@@ -1,0 +1,32 @@
+{
+  "name": "Live Football TV Guide",
+  "short_name": "Football TV",
+  "description": "Find the complete live football TV schedule for today, including broadcasters, kick-off times, and real-time betting odds. Never miss a game!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["sports", "entertainment", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+} 
