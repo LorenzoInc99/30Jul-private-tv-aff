@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import MatchDetailsModal from '../components/MatchDetailsModal';
 import MatchCard from '../components/MatchCard';
 
 function getInitialFavorites() {
@@ -24,8 +23,6 @@ function slugify(str: string) {
 export default function LeagueSchedule({ competitions, timezone = 'auto' }: { competitions: any[]; timezone?: string }) {
   const [favoriteLeagues, setFavoriteLeagues] = useState<number[]>(getInitialFavorites());
   const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
-  const [modalMatchId, setModalMatchId] = useState<string | null>(null);
-  const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null); // NEW: track expanded match for TV
   const router = useRouter();
 
@@ -33,18 +30,7 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
     localStorage.setItem('favoriteLeagues', JSON.stringify(favoriteLeagues));
   }, [favoriteLeagues]);
 
-  useEffect(() => {
-    // Listen for browser back/forward to close modal
-    const handleRouteChange = (url: string) => {
-      if (!url.includes('/match/')) setModalMatchId(null);
-    };
-    window.addEventListener('popstate', () => {
-      if (!window.location.pathname.includes('/match/')) setModalMatchId(null);
-    });
-    return () => {
-      window.removeEventListener('popstate', () => {});
-    };
-  }, []);
+
 
   useEffect(() => {
     // Expand all by default on mount
@@ -72,15 +58,6 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
 
   return (
     <div className="space-y-2 px-2 md:px-8">
-      {modalMatchId && (
-        <MatchDetailsModal
-          matchId={modalMatchId}
-          onClose={() => {
-            setModalMatchId(null);
-            if (prevUrl) router.replace(prevUrl);
-          }}
-        />
-      )}
       {sorted.map(group => {
         const isFav = favoriteLeagues.includes(group.competition.id);
         const isOpen = expanded[group.competition.id];
@@ -138,9 +115,7 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
                         }}
                         onClick={e => {
                           e.preventDefault();
-                          setPrevUrl(window.location.pathname + window.location.search);
-                          setModalMatchId(match.id);
-                          router.push(`/match/${match.id}-${homeSlug}-vs-${awaySlug}`);
+                          router.push(`/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`);
                         }}
                       />
                     </div>
