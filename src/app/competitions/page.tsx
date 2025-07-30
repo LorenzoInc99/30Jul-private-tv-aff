@@ -1,6 +1,6 @@
-import { supabaseServer } from '../../lib/supabase';
 import { Metadata } from 'next';
 import CompetitionsListClient from './CompetitionsListClient';
+import { getAllCompetitions } from '../../lib/database-adapter';
 import { SITE_TITLE } from '../../lib/constants';
 
 export const metadata: Metadata = {
@@ -9,16 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default async function CompetitionsPage() {
-  const supabase = supabaseServer();
-  
-  // Get all competitions with match counts
-  const { data: competitions } = await supabase
-    .from('Competitions')
-    .select(`
-      *,
-      Events(count)
-    `)
-    .order('name', { ascending: true });
-
-  return <CompetitionsListClient competitions={competitions || []} />;
+  try {
+    const competitions = await getAllCompetitions();
+    return <CompetitionsListClient competitions={competitions} />;
+  } catch (error) {
+    console.error('Error fetching competitions:', error);
+    return <CompetitionsListClient competitions={[]} />;
+  }
 } 

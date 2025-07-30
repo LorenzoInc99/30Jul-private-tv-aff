@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getBestOddsFromTransformed } from '../lib/database-adapter';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false }: {
   match: any;
@@ -78,34 +79,30 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             {match.status !== 'Finished' && (
               <div className="flex flex-row items-center justify-between gap-1 min-w-[120px]">
                 {(() => {
-                  type OddKey = '1' | 'X' | '2';
-                  type BestOdds = { [K in OddKey]: { odds: number; operator: any | null } };
-                  const best: BestOdds = { '1': { odds: 0, operator: null }, 'X': { odds: 0, operator: null }, '2': { odds: 0, operator: null } };
-                  (match.Odds || []).forEach((odd: any) => {
-                    if (odd.Operators) {
-                      if (odd.home_win && odd.home_win > best['1'].odds) best['1'] = { odds: odd.home_win, operator: odd.Operators };
-                      if (odd.draw && odd.draw > best['X'].odds) best['X'] = { odds: odd.draw, operator: odd.Operators };
-                      if (odd.away_win && odd.away_win > best['2'].odds) best['2'] = { odds: odd.away_win, operator: odd.Operators };
-                    }
-                  });
-                  return (['1', 'X', '2'] as OddKey[]).map(type => {
-                    const b = best[type];
-                    return b.operator ? (
+                  const bestOdds = getBestOddsFromTransformed(match.Odds || []);
+                  const oddsTypes = [
+                    { key: 'home', label: '1', data: bestOdds.home },
+                    { key: 'draw', label: 'X', data: bestOdds.draw },
+                    { key: 'away', label: '2', data: bestOdds.away }
+                  ];
+                  
+                  return oddsTypes.map(({ key, label, data }) => {
+                    return data.value !== null ? (
                       <a
-                        key={type}
-                        href={b.operator.affiliate_url || '#'}
+                        key={key}
+                        href={data.operator?.url || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex flex-col items-center justify-center text-center w-full px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 transition-colors min-w-[64px] min-h-[36px]"
                         onClick={e => e.stopPropagation()}
                         tabIndex={0}
-                        aria-label={`Best odds for ${type} by ${b.operator.name}`}
+                        aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
                       >
-                        <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400">{parseFloat(b.odds as any).toFixed(2)}</span>
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{b.operator.name}</span>
+                        <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400">{parseFloat(data.value as any).toFixed(2)}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{data.operator?.name || 'Unknown'}</span>
                       </a>
                     ) : (
-                      <div key={type} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[32px]" aria-label="No odds available">
+                      <div key={key} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[32px]" aria-label="No odds available">
                         <span className="font-bold text-xs text-gray-400 dark:text-gray-500">-</span>
                         <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight w-full">N/A</span>
                       </div>
@@ -187,35 +184,31 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           <div className="flex flex-row items-center gap-1"> {/* Odds column, fixed width by grid */}
             {match.status !== 'Finished' ? (
               (() => {
-                type OddKey = '1' | 'X' | '2';
-                type BestOdds = { [K in OddKey]: { odds: number; operator: any | null } };
-                const best: BestOdds = { '1': { odds: 0, operator: null }, 'X': { odds: 0, operator: null }, '2': { odds: 0, operator: null } };
-                (match.Odds || []).forEach((odd: any) => {
-                  if (odd.Operators) {
-                    if (odd.home_win && odd.home_win > best['1'].odds) best['1'] = { odds: odd.home_win, operator: odd.Operators };
-                    if (odd.draw && odd.draw > best['X'].odds) best['X'] = { odds: odd.draw, operator: odd.Operators };
-                    if (odd.away_win && odd.away_win > best['2'].odds) best['2'] = { odds: odd.away_win, operator: odd.Operators };
-                  }
-                });
+                const bestOdds = getBestOddsFromTransformed(match.Odds || []);
+                const oddsTypes = [
+                  { key: 'home', label: '1', data: bestOdds.home },
+                  { key: 'draw', label: 'X', data: bestOdds.draw },
+                  { key: 'away', label: '2', data: bestOdds.away }
+                ];
+                
                 // Always render 3 boxes for alignment
-                return (['1', 'X', '2'] as OddKey[]).map(type => {
-                  const b = best[type];
-                  return b.operator ? (
+                return oddsTypes.map(({ key, label, data }) => {
+                  return data.value !== null ? (
                     <a
-                      key={type}
-                      href={b.operator.affiliate_url || '#'}
+                      key={key}
+                      href={data.operator?.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex flex-col items-center justify-center text-center w-full px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 transition-colors min-w-[64px] min-h-[36px]"
                       onClick={e => e.stopPropagation()}
                       tabIndex={0}
-                      aria-label={`Best odds for ${type} by ${b.operator.name}`}
+                      aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
                     >
-                      <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400">{parseFloat(b.odds as any).toFixed(2)}</span>
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{b.operator.name}</span>
+                      <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400">{parseFloat(data.value as any).toFixed(2)}</span>
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{data.operator?.name || 'Unknown'}</span>
                     </a>
                   ) : (
-                    <div key={type} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[64px] min-h-[36px]" aria-label="No odds available">
+                    <div key={key} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[64px] min-h-[36px]" aria-label="No odds available">
                       <span className="font-bold text-xs text-gray-400 dark:text-gray-500">-</span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight w-full">N/A</span>
                     </div>

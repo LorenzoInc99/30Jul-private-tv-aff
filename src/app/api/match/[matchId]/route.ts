@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabaseServer } from '@/lib/supabase';
+import { getMatchById } from '@/lib/database-adapter';
 
 export async function GET(req: NextRequest, { params }: { params: { matchId: string } }) {
   const { matchId } = params;
@@ -11,13 +11,11 @@ export async function GET(req: NextRequest, { params }: { params: { matchId: str
     const numericMatch = matchId.match(/^(\d+)/);
     if (numericMatch) actualMatchId = numericMatch[1];
   }
-  const { data: match, error } = await supabaseServer()
-    .from('Events')
-    .select(`*, status, Competitions(*), home_team: Teams!Events_home_team_id_fkey(*), away_team: Teams!Events_home_team_id_fkey(*), Event_Broadcasters(Broadcasters(*)), Odds(*, Operators(*))`)
-    .eq('id', actualMatchId)
-    .single();
-  if (error || !match) {
-    return new Response(JSON.stringify({ error: 'Match not found' }), { status: 404 });
+  
+  try {
+    const match = await getMatchById(actualMatchId);
+    return new Response(JSON.stringify({ match }), { status: 200 });
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message || 'Match not found' }), { status: 404 });
   }
-  return new Response(JSON.stringify({ match }), { status: 200 });
 } 

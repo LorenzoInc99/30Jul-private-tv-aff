@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import DateNavigator from './DateNavigator';
 import LeagueSchedule from './LeagueSchedule';
 import TimezoneSelector from './TimezoneSelector';
-import { supabaseBrowser } from '@/lib/supabase';
+import { getMatchesForDate } from '@/lib/database-adapter';
 
 function getInitialTimezone() {
   if (typeof window === 'undefined') return 'auto';
@@ -80,35 +80,23 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
     setLoading(true);
     setError(null);
     const fetchMatches = async () => {
-      const start = new Date(selectedDate);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(start);
-      end.setDate(start.getDate() + 1);
-      const { data, error } = await supabaseBrowser
-        .from('Events')
-        .select('*, Competitions!events_competition_fk(*)')
-        .gte('start_time', start.toISOString())
-        .lt('start_time', end.toISOString())
-        .order('start_time', { ascending: true });
-
-      console.log('Events data:', data, 'Error:', error);
-      if (error) {
-        setError(error.message);
-        setCompetitions([]);
-      } else {
+      try {
+        const data = await getMatchesForDate(selectedDate);
         // Group matches by competition
         const matchesByCompetition: Record<string, { competition: any; matches: any[] }> = {};
-        for (const match of data || []) {
-          // REMOVE or comment out this line for debugging:
-          // if (!match.Competitions || !match.home_team || !match.away_team) continue;
-          const compId = match.Competitions?.id || 'unknown';
+        for (const match of data) {
+          if (!match.Competitions || !match.home_team || !match.away_team) continue;
+          const compId = match.Competitions.id;
           if (!matchesByCompetition[compId]) {
-            matchesByCompetition[compId] = { competition: match.Competitions || { name: 'Unknown' }, matches: [] };
+            matchesByCompetition[compId] = { competition: match.Competitions, matches: [] };
           }
           matchesByCompetition[compId].matches.push(match);
         }
         const sorted = Object.values(matchesByCompetition).sort((a, b) => a.competition.name.localeCompare(b.competition.name));
         setCompetitions(sorted);
+      } catch (error: any) {
+        setError(error.message);
+        setCompetitions([]);
       }
       setLoading(false);
     };
