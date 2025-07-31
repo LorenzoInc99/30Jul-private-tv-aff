@@ -102,25 +102,54 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
     throw error;
   }
 
+  // Hardcoded country data from your database
+  const countriesMap = new Map([
+    [2, { id: 2, name: 'Poland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pl.png' }],
+    [11, { id: 11, name: 'Germany', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/de.png' }],
+    [17, { id: 17, name: 'France', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/fr.png' }],
+    [20, { id: 20, name: 'Portugal', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pt.png' }],
+    [32, { id: 32, name: 'Spain', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/es.png' }],
+    [38, { id: 38, name: 'Netherlands', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/nl.png' }],
+    [41, { id: 41, name: 'Europe', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/eu.png' }],
+    [47, { id: 47, name: 'Sweden', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/se.png' }],
+    [62, { id: 62, name: 'Switzerland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ch.png' }],
+    [86, { id: 86, name: 'Ukraine', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ua.png' }],
+    [143, { id: 143, name: 'Austria', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/at.png' }],
+    [227, { id: 227, name: 'Russia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ru.png' }],
+    [251, { id: 251, name: 'Italy', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/it.png' }],
+    [266, { id: 266, name: 'Croatia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/hr.png' }],
+    [320, { id: 320, name: 'Denmark', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/dk.png' }],
+    [404, { id: 404, name: 'Turkey', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/tr.png' }],
+    [462, { id: 462, name: 'England', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/en.png' }],
+    [556, { id: 556, name: 'Belgium', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/be.png' }],
+    [1161, { id: 1161, name: 'Scotland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/sc.png' }],
+    [1578, { id: 1578, name: 'Norway', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/no.png' }]
+  ]);
+
   // Transform to expected frontend format
-  return (fixtures || []).map((fixture: any) => ({
-    id: fixture.id,
-    name: fixture.name,
-    start_time: fixture.starting_at,
-    home_score: fixture.home_score,
-    away_score: fixture.away_score,
-    status: getMatchStatus(fixture.state_id),
-    Competitions: {
-      id: fixture.league.id,
-      name: fixture.league.name
-    },
-    home_team: transformTeamData(fixture.home_team),
-    away_team: transformTeamData(fixture.away_team),
-    Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
-      Broadcasters: transformTvStationData(ftv.tvstation)
-    })) || [],
-    Odds: transformOdds(fixture.odds || [])
-  }));
+  return (fixtures || []).map((fixture: any) => {
+    const country = countriesMap.get(fixture.league.country_id);
+    
+    return {
+      id: fixture.id,
+      name: fixture.name,
+      start_time: fixture.starting_at,
+      home_score: fixture.home_score,
+      away_score: fixture.away_score,
+      status: getMatchStatus(fixture.state_id),
+      Competitions: {
+        id: fixture.league.id,
+        name: fixture.league.name,
+        country: country || null
+      },
+      home_team: transformTeamData(fixture.home_team),
+      away_team: transformTeamData(fixture.away_team),
+      Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
+        Broadcasters: transformTvStationData(ftv.tvstation)
+      })) || [],
+      Odds: transformOdds(fixture.odds || [])
+    };
+  });
 }
 
 export async function getMatchById(matchId: string, supabase = supabaseServer()) {
@@ -149,6 +178,17 @@ export async function getMatchById(matchId: string, supabase = supabaseServer())
     throw new Error('Match not found');
   }
 
+  // Get country data for the league
+  const { data: country, error: countryError } = await supabase
+    .from('countries')
+    .select('*')
+    .eq('id', fixture.league.country_id)
+    .single();
+
+  if (countryError) {
+    console.warn('Could not fetch country for league:', countryError);
+  }
+
   return {
     id: fixture.id,
     name: fixture.name,
@@ -160,7 +200,8 @@ export async function getMatchById(matchId: string, supabase = supabaseServer())
     away_team_id: fixture.away_team_id,
     Competitions: {
       id: fixture.league.id,
-      name: fixture.league.name
+      name: fixture.league.name,
+      country: country || null
     },
     home_team: transformTeamData(fixture.home_team),
     away_team: transformTeamData(fixture.away_team),
@@ -184,9 +225,34 @@ export async function getAllCompetitions(supabase = supabaseServer()) {
     throw error;
   }
 
+  // Hardcoded country data from your database
+  const countriesMap = new Map([
+    [2, { id: 2, name: 'Poland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pl.png' }],
+    [11, { id: 11, name: 'Germany', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/de.png' }],
+    [17, { id: 17, name: 'France', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/fr.png' }],
+    [20, { id: 20, name: 'Portugal', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pt.png' }],
+    [32, { id: 32, name: 'Spain', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/es.png' }],
+    [38, { id: 38, name: 'Netherlands', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/nl.png' }],
+    [41, { id: 41, name: 'Europe', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/eu.png' }],
+    [47, { id: 47, name: 'Sweden', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/se.png' }],
+    [62, { id: 62, name: 'Switzerland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ch.png' }],
+    [86, { id: 86, name: 'Ukraine', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ua.png' }],
+    [143, { id: 143, name: 'Austria', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/at.png' }],
+    [227, { id: 227, name: 'Russia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ru.png' }],
+    [251, { id: 251, name: 'Italy', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/it.png' }],
+    [266, { id: 266, name: 'Croatia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/hr.png' }],
+    [320, { id: 320, name: 'Denmark', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/dk.png' }],
+    [404, { id: 404, name: 'Turkey', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/tr.png' }],
+    [462, { id: 462, name: 'England', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/en.png' }],
+    [556, { id: 556, name: 'Belgium', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/be.png' }],
+    [1161, { id: 1161, name: 'Scotland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/sc.png' }],
+    [1578, { id: 1578, name: 'Norway', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/no.png' }]
+  ]);
+
   return (leagues || []).map((league: any) => ({
     id: league.id,
     name: league.name,
+    country: countriesMap.get(league.country_id) || null,
     Events: [{ count: league.fixtures?.[0]?.count || 0 }]
   }));
 }

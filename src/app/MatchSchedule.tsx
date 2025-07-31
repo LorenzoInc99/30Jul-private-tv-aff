@@ -93,6 +93,7 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
           matchesByCompetition[compId].matches.push(match);
         }
         const sorted = Object.values(matchesByCompetition).sort((a, b) => a.competition.name.localeCompare(b.competition.name));
+        
         setCompetitions(sorted);
       } catch (error: any) {
         setError(error.message);

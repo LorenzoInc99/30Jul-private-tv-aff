@@ -1,6 +1,7 @@
 import React from 'react';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
 import TeamLogo from './TeamLogo';
+import CountryFlag from './CountryFlag';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false }: {
   match: any;
@@ -210,9 +211,18 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           {/* Teams with logos */}
           <div className="flex flex-col"> {/* Teams column, fixed width by grid */}
-            {/* Competition name (bigger font) */}
+            {/* Competition name with country flag */}
             {!hideCompetitionName && match.competition?.name && (
-              <div className="text-base font-bold text-gray-900 dark:text-white mb-1">{match.competition.name}</div>
+              <div className="flex items-center gap-2 mb-1">
+                {match.Competitions?.country && (
+                  <CountryFlag 
+                    imagePath={match.Competitions.country.image_path} 
+                    countryName={match.Competitions.country.name} 
+                    size="sm" 
+                  />
+                )}
+                <div className="text-base font-bold text-gray-900 dark:text-white">{match.competition.name}</div>
+              </div>
             )}
             <div className="flex items-center gap-2">
               <TeamLogo 

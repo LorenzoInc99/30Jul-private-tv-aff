@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { SITE_TITLE } from '../../lib/constants';
+import CountryFlag from '../../components/CountryFlag';
 
 function slugify(str: string) {
   return str
@@ -88,9 +89,18 @@ export default function CompetitionsListClient({ competitions }: { competitions:
                     className="group block bg-gray-50 dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                   >
                     <div className="text-center">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        {competition.name}
-                      </h2>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        {competition.country && (
+                          <CountryFlag 
+                            imagePath={competition.country.image_path} 
+                            countryName={competition.country.name} 
+                            size="sm" 
+                          />
+                        )}
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {competition.name}
+                        </h2>
+                      </div>
                       <div className="flex items-center justify-center space-x-2 text-gray-600 dark:text-gray-400">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>

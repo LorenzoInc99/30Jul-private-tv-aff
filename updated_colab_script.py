@@ -1,7 +1,7 @@
-# UPDATED COLAB SCRIPT FOR COMPLETE DATA FETCH (2 DAYS AGO TO END OF AUGUST)
+# UPDATED COLAB SCRIPT WITH TEAM LOGO, ODDS & TV CHANNEL FETCHING
 
 # Install necessary library (only run once per Colab session)
-# !pip install psycopg --quiet
+!pip install psycopg --quiet
 
 # Import Libraries
 import requests
@@ -49,9 +49,9 @@ def discover_available_leagues(api_token):
     """Discover what leagues are actually available in the date range."""
     print(f"\n=== DISCOVERING AVAILABLE LEAGUES ===")
     
-    # Calculate date range
+    # FIXED: Use proper date range - from today to end of August
     today = datetime.datetime.now()
-    start_date = today - datetime.timedelta(days=2)  # 2 days ago
+    start_date = today  # Start from today
     end_date = datetime.datetime(2025, 8, 31)  # End of August
     
     # Format dates as YYYY-MM-DD for the API
@@ -74,7 +74,7 @@ def discover_available_leagues(api_token):
     league_names = {}
     total_fixtures = 0
     page = 1
-    max_pages = 20  # Limit to avoid too many API calls
+    max_pages = 50  # INCREASED: Allow more pages for discovery
     
     while page <= max_pages:
         try:
@@ -128,7 +128,7 @@ def discover_available_leagues(api_token):
             print(f"  Error discovering leagues on page {page}: {e}")
             break
         
-        time.sleep(0.2)  # Rate limiting
+        time.sleep(0.1)  # REDUCED: Less aggressive rate limiting
     
     print(f"\n=== LEAGUE DISCOVERY RESULTS ===")
     print(f"Total fixtures found: {total_fixtures}")
@@ -147,9 +147,9 @@ def fetch_all_fixtures_with_discovered_leagues(api_token, discovered_leagues):
     """Fetch all fixtures from discovered leagues in the date range."""
     print(f"\n=== FETCHING FIXTURES FROM DISCOVERED LEAGUES ===")
     
-    # Calculate date range
+    # FIXED: Use the SAME date range as discovery - from today to end of August
     today = datetime.datetime.now()
-    start_date = today - datetime.timedelta(days=2)  # 2 days ago
+    start_date = today  # Start from today
     end_date = datetime.datetime(2025, 8, 31)  # End of August
     
     # Format dates as YYYY-MM-DD for the API
@@ -180,7 +180,7 @@ def fetch_all_fixtures_with_discovered_leagues(api_token, discovered_leagues):
         fixtures_data = []
         page = 1
         has_more = True
-        max_pages = 100  # Increased limit for extended range
+        max_pages = 200  # INCREASED: Allow more pages for extended range
         
         while has_more and page <= max_pages:
             current_params = params.copy()
@@ -212,7 +212,7 @@ def fetch_all_fixtures_with_discovered_leagues(api_token, discovered_leagues):
                 print(f"  ERROR: Error fetching page {page}: {e}")
                 break
             
-            time.sleep(0.2)  # Rate limiting
+            time.sleep(0.1)  # REDUCED: Less aggressive rate limiting
         
         print(f"Total fixtures fetched: {len(fixtures_data)}")
         
@@ -240,6 +240,96 @@ def fetch_all_fixtures_with_discovered_leagues(api_token, discovered_leagues):
             print(f"  League {league_id}: {count} fixtures")
     
     return all_fixtures
+
+def fetch_odds_for_fixtures(api_token, fixture_ids):
+    """Fetch odds data for specific fixtures."""
+    print(f"\n=== FETCHING ODDS FOR FIXTURES ===")
+    
+    all_odds = []
+    fixtures_with_odds = 0
+    
+    for fixture_id in fixture_ids:
+        try:
+            url = f"https://api.sportmonks.com/v3/football/odds/fixtures/{fixture_id}"
+            params = {
+                "api_token": api_token,
+                "include": "bookmaker"
+            }
+            
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            if "data" in data and data["data"] is not None:
+                odds_data = data["data"]
+                if isinstance(odds_data, list):
+                    for odd in odds_data:
+                        odd["fixture_id"] = fixture_id
+                        all_odds.append(odd)
+                    if odds_data:
+                        fixtures_with_odds += 1
+                        print(f"  Fixture {fixture_id}: {len(odds_data)} odds")
+                else:
+                    # Single odd
+                    odds_data["fixture_id"] = fixture_id
+                    all_odds.append(odds_data)
+                    fixtures_with_odds += 1
+                    print(f"  Fixture {fixture_id}: 1 odd")
+            
+            time.sleep(0.05)  # Rate limiting
+            
+        except Exception as e:
+            print(f"  Error fetching odds for fixture {fixture_id}: {e}")
+    
+    print(f"Total odds fetched: {len(all_odds)}")
+    print(f"Fixtures with odds: {fixtures_with_odds}")
+    
+    return all_odds
+
+def fetch_tv_channels_for_fixtures(api_token, fixture_ids):
+    """Fetch TV channel data for specific fixtures."""
+    print(f"\n=== FETCHING TV CHANNELS FOR FIXTURES ===")
+    
+    all_tv_data = []
+    fixtures_with_tv = 0
+    
+    for fixture_id in fixture_ids:
+        try:
+            url = f"https://api.sportmonks.com/v3/football/fixtures/{fixture_id}"
+            params = {
+                "api_token": api_token,
+                "include": "tvstations"
+            }
+            
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            if "data" in data and data["data"] is not None:
+                fixture = data["data"]
+                tv_stations = fixture.get("tvstations", [])
+                
+                if tv_stations:
+                    fixtures_with_tv += 1
+                    print(f"  Fixture {fixture_id}: {len(tv_stations)} TV stations")
+                    
+                    for tv_station in tv_stations:
+                        tv_data = {
+                            "fixture_id": fixture_id,
+                            "tvstation_id": tv_station.get("id"),
+                            "country_id": tv_station.get("country_id")
+                        }
+                        all_tv_data.append(tv_data)
+            
+            time.sleep(0.05)  # Rate limiting
+            
+        except Exception as e:
+            print(f"  Error fetching TV channels for fixture {fixture_id}: {e}")
+    
+    print(f"Total TV station links: {len(all_tv_data)}")
+    print(f"Fixtures with TV: {fixtures_with_tv}")
+    
+    return all_tv_data
 
 def fetch_leagues_data_for_discovered(api_token, discovered_leagues):
     """Fetch league data for discovered leagues."""
@@ -269,16 +359,16 @@ def fetch_leagues_data_for_discovered(api_token, discovered_leagues):
                 })
                 print(f"  League {league_id}: {league.get('name')}")
             
-            time.sleep(0.1)
+            time.sleep(0.05)  # REDUCED: Less aggressive rate limiting
             
         except Exception as e:
             print(f"  Error fetching league {league_id}: {e}")
     
     return leagues_data
 
-def fetch_teams_data(api_token, fixtures_data):
-    """Fetch team data for all teams in our fixtures."""
-    print(f"\n=== FETCHING TEAMS DATA ===")
+def fetch_teams_data_with_logos(api_token, fixtures_data):
+    """Fetch team data including logos for all teams in our fixtures."""
+    print(f"\n=== FETCHING TEAMS DATA WITH LOGOS ===")
     
     # Extract unique team IDs from fixtures
     team_ids = set()
@@ -290,6 +380,7 @@ def fetch_teams_data(api_token, fixtures_data):
     print(f"Found {len(team_ids)} unique teams")
     
     teams_data = []
+    teams_with_logos = 0
     
     for team_id in team_ids:
         if team_id is None:
@@ -307,18 +398,32 @@ def fetch_teams_data(api_token, fixtures_data):
             
             if "data" in data:
                 team = data["data"]
+                team_logo_url = team.get("image_path")
+                
+                if team_logo_url:
+                    teams_with_logos += 1
+                    print(f"  Team {team_id} ({team.get('name')}): Logo found ✅")
+                else:
+                    print(f"  Team {team_id} ({team.get('name')}): No logo ❌")
+                
                 teams_data.append({
                     "id": team.get("id"),
                     "name": team.get("name"),
                     "short_code": team.get("short_code"),
                     "country_id": team.get("country_id"),
-                    "venue_id": team.get("venue_id")
+                    "venue_id": team.get("venue_id"),
+                    "team_logo_url": team_logo_url  # NEW: Include logo URL
                 })
             
-            time.sleep(0.1)
+            time.sleep(0.05)  # REDUCED: Less aggressive rate limiting
             
         except Exception as e:
             print(f"  Error fetching team {team_id}: {e}")
+    
+    print(f"\n=== TEAM LOGO SUMMARY ===")
+    print(f"Total teams processed: {len(teams_data)}")
+    print(f"Teams with logos: {teams_with_logos}")
+    print(f"Teams without logos: {len(teams_data) - teams_with_logos}")
     
     return teams_data
 
@@ -364,9 +469,55 @@ def fetch_tv_stations_data(api_token):
             print(f"  Error fetching TV stations page {page}: {e}")
             break
         
-        time.sleep(0.1)
+        time.sleep(0.05)  # REDUCED: Less aggressive rate limiting
     
     return tv_stations
+
+def fetch_bookmakers_data(api_token):
+    """Fetch bookmakers data."""
+    print(f"\n=== FETCHING BOOKMAKERS DATA ===")
+    
+    url = "https://api.sportmonks.com/v3/football/bookmakers"
+    params = {
+        "api_token": api_token,
+        "per_page": 100
+    }
+    
+    bookmakers = []
+    page = 1
+    has_more = True
+    
+    while has_more:
+        try:
+            current_params = params.copy()
+            current_params["page"] = page
+            
+            response = requests.get(url, params=current_params)
+            response.raise_for_status()
+            data = response.json()
+            
+            if "data" in data and data["data"] is not None:
+                if isinstance(data["data"], list):
+                    page_bookmakers = [dict(item) for item in data["data"]]
+                    bookmakers.extend(page_bookmakers)
+                    print(f"  Got {len(page_bookmakers)} bookmakers on page {page}")
+                else:
+                    bookmakers.append(dict(data["data"]))
+            
+            # Check pagination
+            if "pagination" in data and data["pagination"] is not None:
+                has_more = data["pagination"].get("has_more", False)
+                page += 1
+            else:
+                has_more = False
+                
+        except Exception as e:
+            print(f"  Error fetching bookmakers page {page}: {e}")
+            break
+        
+        time.sleep(0.05)  # REDUCED: Less aggressive rate limiting
+    
+    return bookmakers
 
 def populate_leagues_data(leagues_data, conn):
     """Populate leagues table."""
@@ -395,28 +546,30 @@ def populate_leagues_data(leagues_data, conn):
     finally:
         cur.close()
 
-def populate_teams_data(teams_data, conn):
-    """Populate teams_new table."""
+def populate_teams_data_with_logos(teams_data, conn):
+    """Populate teams_new table with logo URLs."""
     if not conn or not teams_data:
         return
     
     cur = conn.cursor()
-    print("Populating Teams Data...")
+    print("Populating Teams Data with Logos...")
     
+    # UPDATED: Include team_logo_url in the insert query
     insert_query = """
-    INSERT INTO public.teams_new (id, name, short_code, country_id, venue_id)
-    VALUES (%(id)s, %(name)s, %(short_code)s, %(country_id)s, %(venue_id)s)
+    INSERT INTO public.teams_new (id, name, short_code, country_id, venue_id, team_logo_url)
+    VALUES (%(id)s, %(name)s, %(short_code)s, %(country_id)s, %(venue_id)s, %(team_logo_url)s)
     ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name,
         short_code = EXCLUDED.short_code,
         country_id = EXCLUDED.country_id,
-        venue_id = EXCLUDED.venue_id;
+        venue_id = EXCLUDED.venue_id,
+        team_logo_url = EXCLUDED.team_logo_url;
     """
     
     try:
         cur.executemany(insert_query, teams_data)
         conn.commit()
-        print(f"Successfully inserted/updated {len(teams_data)} teams.")
+        print(f"Successfully inserted/updated {len(teams_data)} teams with logos.")
     except Exception as e:
         conn.rollback()
         print(f"Error inserting teams: {e}")
@@ -447,6 +600,89 @@ def populate_tv_stations_data(tv_stations_data, conn):
     except Exception as e:
         conn.rollback()
         print(f"Error inserting TV stations: {e}")
+    finally:
+        cur.close()
+
+def populate_bookmakers_data(bookmakers_data, conn):
+    """Populate bookmakers table."""
+    if not conn or not bookmakers_data:
+        return
+    
+    cur = conn.cursor()
+    print("Populating Bookmakers Data...")
+    
+    insert_query = """
+    INSERT INTO public.bookmakers (id, name, url, image_path)
+    VALUES (%(id)s, %(name)s, %(url)s, %(image_path)s)
+    ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        url = EXCLUDED.url,
+        image_path = EXCLUDED.image_path;
+    """
+    
+    try:
+        cur.executemany(insert_query, bookmakers_data)
+        conn.commit()
+        print(f"Successfully inserted/updated {len(bookmakers_data)} bookmakers.")
+    except Exception as e:
+        conn.rollback()
+        print(f"Error inserting bookmakers: {e}")
+    finally:
+        cur.close()
+
+def populate_odds_data(odds_data, conn):
+    """Populate odds table."""
+    if not conn or not odds_data:
+        return
+    
+    cur = conn.cursor()
+    print("Populating Odds Data...")
+    
+    insert_query = """
+    INSERT INTO public.odds (id, fixture_id, bookmaker_id, market_id, label, value, probability, latest_bookmaker_update)
+    VALUES (%(id)s, %(fixture_id)s, %(bookmaker_id)s, %(market_id)s, %(label)s, %(value)s, %(probability)s, %(latest_bookmaker_update)s)
+    ON CONFLICT (id) DO UPDATE SET
+        fixture_id = EXCLUDED.fixture_id,
+        bookmaker_id = EXCLUDED.bookmaker_id,
+        market_id = EXCLUDED.market_id,
+        label = EXCLUDED.label,
+        value = EXCLUDED.value,
+        probability = EXCLUDED.probability,
+        latest_bookmaker_update = EXCLUDED.latest_bookmaker_update;
+    """
+    
+    try:
+        cur.executemany(insert_query, odds_data)
+        conn.commit()
+        print(f"Successfully inserted/updated {len(odds_data)} odds.")
+    except Exception as e:
+        conn.rollback()
+        print(f"Error inserting odds: {e}")
+    finally:
+        cur.close()
+
+def populate_fixture_tv_data(fixture_tv_data, conn):
+    """Populate fixturetvstations table."""
+    if not conn or not fixture_tv_data:
+        return
+    
+    cur = conn.cursor()
+    print("Populating Fixture TV Stations Data...")
+    
+    insert_query = """
+    INSERT INTO public.fixturetvstations (fixture_id, tvstation_id, country_id)
+    VALUES (%(fixture_id)s, %(tvstation_id)s, %(country_id)s)
+    ON CONFLICT (fixture_id, tvstation_id) DO UPDATE SET
+        country_id = EXCLUDED.country_id;
+    """
+    
+    try:
+        cur.executemany(insert_query, fixture_tv_data)
+        conn.commit()
+        print(f"Successfully inserted/updated {len(fixture_tv_data)} fixture TV station links.")
+    except Exception as e:
+        conn.rollback()
+        print(f"Error inserting fixture TV stations: {e}")
     finally:
         cur.close()
 
@@ -600,9 +836,9 @@ def populate_fixtures_data_optimized(fixtures_data, conn):
         if cur:
             cur.close()
 
-def run_updated_data_fetch():
-    """Main function to discover leagues and fetch all data."""
-    print("=== STARTING UPDATED DATA FETCH (DISCOVER + FETCH) ===")
+def run_complete_data_fetch_with_odds_and_tv():
+    """Main function to discover leagues and fetch all data including odds and TV channels."""
+    print("=== STARTING COMPLETE DATA FETCH WITH ODDS & TV CHANNELS ===")
     
     # Test database connection first
     test_conn = get_db_connection()
@@ -627,16 +863,26 @@ def run_updated_data_fetch():
         print("❌ No fixtures found. Exiting.")
         return
     
-    # 3. Fetch supporting data
+    # 3. Extract fixture IDs for odds and TV channel fetching
+    fixture_ids = [fixture.get("id") for fixture in all_fixtures if fixture.get("id")]
+    print(f"Extracted {len(fixture_ids)} fixture IDs for odds and TV channel fetching")
+    
+    # 4. Fetch odds and TV channels for these fixtures
+    print(f"\n=== FETCHING ODDS AND TV CHANNELS ===")
+    odds_data = fetch_odds_for_fixtures(API_TOKEN, fixture_ids)
+    tv_data = fetch_tv_channels_for_fixtures(API_TOKEN, fixture_ids)
+    
+    # 5. Fetch supporting data
     print(f"\n=== FETCHING SUPPORTING DATA ===")
     leagues_data = fetch_leagues_data_for_discovered(API_TOKEN, discovered_leagues)
     tv_stations_data = fetch_tv_stations_data(API_TOKEN)
+    bookmakers_data = fetch_bookmakers_data(API_TOKEN)
     
-    # Skip teams for now (too slow)
-    print("⚠️  Skipping teams data (too many API calls)")
-    teams_data = []
+    # 6. Fetch teams with logos
+    print("🔄 Fetching teams data with logos...")
+    teams_data = fetch_teams_data_with_logos(API_TOKEN, all_fixtures)
     
-    # 4. Save everything to database
+    # 7. Save everything to database
     conn = get_db_connection()
     if conn:
         try:
@@ -651,16 +897,39 @@ def run_updated_data_fetch():
                 print("🔄 Saving leagues...")
                 populate_leagues_data(leagues_data, conn)
             
+            # Save teams with logos
+            if teams_data:
+                print("🔄 Saving teams with logos...")
+                populate_teams_data_with_logos(teams_data, conn)
+            
             # Save TV stations
             if tv_stations_data:
                 print("🔄 Saving TV stations...")
                 populate_tv_stations_data(tv_stations_data, conn)
             
-            print(f"\n=== COMPLETE DATA FETCH FINISHED ===")
+            # Save bookmakers
+            if bookmakers_data:
+                print("🔄 Saving bookmakers...")
+                populate_bookmakers_data(bookmakers_data, conn)
+            
+            # Save odds
+            if odds_data:
+                print("🔄 Saving odds...")
+                populate_odds_data(odds_data, conn)
+            
+            # Save fixture TV station links
+            if tv_data:
+                print("🔄 Saving fixture TV station links...")
+                populate_fixture_tv_data(tv_data, conn)
+            
+            print(f"\n=== COMPLETE DATA FETCH WITH ODDS & TV FINISHED ===")
             print(f"✅ Total fixtures: {len(all_fixtures)}")
             print(f"✅ Total leagues: {len(leagues_data)}")
+            print(f"✅ Total teams with logos: {len(teams_data)}")
             print(f"✅ Total TV stations: {len(tv_stations_data)}")
-            print(f"⚠️  Teams skipped for performance")
+            print(f"✅ Total bookmakers: {len(bookmakers_data)}")
+            print(f"✅ Total odds: {len(odds_data)}")
+            print(f"✅ Total fixture TV links: {len(tv_data)}")
             
         finally:
             conn.close()
@@ -668,9 +937,9 @@ def run_updated_data_fetch():
     else:
         print("❌ Failed to connect to database for saving data.")
 
-def quick_verify_updated_data():
-    """Quick verification of the updated data in the database."""
-    print(f"\n=== QUICK VERIFICATION (UPDATED DATA) ===")
+def quick_verify_complete_data():
+    """Quick verification of the complete data including odds and TV channels in the database."""
+    print(f"\n=== QUICK VERIFICATION WITH ODDS & TV CHANNELS ===")
     conn = get_db_connection()
     if not conn:
         return
@@ -688,33 +957,71 @@ def quick_verify_updated_data():
         fixtures_with_scores = cur.fetchone()[0]
         print(f"Fixtures with scores: {fixtures_with_scores}")
         
+        # Count teams with logos
+        cur.execute("SELECT COUNT(*) FROM public.teams_new WHERE team_logo_url IS NOT NULL")
+        teams_with_logos = cur.fetchone()[0]
+        print(f"Teams with logos: {teams_with_logos}")
+        
+        # Count odds
+        cur.execute("SELECT COUNT(*) FROM public.odds")
+        total_odds = cur.fetchone()[0]
+        print(f"Total odds: {total_odds}")
+        
+        # Count fixture TV links
+        cur.execute("SELECT COUNT(*) FROM public.fixturetvstations")
+        total_fixture_tv = cur.fetchone()[0]
+        print(f"Total fixture TV links: {total_fixture_tv}")
+        
         # Show date range
         cur.execute("SELECT MIN(starting_at), MAX(starting_at) FROM public.fixtures")
         date_range = cur.fetchone()
         print(f"Date range: {date_range[0]} to {date_range[1]}")
         
-        # Show recent fixtures with scores
-        print(f"\n=== RECENT FIXTURES WITH SCORES ===")
+        # Show recent fixtures with odds
+        print(f"\n=== RECENT FIXTURES WITH ODDS ===")
         cur.execute("""
             SELECT 
                 f.name,
                 f.starting_at,
-                f.home_score,
-                f.away_score,
-                f.league_id
+                COUNT(o.id) as odds_count
             FROM public.fixtures f
-            WHERE (f.home_score IS NOT NULL OR f.away_score IS NOT NULL)
-            ORDER BY f.starting_at DESC
+            LEFT JOIN public.odds o ON f.id = o.fixture_id
+            WHERE f.starting_at >= NOW()
+            GROUP BY f.id, f.name, f.starting_at
+            HAVING COUNT(o.id) > 0
+            ORDER BY f.starting_at ASC
             LIMIT 10;
         """)
         
-        recent_samples = cur.fetchall()
-        if recent_samples:
-            for sample in recent_samples:
-                score_display = f"{sample[2]}-{sample[3]}" if sample[2] is not None and sample[3] is not None else "No score"
-                print(f"  {sample[0]} | {sample[1]} | League: {sample[4]} | Score: {score_display}")
+        recent_with_odds = cur.fetchall()
+        if recent_with_odds:
+            for fixture in recent_with_odds:
+                print(f"  {fixture[0]} | {fixture[1]} | {fixture[2]} odds")
         else:
-            print("  No fixtures with scores found.")
+            print("  No upcoming fixtures with odds found.")
+            
+        # Show recent fixtures with TV
+        print(f"\n=== RECENT FIXTURES WITH TV ===")
+        cur.execute("""
+            SELECT 
+                f.name,
+                f.starting_at,
+                COUNT(ftv.tvstation_id) as tv_count
+            FROM public.fixtures f
+            LEFT JOIN public.fixturetvstations ftv ON f.id = ftv.fixture_id
+            WHERE f.starting_at >= NOW()
+            GROUP BY f.id, f.name, f.starting_at
+            HAVING COUNT(ftv.tvstation_id) > 0
+            ORDER BY f.starting_at ASC
+            LIMIT 10;
+        """)
+        
+        recent_with_tv = cur.fetchall()
+        if recent_with_tv:
+            for fixture in recent_with_tv:
+                print(f"  {fixture[0]} | {fixture[1]} | {fixture[2]} TV stations")
+        else:
+            print("  No upcoming fixtures with TV found.")
             
     except Exception as e:
         print(f"Error during verification: {e}")
@@ -723,10 +1030,10 @@ def quick_verify_updated_data():
             cur.close()
             conn.close()
 
-# RUN THE UPDATED DATA FETCH
+# RUN THE COMPLETE DATA FETCH WITH ODDS & TV
 if __name__ == "__main__":
-    # Run the updated data fetch
-    run_updated_data_fetch()
+    # Run the complete data fetch with odds and TV channels
+    run_complete_data_fetch_with_odds_and_tv()
     
-    # Quick verification
-    quick_verify_updated_data() 
+    # Quick verification including odds and TV
+    quick_verify_complete_data() 
