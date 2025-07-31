@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import TeamLogo from '@/components/TeamLogo';
 
 function slugify(str: string) {
   return str
@@ -13,7 +14,7 @@ function slugify(str: string) {
 interface Team {
   id: number | string;
   name: string;
-  logo_url?: string;
+  team_logo_url?: string;
   totalMatches?: number;
 }
 
@@ -85,13 +86,10 @@ export default function TeamsListClient({ grouped }: TeamsListClientProps) {
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                       {uniqueTeams.map(team => (
                         <li key={`${group.competition.id}-${team.id}`} className="flex items-center space-x-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-                          <Image
-                            src={team.logo_url || 'https://placehold.co/32x32/f3f4f6/f3f4f6'}
-                            alt={team.name || 'Team logo'}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8 object-contain rounded"
-                            loading="lazy"
+                          <TeamLogo 
+                            logoUrl={team.team_logo_url} 
+                            teamName={team.name} 
+                            size="sm" 
                           />
                           <Link
                             href={`/team/${team.id}-${slugify(team.name)}`}

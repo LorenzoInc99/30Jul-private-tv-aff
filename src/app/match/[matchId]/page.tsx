@@ -4,6 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getMatchById, getTeamForm } from '@/lib/database-adapter';
+import TeamLogo from '@/components/TeamLogo';
 
 
 
@@ -491,13 +492,13 @@ export default function MatchPage() {
               {/* Teams and Score */}
               <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 mb-6">
                 <div className="flex flex-col items-center">
-                  <Image
-                    src={match.home_team?.logo_url || 'https://placehold.co/64x64/f3f4f6/f3f4f6'}
-                    alt={homeTeamName}
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 object-contain mb-2"
-                  />
+                  <div className="mb-2">
+                    <TeamLogo 
+                      logoUrl={match.home_team?.team_logo_url} 
+                      teamName={homeTeamName} 
+                      size="lg" 
+                    />
+                  </div>
                   <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{homeTeamName}</span>
                   <TeamFormRectangles
                     teamId={match.home_team_id}
@@ -506,13 +507,13 @@ export default function MatchPage() {
                 </div>
                 <span className="text-3xl font-extrabold text-gray-500 dark:text-gray-400">vs</span>
                 <div className="flex flex-col items-center">
-                  <Image
-                    src={match.away_team?.logo_url || 'https://placehold.co/64x64/f3f4f6/f3f4f6'}
-                    alt={awayTeamName}
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 object-contain mb-2"
-                  />
+                  <div className="mb-2">
+                    <TeamLogo 
+                      logoUrl={match.away_team?.team_logo_url} 
+                      teamName={awayTeamName} 
+                      size="lg" 
+                    />
+                  </div>
                   <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{awayTeamName}</span>
                   <TeamFormRectangles
                     teamId={match.away_team_id}

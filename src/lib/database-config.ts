@@ -24,9 +24,9 @@ export const MATCH_STATUS_MAP: { [key: number]: string } = {
   20: 'Technical Loss',
   21: 'Walkover',
   22: 'Live Extra Time',
-  23: 'Match Finished',
-  24: 'After Penalties',
-  25: 'After Extra Time'
+  23: 'Finished', // Match Finished - this is likely the main finished state
+  24: 'Finished', // After Penalties - also finished
+  25: 'Finished'  // After Extra Time - also finished
 };
 
 // Reverse mapping for status to state_id
@@ -96,7 +96,8 @@ export function transformTeamData(team: any) {
   return {
     id: team.id,
     name: team.name,
-    short_code: team.short_code || DEFAULTS.TEAM_SHORT_CODE
+    short_code: team.short_code || DEFAULTS.TEAM_SHORT_CODE,
+    team_logo_url: team.team_logo_url || null
   };
 }
 

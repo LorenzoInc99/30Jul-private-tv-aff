@@ -3,15 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MatchCard from '../components/MatchCard';
-
-function getInitialFavorites() {
-  if (typeof window === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem('favoriteLeagues') || '[]');
-  } catch {
-    return [];
-  }
-}
+import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
 
 function slugify(str: string) {
   return str
@@ -21,16 +13,29 @@ function slugify(str: string) {
 }
 
 export default function LeagueSchedule({ competitions, timezone = 'auto' }: { competitions: any[]; timezone?: string }) {
-  const [favoriteLeagues, setFavoriteLeagues] = useState<number[]>(getInitialFavorites());
+  const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
-  const [expandedMatch, setExpandedMatch] = useState<string | null>(null); // NEW: track expanded match for TV
+  const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
+  // Load pinned leagues on mount
   useEffect(() => {
-    localStorage.setItem('favoriteLeagues', JSON.stringify(favoriteLeagues));
-  }, [favoriteLeagues]);
+    setMounted(true);
+    updatePinnedLeagues();
+  }, [competitions]);
 
+  const updatePinnedLeagues = () => {
+    const pinned = getPinnedLeagues();
+    setPinnedLeagues(pinned);
+  };
 
+  const handlePinToggle = (league: any) => {
+    togglePinnedLeague(league);
+    updatePinnedLeagues();
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('pinnedLeaguesChanged'));
+  };
 
   useEffect(() => {
     // Expand all by default on mount
@@ -39,12 +44,12 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
     setExpanded(all);
   }, [competitions]);
 
-  // Sort: favorites first, then alphabetical
+  // Sort: pinned leagues first, then alphabetical
   const sorted = [...competitions].sort((a, b) => {
-    const aFav = favoriteLeagues.includes(a.competition.id);
-    const bFav = favoriteLeagues.includes(b.competition.id);
-    if (aFav && !bFav) return -1;
-    if (!aFav && bFav) return 1;
+    const aPinned = isLeaguePinned(a.competition.id);
+    const bPinned = isLeaguePinned(b.competition.id);
+    if (aPinned && !bPinned) return -1;
+    if (!aPinned && bPinned) return 1;
     return a.competition.name.localeCompare(b.competition.name);
   });
 
@@ -59,7 +64,7 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
   return (
     <div className="space-y-2 px-2 md:px-8">
       {sorted.map(group => {
-        const isFav = favoriteLeagues.includes(group.competition.id);
+        const isPinned = mounted && isLeaguePinned(group.competition.id);
         const isOpen = expanded[group.competition.id];
         return (
           <div key={group.competition.id} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-6 md:rounded-lg md:shadow">
@@ -70,13 +75,22 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
             >
               <div className="flex items-center space-x-2">
                 <svg
-                  className={`favorite-star w-5 h-5 ${isFav ? 'text-yellow-400 dark:text-yellow-300' : 'text-gray-400 dark:text-gray-500'}`}
-                  fill="currentColor"
+                  className={`pin-star w-5 h-5 ${isPinned ? 'text-yellow-500 dark:text-yellow-400' : 'text-gray-400 dark:text-gray-500'}`}
+                  fill={isPinned ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  strokeWidth="2"
                   viewBox="0 0 24 24"
-                  onClick={e => { e.stopPropagation(); setFavoriteLeagues(favs => favs.includes(group.competition.id) ? favs.filter(id => id !== group.competition.id) : [...favs, group.competition.id]); }}
+                  onClick={e => { 
+                    e.stopPropagation(); 
+                    handlePinToggle(group.competition);
+                  }}
                   style={{ cursor: 'pointer', transition: 'color 0.2s' }}
                 >
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" 
+                  />
                 </svg>
                 <Link 
                   href={`/competition/${group.competition.id}-${slugify(group.competition.name)}`}

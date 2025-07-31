@@ -123,7 +123,12 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
 
   return (
     <div>
-      <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 px-2 md:px-8">
+        <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
+        <div className="flex items-center gap-2">
+          <TimezoneSelector value={timezone} onChange={setTimezone} />
+        </div>
+      </div>
       {!loading && !error && allMatches.length > 0 && <HomeStructuredData matches={allMatches} />}
       {loading ? (
         <div className="text-center text-gray-500 py-10">Loading matches...</div>

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 interface Team {
   id: number | string;
   name: string;
-  logo_url?: string;
+  team_logo_url?: string;
   competition_id?: number | string;
   home_matches?: { count: number }[];
   away_matches?: { count: number }[];
@@ -38,7 +38,7 @@ export default async function TeamsPage() {
   // Fetch all team_competitions with team and competition info
   const { data: teamComps } = await supabase
     .from('team_competitions')
-    .select('competition_id, team_id, Teams(id, name, logo_url), Competitions(id, name)')
+    .select('competition_id, team_id, Teams(id, name, team_logo_url), Competitions(id, name)')
     .order('competition_id', { ascending: true });
 
   // Group teams by competition

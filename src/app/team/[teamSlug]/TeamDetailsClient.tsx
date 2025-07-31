@@ -6,6 +6,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import MatchCard from '@/components/MatchCard'; // Added import for MatchCard
+import TeamLogo from '@/components/TeamLogo';
 
 function slugify(str: string) {
   return str
@@ -45,7 +46,7 @@ function TeamStructuredData({ team, matches }: { team: any; matches: any[] }) {
     '@type': 'SportsTeam',
     name: team.name,
     sport: 'Football',
-    logo: team.logo_url,
+    logo: team.team_logo_url,
     mainEntity: {
       '@type': 'ItemList',
       itemListElement: itemListElements,
@@ -93,11 +94,11 @@ export default function TeamDetailsClient({ team, matches }: { team: any; matche
         <meta property="og:description" content={`Get ${team.name} team profile, recent matches, upcoming fixtures, players, stats, and live betting odds. Follow ${team.name} performance and results!`} />
         <meta property="og:type" content="profile" />
         <meta property="og:url" content={`https://your-domain.com/team/${team.id}-${slugify(team.name || '')}`} />
-        <meta property="og:image" content={team.logo_url || '/og-image.jpg'} />
+        <meta property="og:image" content={team.team_logo_url || '/og-image.jpg'} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${team.name} - Team Profile, Matches & Stats | Live Football TV Guide`} />
         <meta name="twitter:description" content={`Get ${team.name} team profile, recent matches, upcoming fixtures, players, stats, and live betting odds. Follow ${team.name} performance and results!`} />
-        <meta name="twitter:image" content={team.logo_url || '/og-image.jpg'} />
+        <meta name="twitter:image" content={team.team_logo_url || '/og-image.jpg'} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'http://schema.org',
           '@type': 'SportsTeam',
@@ -124,11 +125,14 @@ export default function TeamDetailsClient({ team, matches }: { team: any; matche
             {/* Team Profile Section */}
             <div className="text-center mb-8">
               <div className="flex flex-col items-center justify-center mb-4">
-                <img 
-                  src={team.logo_url || 'https://placehold.co/120x120/f3f4f6/f3f4f6'} 
-                  alt={team.name || 'Team logo'} 
-                  className="w-24 h-24 object-contain mb-2"
-                />
+                <div className="mb-2">
+                  <TeamLogo 
+                    logoUrl={team.team_logo_url} 
+                    teamName={team.name} 
+                    size="lg" 
+                    className="w-24 h-24"
+                  />
+                </div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-0 text-center">
                   {team.name}
                 </h1>

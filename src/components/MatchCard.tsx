@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
+import TeamLogo from './TeamLogo';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false }: {
   match: any;
@@ -9,7 +10,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   onClick: (e: React.MouseEvent) => void;
   hideCompetitionName?: boolean;
 }) {
-  const [showAllStreams, setShowAllStreams] = useState(false);
   function getTargetTimezone() {
     if (timezone === 'auto') {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -23,7 +23,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
       .replace(/^-+|-+$/g, '');
   }
   return (
-    <div className="overflow-x-auto w-full md:w-full">
+    <div className="w-full md:w-full">
       <div
         className={`group w-full transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer`}
         tabIndex={0}
@@ -72,8 +72,22 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           <div className={`grid ${match.status !== 'Finished' ? 'grid-cols-[minmax(0,1fr)_minmax(0,180px)_3rem]' : 'grid-cols-[minmax(0,1fr)_3rem]'} items-center w-full gap-2`}>
             {/* Teams column */}
             <div className="flex flex-col min-w-0 overflow-hidden">
-              <span className="text-xs font-semibold truncate">{match.home_team?.name}</span>
-              <span className="text-xs font-semibold truncate">{match.away_team?.name}</span>
+              <div className="flex items-center gap-2">
+                <TeamLogo 
+                  logoUrl={match.home_team?.team_logo_url} 
+                  teamName={match.home_team?.name || 'Unknown'} 
+                  size="sm" 
+                />
+                <span className="text-xs font-semibold truncate">{match.home_team?.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TeamLogo 
+                  logoUrl={match.away_team?.team_logo_url} 
+                  teamName={match.away_team?.name || 'Unknown'} 
+                  size="sm" 
+                />
+                <span className="text-xs font-semibold truncate">{match.away_team?.name}</span>
+              </div>
             </div>
             {/* Odds column (only if not finished) */}
             {match.status !== 'Finished' && (
@@ -113,10 +127,17 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             )}
             {/* Score column */}
             <span className="flex flex-col items-center justify-center text-xs text-center font-bold w-12 block">
-              {match.status === 'Finished' || match.status === 'Live' ? (
+              {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
                 <>
-                  <span>{match.home_score}</span>
-                  <span>{match.away_score}</span>
+                  <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                    {match.home_score}
+                  </span>
+                  <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                    {match.away_score}
+                  </span>
+                  {match.status === 'Live' && (
+                    <span className="text-[8px] text-red-500 font-bold animate-pulse">LIVE</span>
+                  )}
                 </>
               ) : (
                 <>
@@ -131,27 +152,43 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             <div className="md:hidden px-4 pb-2">
               {match.Event_Broadcasters && match.Event_Broadcasters.length > 0 ? (
                 <div className="flex flex-col gap-1 mt-1">
-                  {match.Event_Broadcasters.map((eb: any, i: number) => {
-                    const b = eb.Broadcasters;
-                    if (!b?.name) return null;
-                    return b.affiliate_url ? (
-                      <a
-                        key={i}
-                        href={b.affiliate_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors"
-                        aria-label={`Watch on ${b.name}`}
-                        onClick={e => { e.stopPropagation(); }}
-                      >
-                        {b.name}
-                      </a>
-                    ) : (
-                      <span key={i} className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-gray-400">
-                        {b.name}
-                      </span>
+                  {(() => {
+                    const broadcasters = match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name);
+                    const maxToShow = 5;
+                    const visible = broadcasters.slice(0, maxToShow);
+                    const hasMore = broadcasters.length > maxToShow;
+                    
+                    return (
+                      <>
+                        {visible.map((eb: any, i: number) => {
+                          const b = eb.Broadcasters;
+                          if (!b?.name) return null;
+                          return b.affiliate_url ? (
+                            <a
+                              key={i}
+                              href={b.affiliate_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors"
+                              aria-label={`Watch on ${b.name}`}
+                              onClick={e => { e.stopPropagation(); }}
+                            >
+                              {b.name}
+                            </a>
+                          ) : (
+                            <span key={i} className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-gray-400">
+                              {b.name}
+                            </span>
+                          );
+                        })}
+                        {hasMore && (
+                          <span className="bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 text-[12px] text-center text-gray-600 dark:text-gray-400">
+                            +{broadcasters.length - maxToShow} more channels
+                          </span>
+                        )}
+                      </>
                     );
-                  })}
+                  })()}
                 </div>
               ) : (
                 <span className="text-gray-400 text-[12px]">No TV</span>
@@ -160,7 +197,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           )}
         </div>
         {/* Desktop: Row layout */}
-        <div className="hidden md:grid w-full py-2 px-3 relative md:grid-cols-[3.5rem_12rem_13rem_3.5rem_13rem] items-center">
+        <div className="hidden md:grid w-full py-2 px-3 relative md:grid-cols-[3.5rem_11rem_12rem_3.5rem_11rem] items-center">
           {/* Time */}
           <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
             {match.status === 'Finished'
@@ -177,8 +214,22 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             {!hideCompetitionName && match.competition?.name && (
               <div className="text-base font-bold text-gray-900 dark:text-white mb-1">{match.competition.name}</div>
             )}
-            <span className="font-semibold text-xs truncate">{match.home_team?.name}</span>
-            <span className="font-semibold text-xs truncate">{match.away_team?.name}</span>
+            <div className="flex items-center gap-2">
+              <TeamLogo 
+                logoUrl={match.home_team?.team_logo_url} 
+                teamName={match.home_team?.name || 'Unknown'} 
+                size="sm" 
+              />
+              <span className="font-semibold text-xs truncate">{match.home_team?.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TeamLogo 
+                logoUrl={match.away_team?.team_logo_url} 
+                teamName={match.away_team?.name || 'Unknown'} 
+                size="sm" 
+              />
+              <span className="font-semibold text-xs truncate">{match.away_team?.name}</span>
+            </div>
           </div>
           {/* Odds */}
           <div className="flex flex-row items-center gap-1"> {/* Odds column, fixed width by grid */}
@@ -199,7 +250,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       href={data.operator?.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center text-center w-full px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 transition-colors min-w-[64px] min-h-[36px]"
+                      className="flex flex-col items-center justify-center text-center w-full px-2 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 transition-colors min-w-[58px] min-h-[36px]"
                       onClick={e => e.stopPropagation()}
                       tabIndex={0}
                       aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
@@ -208,7 +259,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{data.operator?.name || 'Unknown'}</span>
                     </a>
                   ) : (
-                    <div key={key} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[64px] min-h-[36px]" aria-label="No odds available">
+                    <div key={key} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[58px] min-h-[36px]" aria-label="No odds available">
                       <span className="font-bold text-xs text-gray-400 dark:text-gray-500">-</span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight w-full">N/A</span>
                     </div>
@@ -218,7 +269,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             ) : (
               // Always render 3 empty boxes for finished matches for alignment
               [0,1,2].map(idx => (
-                <div key={idx} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[64px] min-h-[36px]" aria-label="No odds available">
+                <div key={idx} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[58px] min-h-[36px]" aria-label="No odds available">
                   <span className="font-bold text-xs text-gray-400 dark:text-gray-500">-</span>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight w-full">N/A</span>
                 </div>
@@ -227,10 +278,17 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           {/* Score */}
           <div className="flex flex-col items-center justify-center font-semibold text-xs text-gray-800 dark:text-gray-200"> {/* Result column, fixed width by grid */}
-            {match.status === 'Finished' || match.status === 'Live' ? (
+            {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
-                <span>{match.home_score}</span>
-                <span>{match.away_score}</span>
+                <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                  {match.home_score}
+                </span>
+                <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                  {match.away_score}
+                </span>
+                {match.status === 'Live' && (
+                  <span className="text-[8px] text-red-500 font-bold animate-pulse">LIVE</span>
+                )}
               </>
             ) : (
               <>
@@ -239,25 +297,25 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </>
             )}
           </div>
-          {/* TV Stream Logos (fixed-width, up to 5, aligned right, fill leftward) */}
-          <div className="flex flex-row-reverse items-center gap-2 justify-end"> {/* TV streams column, fixed width by grid */}
+          {/* TV Stream Logos (fixed-width, up to 4, with "see more" indicator) */}
+          <div className="flex flex-row-reverse items-center gap-1 justify-end overflow-hidden"> {/* TV streams column, fixed width by grid */}
             {(() => {
               const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
               const count = broadcasters.length;
-              const maxToShow = showAllStreams ? 5 : 5;
-              const visible = broadcasters.slice(0, 5).slice(-maxToShow);
+              const maxToShow = 4; // Limit to 4 visible channels to prevent horizontal scrolling
+              const visible = broadcasters.slice(0, maxToShow);
+              const hasMore = count > maxToShow;
+              
               return (
                 <>
-                  {count > 5 && !showAllStreams && (
-                    <button
-                      className="flex items-center justify-center w-8 h-8 rounded bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700 text-xl font-bold text-gray-700 dark:text-gray-200 transition-colors"
-                      aria-label="Show all TV streams"
-                      onClick={e => { e.stopPropagation(); setShowAllStreams(true); }}
-                      tabIndex={0}
-                    >
-                      &gt;
-                    </button>
+                  {/* "See more" indicator */}
+                  {hasMore && (
+                    <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded bg-indigo-100 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      +{count - maxToShow}
+                    </div>
                   )}
+                  
+                  {/* Visible channels */}
                   {visible.map((eb: any, idx: number) => {
                     const b = eb.Broadcasters;
                     return (
@@ -266,14 +324,14 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                         href={b.affiliate_url || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center"
+                        className="flex-shrink-0 flex items-center"
                         aria-label={`Watch on ${b.name}`}
                         onClick={e => { e.stopPropagation(); }}
                       >
                         {b.logo_url ? (
-                          <img src={b.logo_url} alt={b.name} className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-700" />
+                          <img src={b.logo_url} alt={b.name} className="w-6 h-6 object-contain rounded bg-white border border-gray-200 dark:border-gray-700" />
                         ) : (
-                          <span className="w-8 h-8 inline-block rounded bg-white border border-gray-200 dark:border-gray-700" />
+                          <span className="w-6 h-6 inline-block rounded bg-white border border-gray-200 dark:border-gray-700" />
                         )}
                       </a>
                     );

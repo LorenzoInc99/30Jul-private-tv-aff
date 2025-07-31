@@ -84,10 +84,16 @@ export default async function RootLayout({
 
   // Fetch all competitions for sidebar
   const supabase = supabaseServer();
-  const { data: competitions } = await supabase
-    .from('Competitions')
+  const { data: competitions, error } = await supabase
+    .from('leagues')
     .select('*')
     .order('name', { ascending: true });
+
+  console.log('Layout Debug - Database query result:', {
+    competitionsCount: competitions?.length || 0,
+    competitions: competitions,
+    error: error
+  });
 
   // Get current path for aria-current
   // This must be done in a client component, so move the footer nav to a new FooterNavClient component
