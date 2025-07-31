@@ -1,135 +1,128 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getMatchById } from '@/lib/database-adapter';
+import { getMatchById, getTeamForm } from '@/lib/database-adapter';
 
-// Helper function to get form description
-function getFormDescription(formResults: any[]) {
-  if (!formResults || formResults.length === 0) {
-    return {
-      qualitativeDescription: "has no recent form data available",
-      recordString: ""
-    };
-  }
 
-  const relevantFormResults = formResults.slice(0, 5);
-  const wins = relevantFormResults.filter(f => f.result === 'win').length;
-  const draws = relevantFormResults.filter(f => f.result === 'draw').length;
-  const losses = relevantFormResults.filter(f => f.result === 'loss').length;
-  const played = relevantFormResults.length;
 
-  if (played === 0) {
-    return {
-      qualitativeDescription: "has no recent form data available",
-      recordString: ""
-    };
-  }
 
-  let parts = [];
-  if (wins > 0) parts.push(`${wins} win${wins === 1 ? '' : 's'}`);
-  if (draws > 0) parts.push(`${draws} draw${draws === 1 ? '' : 's'}`);
-  if (losses > 0) parts.push(`${losses} loss${losses === 1 ? '' : 'es'}`);
 
-  let recordSummary = "";
-  if (parts.length === 0) {
-    recordSummary = "no discernible record";
-  } else if (parts.length === 1) {
-    recordSummary = parts[0];
-  } else if (parts.length === 2) {
-    recordSummary = parts.join(' and ');
-  } else {
-    let lastPart = parts.pop();
-    recordSummary = parts.join(', ') + ', and ' + lastPart;
-  }
 
-  let recordString = `a record of ${recordSummary} in their last ${played} games.`;
 
-  let qualitativeDescription = "";
-  if (wins >= played * 0.7) {
-    qualitativeDescription = "in excellent form";
-  } else if (wins >= played * 0.5 && losses <= played * 0.1) {
-    qualitativeDescription = "in strong recent form";
-  } else if (wins <= played * 0.2) {
-    qualitativeDescription = "currently in poor form";
-  } else if (draws >= played * 0.6) {
-    qualitativeDescription = "showing a tendency for draws";
-  } else {
-    qualitativeDescription = "with mixed form";
-  }
-
-  return { qualitativeDescription, recordString };
-}
-
-// Form circle component
-function FormCircle({ result, opponent, matchUrl }: { result: string | null, opponent: string, matchUrl: string }) {
-  let circleClass = 'form-unknown';
-  let circleText = '';
-  let tooltipText = 'No data available';
-
-  if (result) {
-    if (result === 'win') {
-      circleClass = 'form-win';
-      circleText = 'W';
-    } else if (result === 'draw') {
-      circleClass = 'form-draw';
-      circleText = 'D';
-    } else if (result === 'loss') {
-      circleClass = 'form-loss';
-      circleText = 'L';
-    }
-    tooltipText = opponent;
-  }
-
-  return (
-    <div className="custom-tooltip-container">
-      <Link href={matchUrl} target="_blank" rel="noopener noreferrer">
-        <div className={`form-circle ${circleClass}`}>{circleText}</div>
-      </Link>
-      <span className="custom-tooltip-text">{tooltipText}</span>
-    </div>
-  );
-}
-
-// Team form component
-function TeamForm({ teamId, matchId, matchStartTime }: { teamId: number, matchId: string, matchStartTime: string }) {
+// Team form rectangles component
+function TeamFormRectangles({ teamId, matchStartTime }: { teamId: number, matchStartTime: string }) {
   const [formResults, setFormResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchTeamForm = async () => {
       try {
-        // This would need to be implemented with your actual database structure
-        // For now, we'll show placeholder form circles
-        setFormResults([]);
+        console.log('Fetching team form for teamId:', teamId, 'before date:', matchStartTime, 'type:', typeof matchStartTime);
+        const formData = await getTeamForm(teamId, matchStartTime);
+        console.log('Team form data received:', formData);
+        setFormResults(formData);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching team form:', error);
+        setFormResults([]);
         setLoading(false);
       }
     };
 
     fetchTeamForm();
-  }, [teamId, matchId, matchStartTime]);
+  }, [teamId, matchStartTime]);
+
+  const handleMouseEnter = (index: number) => {
+    setHoveredIndex(index);
+    tooltipTimeoutRef.current = setTimeout(() => {
+      setShowTooltip(true);
+    }, 100); // 0.1 seconds
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+    setShowTooltip(false);
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+    }
+  };
+
+  const handleClick = (form: any) => {
+    if (form?.matchUrl) {
+      console.log('Navigating to:', form.matchUrl);
+      router.push(form.matchUrl);
+    }
+  };
 
   if (loading) {
-    return <div className="flex justify-center mt-2">Loading form...</div>;
+    return (
+      <div className="flex justify-center mt-2 space-x-1">
+        {[...Array(5)].map((_, index) => (
+          <div
+            key={index}
+            className="w-5 h-4 bg-gray-300 dark:bg-gray-600 rounded-sm animate-pulse"
+          />
+        ))}
+      </div>
+    );
   }
 
-  // Show 5 form circles (filled or empty)
-  const displayResults = Array(5).fill(null).map((_, index) => formResults[index] || null);
+  // Show 5 rectangles (filled or grey) - most recent on the right
+  console.log('Form results length:', formResults.length);
+  console.log('Form results:', formResults);
+  
+  const displayResults = Array(5).fill(null).map((_, index) => {
+    // Reverse the order so most recent is on the right
+    const reversedIndex = 4 - index;
+    const result = formResults[reversedIndex] || null;
+    console.log(`Rectangle ${index} (reversedIndex ${reversedIndex}):`, result);
+    return result;
+  });
 
   return (
-    <div className="flex justify-center mt-2">
-      {displayResults.map((form, index) => (
-        <FormCircle
-          key={index}
-          result={form?.result || null}
-          opponent={form?.opponent || 'No data'}
-          matchUrl={form?.matchUrl || '#'}
-        />
-      ))}
+    <div className="flex justify-center mt-2 space-x-1 relative">
+      {displayResults.map((form, index) => {
+        let bgColor = 'bg-gray-400 dark:bg-gray-500'; // Default grey for no data
+        
+        if (form?.result) {
+          if (form.result === 'win') {
+            bgColor = 'bg-green-500 dark:bg-green-600';
+          } else if (form.result === 'draw') {
+            bgColor = 'bg-orange-500 dark:bg-orange-600';
+          } else if (form.result === 'loss') {
+            bgColor = 'bg-red-500 dark:bg-red-600';
+          }
+        }
+
+        return (
+          <div
+            key={index}
+            className={`w-5 h-4 ${bgColor} rounded-sm transition-colors duration-200 cursor-pointer relative ${
+              form?.matchUrl ? 'hover:scale-110' : ''
+            }`}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onMouseLeave={handleMouseLeave}
+            onClick={() => handleClick(form)}
+          >
+            {/* Custom tooltip */}
+            {hoveredIndex === index && showTooltip && form && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 dark:bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                vs {form.opponent}
+                {form.matchUrl && (
+                  <div className="text-blue-300 text-xs mt-1">Click to view match</div>
+                )}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800 dark:border-t-gray-900"></div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -496,7 +489,7 @@ export default function MatchPage() {
               </div>
 
               {/* Teams and Score */}
-              <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 text-center mb-6">
+              <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 mb-6">
                 <div className="flex flex-col items-center">
                   <Image
                     src={match.home_team?.logo_url || 'https://placehold.co/64x64/f3f4f6/f3f4f6'}
@@ -506,9 +499,8 @@ export default function MatchPage() {
                     className="w-16 h-16 object-contain mb-2"
                   />
                   <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{homeTeamName}</span>
-                  <TeamForm
+                  <TeamFormRectangles
                     teamId={match.home_team_id}
-                    matchId={match.id}
                     matchStartTime={match.start_time}
                   />
                 </div>
@@ -522,9 +514,8 @@ export default function MatchPage() {
                     className="w-16 h-16 object-contain mb-2"
                   />
                   <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{awayTeamName}</span>
-                  <TeamForm
+                  <TeamFormRectangles
                     teamId={match.away_team_id}
-                    matchId={match.id}
                     matchStartTime={match.start_time}
                   />
                 </div>
@@ -674,77 +665,7 @@ export default function MatchPage() {
           font-size: 0.75em;
           vertical-align: middle;
         }
-        .form-circle {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          font-size: 0.8rem;
-          color: white;
-          flex-shrink: 0;
-          cursor: pointer;
-          transition: transform 0.2s ease-in-out;
-          margin: 0 4px;
-        }
-        .form-circle:hover {
-          transform: scale(1.1);
-        }
-        .form-win { background-color: #22c55e; }
-        .form-draw { background-color: #f97316; }
-        .form-loss { background-color: #ef4444; }
-        .form-unknown { background-color: #6b7280; }
-        .dark .form-win { background-color: #16a34a; }
-        .dark .form-draw { background-color: #ea580c; }
-        .dark .form-loss { background-color: #dc2626; }
-        .dark .form-unknown { background-color: #4b5563; }
-        .custom-tooltip-container {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        .custom-tooltip-text {
-          visibility: hidden;
-          opacity: 0;
-          position: absolute;
-          bottom: calc(100% + 5px);
-          left: 50%;
-          transform: translateX(-50%);
-          background-color: #374151;
-          color: #fff;
-          padding: 4px 8px;
-          border-radius: 6px;
-          white-space: nowrap;
-          font-size: 0.75rem;
-          z-index: 10;
-          pointer-events: none;
-          transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-          transition-delay: 0s;
-        }
-        .dark .custom-tooltip-text {
-          background-color: #1f2937;
-        }
-        .custom-tooltip-container:hover .custom-tooltip-text {
-          visibility: visible;
-          opacity: 1;
-          transition-delay: 0.5s;
-        }
-        .custom-tooltip-text::after {
-          content: "";
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          margin-left: -5px;
-          border-width: 5px;
-          border-style: solid;
-          border-color: #374151 transparent transparent transparent;
-        }
-        .dark .custom-tooltip-text::after {
-          border-color: #1f2937 transparent transparent transparent;
-        }
+
       `}</style>
     </div>
   );

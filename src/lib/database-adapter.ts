@@ -156,6 +156,8 @@ export async function getMatchById(matchId: string, supabase = supabaseServer())
     home_score: fixture.home_score,
     away_score: fixture.away_score,
     status: getMatchStatus(fixture.state_id),
+    home_team_id: fixture.home_team_id,
+    away_team_id: fixture.away_team_id,
     Competitions: {
       id: fixture.league.id,
       name: fixture.league.name
@@ -241,40 +243,81 @@ export async function getCompetitionDetails(competitionId: string, supabase = su
 
 export function transformOdds(odds: NewOdds[]): any[] {
   // Transform odds to match the expected format
-  // Group by market_id and create the expected structure
-  const oddsByMarket: { [key: number]: any } = {};
+  // Instead of grouping by market_id, we'll find the best odds for each outcome independently
+  const bestOdds = {
+    home: { value: null as number | null, operator: null as any, market_id: null as number | null },
+    draw: { value: null as number | null, operator: null as any, market_id: null as number | null },
+    away: { value: null as number | null, operator: null as any, market_id: null as number | null }
+  };
   
   if (!odds || !Array.isArray(odds)) {
     return [];
   }
   
+  // Find the best odds for each outcome
   odds.forEach(odd => {
     // Skip if required fields are missing
-    if (!odd.label || !odd.market_id || !odd.bookmaker) {
+    if (!odd.label || !odd.bookmaker) {
       return;
-    }
-    
-    if (!oddsByMarket[odd.market_id]) {
-      oddsByMarket[odd.market_id] = {
-        id: odd.id,
-        fixture_id: odd.fixture_id,
-        Operators: transformBookmakerData(odd.bookmaker)
-      };
     }
     
     const label = odd.label.toLowerCase();
     
-    // Map odds based on label - handle various formats including capitalized versions
-    if (label === '1' || label === 'home') {
-      oddsByMarket[odd.market_id].home_win = odd.value;
-    } else if (label === 'x' || label === 'draw') {
-      oddsByMarket[odd.market_id].draw = odd.value;
-    } else if (label === '2' || label === 'away') {
-      oddsByMarket[odd.market_id].away_win = odd.value;
+    // Check for various label formats: "home"/"Home"/"1", "draw"/"Draw"/"x", "away"/"Away"/"2"
+    if ((label === 'home' || label === '1') && (bestOdds.home.value === null || odd.value > bestOdds.home.value)) {
+      bestOdds.home = { 
+        value: odd.value, 
+        operator: transformBookmakerData(odd.bookmaker),
+        market_id: odd.market_id
+      };
+    }
+    if ((label === 'draw' || label === 'x') && (bestOdds.draw.value === null || odd.value > bestOdds.draw.value)) {
+      bestOdds.draw = { 
+        value: odd.value, 
+        operator: transformBookmakerData(odd.bookmaker),
+        market_id: odd.market_id
+      };
+    }
+    if ((label === 'away' || label === '2') && (bestOdds.away.value === null || odd.value > bestOdds.away.value)) {
+      bestOdds.away = { 
+        value: odd.value, 
+        operator: transformBookmakerData(odd.bookmaker),
+        market_id: odd.market_id
+      };
     }
   });
   
-  return Object.values(oddsByMarket);
+  // Create separate market objects for each outcome that has odds
+  const result = [];
+  
+  if (bestOdds.home.value !== null) {
+    result.push({
+      id: bestOdds.home.market_id,
+      fixture_id: odds[0]?.fixture_id,
+      home_win: bestOdds.home.value,
+      Operators: bestOdds.home.operator
+    });
+  }
+  
+  if (bestOdds.draw.value !== null) {
+    result.push({
+      id: bestOdds.draw.market_id,
+      fixture_id: odds[0]?.fixture_id,
+      draw: bestOdds.draw.value,
+      Operators: bestOdds.draw.operator
+    });
+  }
+  
+  if (bestOdds.away.value !== null) {
+    result.push({
+      id: bestOdds.away.market_id,
+      fixture_id: odds[0]?.fixture_id,
+      away_win: bestOdds.away.value,
+      Operators: bestOdds.away.operator
+    });
+  }
+  
+  return result;
 }
 
 export function getBestOdds(odds: NewOdds[]) {
@@ -323,18 +366,121 @@ export function getBestOddsFromTransformed(transformedOdds: any[]) {
     return best;
   }
 
+  // With the new structure, each market object contains the best odds for one outcome
   for (const market of transformedOdds) {
-    // Check if this market has better odds for any outcome
-    if (market.home_win && (best.home.value === null || market.home_win > best.home.value)) {
+    // Each market now contains only one outcome type with the best odds
+    if (market.home_win) {
       best.home = { value: market.home_win, operator: market.Operators };
     }
-    if (market.draw && (best.draw.value === null || market.draw > best.draw.value)) {
+    if (market.draw) {
       best.draw = { value: market.draw, operator: market.Operators };
     }
-    if (market.away_win && (best.away.value === null || market.away_win > best.away.value)) {
+    if (market.away_win) {
       best.away = { value: market.away_win, operator: market.Operators };
     }
   }
   
   return best;
+} 
+
+export async function getTeamForm(teamId: number, beforeDate: string, supabase = supabaseBrowser) {
+  try {
+    console.log('Fetching team form for:', { teamId, beforeDate });
+    
+    // Fetch the last 5 matches for this team before the given date
+    const { data: fixtures, error } = await supabase
+      .from('fixtures')
+      .select(`
+        id,
+        home_team_id,
+        away_team_id,
+        home_score,
+        away_score,
+        starting_at,
+        home_team:teams_new!fixtures_home_team_id_fkey1(name),
+        away_team:teams_new!fixtures_away_team_id_fkey1(name)
+      `)
+      .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+      .lt('starting_at', beforeDate)
+      .not('home_score', 'is', null)
+      .not('away_score', 'is', null)
+      .order('starting_at', { ascending: false })
+      .limit(5);
+
+    // Also check total matches for this team (for debugging)
+    const { data: totalMatches, error: totalError } = await supabase
+      .from('fixtures')
+      .select('id, starting_at')
+      .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+      .not('home_score', 'is', null)
+      .not('away_score', 'is', null)
+      .order('starting_at', { ascending: false });
+
+    console.log(`Total matches for team ${teamId}:`, totalMatches?.length || 0);
+    console.log(`Matches before ${beforeDate}:`, fixtures?.length || 0);
+    console.log('All matches for this team:', totalMatches?.map((m: any) => ({ id: m.id, date: m.starting_at })));
+    console.log('Date comparison - beforeDate:', beforeDate, 'type:', typeof beforeDate);
+
+    console.log('Team form query result:', { fixtures, error, count: fixtures?.length });
+    console.log('Raw fixtures data:', fixtures);
+    console.log('Query details:', {
+      teamId,
+      beforeDate,
+      query: `SELECT * FROM fixtures WHERE (home_team_id = ${teamId} OR away_team_id = ${teamId}) AND starting_at < '${beforeDate}' AND home_score IS NOT NULL AND away_score IS NOT NULL ORDER BY starting_at DESC LIMIT 5`
+    });
+
+    if (error) {
+      console.error('Error fetching team form:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      // If it's a permission error, return empty results (will show grey circles)
+      if (error.code === '42501') {
+        console.log('Database permission denied - showing grey circles for form');
+        return [];
+      }
+      
+      return [];
+    }
+
+    if (!fixtures) return [];
+
+    // Transform the data to determine result for the team
+    const formResults = fixtures.map((fixture: any) => {
+      const isHomeTeam = fixture.home_team_id === teamId;
+      const teamName = isHomeTeam ? fixture.home_team?.name : fixture.away_team?.name;
+      const opponentName = isHomeTeam ? fixture.away_team?.name : fixture.home_team?.name;
+      
+      let result: 'win' | 'draw' | 'loss' | null = null;
+      
+      if (fixture.home_score !== null && fixture.away_score !== null) {
+        if (isHomeTeam) {
+          if (fixture.home_score > fixture.away_score) result = 'win';
+          else if (fixture.home_score < fixture.away_score) result = 'loss';
+          else result = 'draw';
+        } else {
+          if (fixture.away_score > fixture.home_score) result = 'win';
+          else if (fixture.away_score < fixture.home_score) result = 'loss';
+          else result = 'draw';
+        }
+      }
+
+      return {
+        result,
+        opponent: opponentName || 'Unknown',
+        matchUrl: `/match/${fixture.id}-${teamName?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-vs-${opponentName?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        date: fixture.starting_at
+      };
+    });
+
+    console.log('Transformed form results:', formResults);
+    return formResults;
+  } catch (error) {
+    console.error('Error in getTeamForm:', error);
+    return [];
+  }
 } 
