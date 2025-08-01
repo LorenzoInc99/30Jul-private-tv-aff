@@ -114,10 +114,10 @@ async function populateTable(supabase: any, tableName: string, data: any[], colu
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  let currentStep = 'Initialization';
+  let currentStep = 'Initializing';
   
   try {
-    console.log('🚀 Starting SportMonks data fetch...');
+    console.log('🚀 Starting comprehensive data fetch...');
     console.log('API Token configured:', !!SPORTMONKS_API_TOKEN);
     
     currentStep = 'Database Connection';
@@ -169,20 +169,22 @@ export async function POST(request: NextRequest) {
     const teamsData = await fetchAllPages('https://api.sportmonks.com/v3/football/teams');
     await populateTable(supabase, 'teams_new', teamsData, ['id', 'name', 'short_code', 'country_id', 'venue_id']);
     
-    // 7. Fetch fixtures for your selected leagues
-    currentStep = 'Fetching Fixtures';
-    console.log('🏟️ Step 7: Fetching fixtures...');
+    // 7. Fetch fixtures with TV stations and odds for your selected leagues
+    currentStep = 'Fetching Fixtures with TV and Odds';
+    console.log('🏟️ Step 7: Fetching fixtures with TV stations and odds...');
     const allFixtures: any[] = [];
+    const allTvData: any[] = [];
+    const allOddsData: any[] = [];
     
     for (const leagueId of EUROPEAN_LEAGUE_IDS) {
       try {
         console.log(`Fetching fixtures for league ${leagueId}...`);
         const fixturesData = await fetchAllPages(
           `https://api.sportmonks.com/v3/football/fixtures/leagues/${leagueId}`,
-          { include: 'participants;league;venue;state' }
+          { include: 'participants;league;venue;state;tvstations;odds' }
         );
         
-        // Process fixtures to extract home/away team IDs
+        // Process fixtures to extract home/away team IDs, TV stations, and odds
         const processedFixtures = fixturesData.map((fixture: any) => {
           let homeTeamId = null;
           let awayTeamId = null;
@@ -194,6 +196,32 @@ export async function POST(request: NextRequest) {
               } else if (participant.meta?.location === 'away') {
                 awayTeamId = participant.id;
               }
+            });
+          }
+          
+          // Extract TV station data
+          if (fixture.tvstations && Array.isArray(fixture.tvstations)) {
+            fixture.tvstations.forEach((tv: any) => {
+              allTvData.push({
+                fixture_id: fixture.id,
+                tvstation_id: tv.tvstation_id,
+                country_id: tv.country_id || 1
+              });
+            });
+          }
+          
+          // Extract odds data
+          if (fixture.odds && Array.isArray(fixture.odds)) {
+            fixture.odds.forEach((odd: any) => {
+              allOddsData.push({
+                fixture_id: fixture.id,
+                bookmaker_id: odd.bookmaker_id,
+                market_id: odd.market_id,
+                label: odd.label,
+                value: odd.value,
+                probability: odd.probability,
+                latest_bookmaker_update: odd.latest_bookmaker_update
+              });
             });
           }
           
@@ -224,6 +252,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    // 8. Populate fixtures
     currentStep = 'Populating Fixtures';
     console.log(`📊 Total fixtures to insert: ${allFixtures.length}`);
     await populateTable(supabase, 'fixtures', allFixtures, [
@@ -232,15 +261,39 @@ export async function POST(request: NextRequest) {
       'state_id', 'home_score', 'away_score'
     ]);
     
+    // 9. Populate TV stations data
+    if (allTvData.length > 0) {
+      currentStep = 'Populating TV Stations Data';
+      console.log(`📺 Total TV station links to insert: ${allTvData.length}`);
+      await populateTable(supabase, 'fixturetvstations', allTvData, [
+        'fixture_id', 'tvstation_id', 'country_id'
+      ]);
+    }
+    
+    // 10. Populate odds data
+    if (allOddsData.length > 0) {
+      currentStep = 'Populating Odds Data';
+      console.log(`🎲 Total odds to insert: ${allOddsData.length}`);
+      await populateTable(supabase, 'odds', allOddsData, [
+        'fixture_id', 'bookmaker_id', 'market_id', 'label', 'value', 'probability', 'latest_bookmaker_update'
+      ]);
+    }
+    
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
     
-    console.log(`🎉 Data fetch completed successfully in ${duration} seconds!`);
+    console.log(`🎉 Comprehensive data fetch completed successfully in ${duration} seconds!`);
+    console.log(`📊 Summary:`);
+    console.log(`   - Fixtures: ${allFixtures.length}`);
+    console.log(`   - TV station links: ${allTvData.length}`);
+    console.log(`   - Odds: ${allOddsData.length}`);
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Data fetched and stored successfully',
+      message: 'Comprehensive data fetched and stored successfully',
       fixturesCount: allFixtures.length,
+      tvLinksCount: allTvData.length,
+      oddsCount: allOddsData.length,
       duration: `${duration}s`
     });
     

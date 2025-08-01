@@ -4,7 +4,7 @@ import Image from 'next/image';
 interface TeamLogoProps {
   logoUrl?: string | null;
   teamName: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
@@ -12,7 +12,8 @@ export default function TeamLogo({ logoUrl, teamName, size = 'sm', className = '
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+    lg: 'w-8 h-8',
+    xl: 'w-24 h-24'
   };
 
   const sizeClass = sizeClasses[size];
@@ -31,9 +32,9 @@ export default function TeamLogo({ logoUrl, teamName, size = 'sm', className = '
       <Image
         src={logoUrl}
         alt={`${teamName} logo`}
-        width={size === 'sm' ? 16 : size === 'md' ? 24 : 32}
-        height={size === 'sm' ? 16 : size === 'md' ? 24 : 32}
-        className="rounded-full object-cover"
+        width={size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
+        height={size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
+        className="object-contain"
         onError={(e) => {
           // Fallback to letter if image fails to load
           const target = e.target as HTMLImageElement;

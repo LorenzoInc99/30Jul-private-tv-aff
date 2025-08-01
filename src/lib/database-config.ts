@@ -1,43 +1,61 @@
 // Database configuration and constants for the new schema
 
-// Match status mappings (adjust these based on your actual state_id values)
+// Match status mappings - OFFICIAL SPORTMONKS API MAPPINGS
 export const MATCH_STATUS_MAP: { [key: number]: string } = {
-  1: 'Scheduled',
-  2: 'Live',
-  3: 'Finished',
-  4: 'Postponed',
-  5: 'Cancelled',
-  6: 'Suspended',
-  7: 'Abandoned',
-  8: 'Not Started',
-  9: 'First Half',
-  10: 'Half Time',
-  11: 'Second Half',
-  12: 'Extra Time',
-  13: 'Penalty In Progress',
-  14: 'Break Time',
-  15: 'Match Suspended',
-  16: 'Match Interrupted',
-  17: 'Match Postponed',
-  18: 'Match Cancelled',
-  19: 'Match Abandoned',
-  20: 'Technical Loss',
-  21: 'Walkover',
-  22: 'Live Extra Time',
-  23: 'Finished', // Match Finished - this is likely the main finished state
-  24: 'Finished', // After Penalties - also finished
-  25: 'Finished'  // After Extra Time - also finished
+  1: 'Not Started',
+  2: '1st Half',
+  3: 'Half Time',
+  4: 'Break',
+  5: 'Full Time',
+  6: 'Extra Time',
+  7: 'After Extra Time',
+  8: 'After Penalties',
+  9: 'Penalties',
+  10: 'Postponed',
+  11: 'Suspended',
+  12: 'Cancelled',
+  13: 'To Be Announced',
+  14: 'Walk Over',
+  15: 'Abandoned',
+  16: 'Delayed',
+  17: 'Awarded',
+  18: 'Interrupted',
+  19: 'Awaiting Updates',
+  20: 'Deleted',
+  21: 'Extra Time - Break',
+  22: '2nd Half',
+  23: 'ET - 2nd Half',
+  25: 'Penalties - Break',
+  26: 'Pending'
 };
 
 // Reverse mapping for status to state_id
 export const STATUS_TO_STATE_ID: { [key: string]: number } = {
-  'Scheduled': 1,
-  'Live': 2,
-  'Finished': 3,
-  'Postponed': 4,
-  'Cancelled': 5,
-  'Suspended': 6,
-  'Abandoned': 7
+  'Not Started': 1,
+  '1st Half': 2,
+  'Half Time': 3,
+  'Break': 4,
+  'Full Time': 5,
+  'Extra Time': 6,
+  'After Extra Time': 7,
+  'After Penalties': 8,
+  'Penalties': 9,
+  'Postponed': 10,
+  'Suspended': 11,
+  'Cancelled': 12,
+  'To Be Announced': 13,
+  'Walk Over': 14,
+  'Abandoned': 15,
+  'Delayed': 16,
+  'Awarded': 17,
+  'Interrupted': 18,
+  'Awaiting Updates': 19,
+  'Deleted': 20,
+  'Extra Time - Break': 21,
+  '2nd Half': 22,
+  'ET - 2nd Half': 23,
+  'Penalties - Break': 25,
+  'Pending': 26
 };
 
 // Database table names

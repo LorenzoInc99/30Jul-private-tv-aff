@@ -3,8 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getMatchById, getTeamForm } from '@/lib/database-adapter';
+import { getMatchById, getTeamForm, getAllBookmakers, transformOddsByBookmaker } from '@/lib/database-adapter';
 import TeamLogo from '@/components/TeamLogo';
+import BroadcasterLogo from '@/components/BroadcasterLogo';
+import BookmakerLogo from '@/components/BookmakerLogo';
 
 
 
@@ -202,8 +204,23 @@ function BestOddsSummary({ odds }: { odds: any[] }) {
 
 // Full odds table component
 function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeamName: string, awayTeamName: string }) {
+  
   const [sortColumn, setSortColumn] = useState('operator');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [allBookmakers, setAllBookmakers] = useState<any[]>([]);
+
+  // Fetch all bookmakers when component mounts
+  useEffect(() => {
+    const fetchBookmakers = async () => {
+      try {
+        const bookmakers = await getAllBookmakers();
+        setAllBookmakers(bookmakers);
+      } catch (error) {
+        console.error('Error fetching bookmakers:', error);
+      }
+    };
+    fetchBookmakers();
+  }, []);
 
   const findBestOdds = (oddsArray: any[]) => {
     const bestOdds = {
@@ -216,14 +233,17 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
 
     oddsArray.forEach(oddSet => {
       if (oddSet.Operators) {
-        if (oddSet.home_win && oddSet.home_win > bestOdds['1'].odds) {
-          bestOdds['1'] = { odds: oddSet.home_win, operator: oddSet.Operators };
+        // Check home win odds
+        if (oddSet.home_win && parseFloat(oddSet.home_win) > bestOdds['1'].odds) {
+          bestOdds['1'] = { odds: parseFloat(oddSet.home_win), operator: oddSet.Operators };
         }
-        if (oddSet.draw && oddSet.draw > bestOdds['X'].odds) {
-          bestOdds['X'] = { odds: oddSet.draw, operator: oddSet.Operators };
+        // Check draw odds
+        if (oddSet.draw && parseFloat(oddSet.draw) > bestOdds['X'].odds) {
+          bestOdds['X'] = { odds: parseFloat(oddSet.draw), operator: oddSet.Operators };
         }
-        if (oddSet.away_win && oddSet.away_win > bestOdds['2'].odds) {
-          bestOdds['2'] = { odds: oddSet.away_win, operator: oddSet.Operators };
+        // Check away win odds
+        if (oddSet.away_win && parseFloat(oddSet.away_win) > bestOdds['2'].odds) {
+          bestOdds['2'] = { odds: parseFloat(oddSet.away_win), operator: oddSet.Operators };
         }
       }
     });
@@ -242,111 +262,149 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
     }
   };
 
-  const sortedOdds = [...odds].sort((a, b) => {
-    let valA, valB;
-    if (sortColumn === 'operator') {
-      valA = a.Operators.name.toLowerCase();
-      valB = b.Operators.name.toLowerCase();
-      return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-    } else {
-      if (sortColumn === '1') {
-        valA = parseFloat(a.home_win) || 0;
-        valB = parseFloat(b.home_win) || 0;
-      } else if (sortColumn === 'X') {
-        valA = parseFloat(a.draw) || 0;
-        valB = parseFloat(b.draw) || 0;
-      } else {
-        valA = parseFloat(a.away_win) || 0;
-        valB = parseFloat(b.away_win) || 0;
-      }
-      return sortDirection === 'asc' ? valA - valB : valB - valA;
+  // Create a map of odds by bookmaker ID for quick lookup
+  const oddsByBookmaker = new Map();
+  odds.forEach(oddSet => {
+    if (oddSet.Operators) {
+      oddsByBookmaker.set(oddSet.Operators.id, oddSet);
     }
   });
 
+  // Filter bookmakers to only show those that have odds for this match
+  const bookmakersWithOdds = allBookmakers.filter(bookmaker => {
+    const oddSet = oddsByBookmaker.get(bookmaker.id);
+    return oddSet && (oddSet.home_win !== null || oddSet.draw !== null || oddSet.away_win !== null);
+  });
+
+  // Sort bookmakers with odds
+  const sortedBookmakers = [...bookmakersWithOdds].sort((a, b) => {
+    const oddSetA = oddsByBookmaker.get(a.id);
+    const oddSetB = oddsByBookmaker.get(b.id);
+    
+    if (sortColumn === 'operator') {
+      return sortDirection === 'asc' 
+        ? a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        : b.name.toLowerCase().localeCompare(a.name.toLowerCase());
+    } else if (sortColumn === '1') {
+      const valueA = oddSetA?.home_win ? parseFloat(oddSetA.home_win) : 0;
+      const valueB = oddSetB?.home_win ? parseFloat(oddSetB.home_win) : 0;
+      return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+    } else if (sortColumn === 'X') {
+      const valueA = oddSetA?.draw ? parseFloat(oddSetA.draw) : 0;
+      const valueB = oddSetB?.draw ? parseFloat(oddSetB.draw) : 0;
+      return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+    } else if (sortColumn === '2') {
+      const valueA = oddSetA?.away_win ? parseFloat(oddSetA.away_win) : 0;
+      const valueB = oddSetB?.away_win ? parseFloat(oddSetB.away_win) : 0;
+      return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+    }
+    return 0;
+  });
+
   return (
-    <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <div className="overflow-x-auto bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
       <table className="odds-table w-full table-auto border-collapse">
         <thead>
-          <tr className="bg-gray-100 dark:bg-gray-700">
+          <tr className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
             <th
-              className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
+              className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200 rounded-tl-lg"
               onClick={() => handleSort('operator')}
             >
-              Operator
-              <span className="sort-arrow ml-1">
-                {sortColumn === 'operator' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-              </span>
+              <div className="flex items-center">
+                <span>Operator</span>
+                <span className="sort-arrow ml-2 text-xs">
+                  {sortColumn === 'operator' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                </span>
+              </div>
             </th>
             <th
-              className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
+              className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200"
               onClick={() => handleSort('1')}
             >
-              {homeTeamName} (1)
-              <span className="sort-arrow ml-1">
-                {sortColumn === '1' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-              </span>
+              <div className="flex items-center justify-center">
+                <span>{homeTeamName} (1)</span>
+                <span className="sort-arrow ml-2 text-xs">
+                  {sortColumn === '1' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                </span>
+              </div>
             </th>
             <th
-              className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
+              className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200"
               onClick={() => handleSort('X')}
             >
-              Draw (X)
-              <span className="sort-arrow ml-1">
-                {sortColumn === 'X' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-              </span>
+              <div className="flex items-center justify-center">
+                <span>Draw (X)</span>
+                <span className="sort-arrow ml-2 text-xs">
+                  {sortColumn === 'X' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                </span>
+              </div>
             </th>
             <th
-              className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
+              className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200 rounded-tr-lg"
               onClick={() => handleSort('2')}
             >
-              {awayTeamName} (2)
-              <span className="sort-arrow ml-1">
-                {sortColumn === '2' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
-              </span>
+              <div className="flex items-center justify-center">
+                <span>{awayTeamName} (2)</span>
+                <span className="sort-arrow ml-2 text-xs">
+                  {sortColumn === '2' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                </span>
+              </div>
             </th>
           </tr>
         </thead>
         <tbody>
-          {sortedOdds.map((oddSet, index) => {
-            const operatorName = oddSet.Operators.name;
-            const affiliateUrl = oddSet.Operators.affiliate_url || '#';
-            const homeHighlight = parseFloat(oddSet.home_win) === bestOdds['1'].odds ? 'highlight-best-odd' : '';
-            const drawHighlight = parseFloat(oddSet.draw) === bestOdds['X'].odds ? 'highlight-best-odd' : '';
-            const awayHighlight = parseFloat(oddSet.away_win) === bestOdds['2'].odds ? 'highlight-best-odd' : '';
+          {sortedBookmakers.map((bookmaker, index) => {
+            const oddSet = oddsByBookmaker.get(bookmaker.id);
+            const operatorName = bookmaker.name;
+            const affiliateUrl = bookmaker.url || '#';
+            // Test highlighting - temporarily highlight first row to verify CSS works
+            const testHighlight = index === 0 ? 'highlight-best-odd' : '';
+            const homeHighlight = oddSet && oddSet.home_win && Math.abs(parseFloat(oddSet.home_win) - bestOdds['1'].odds) < 0.001 ? 'highlight-best-odd' : '';
+            const drawHighlight = oddSet && oddSet.draw && Math.abs(parseFloat(oddSet.draw) - bestOdds['X'].odds) < 0.001 ? 'highlight-best-odd' : '';
+            const awayHighlight = oddSet && oddSet.away_win && Math.abs(parseFloat(oddSet.away_win) - bestOdds['2'].odds) < 0.001 ? 'highlight-best-odd' : '';
 
             return (
-              <tr key={index}>
-                <td className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                  {operatorName}
+              <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                <td className="px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <BookmakerLogo
+                      logoUrl={bookmaker.image_path}
+                      bookmakerName={operatorName}
+                      size="md"
+                    />
+                    <span className="text-gray-800 dark:text-gray-200 font-medium">
+                      {operatorName}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-3 py-2 text-center">
+                <td className="px-4 py-3 text-center border-b border-gray-100 dark:border-gray-700">
                   <a
                     href={affiliateUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`odds-cell transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 ${homeHighlight}`}
+                    className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${testHighlight} ${homeHighlight}`}
                   >
-                    {oddSet.home_win ? parseFloat(oddSet.home_win).toFixed(2) : '-'}
+                    {oddSet?.home_win ? parseFloat(oddSet.home_win).toFixed(2) : '-'}
                   </a>
                 </td>
-                <td className="px-3 py-2 text-center">
+                <td className="px-4 py-3 text-center border-b border-gray-100 dark:border-gray-700">
                   <a
                     href={affiliateUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`odds-cell transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 ${drawHighlight}`}
+                    className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${drawHighlight}`}
                   >
-                    {oddSet.draw ? parseFloat(oddSet.draw).toFixed(2) : '-'}
+                    {oddSet?.draw ? parseFloat(oddSet.draw).toFixed(2) : '-'}
                   </a>
                 </td>
-                <td className="px-3 py-2 text-center">
+                <td className="px-4 py-3 text-center border-b border-gray-100 dark:border-gray-700">
                   <a
                     href={affiliateUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`odds-cell transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 ${awayHighlight}`}
+                    className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${awayHighlight}`}
                   >
-                    {oddSet.away_win ? parseFloat(oddSet.away_win).toFixed(2) : '-'}
+                    {oddSet?.away_win ? parseFloat(oddSet.away_win).toFixed(2) : '-'}
                   </a>
                 </td>
               </tr>
@@ -464,13 +522,6 @@ export default function MatchPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto p-4 md:p-8 max-w-7xl">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-6">
-          <Link href="/" className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight no-underline hover:text-indigo-600 dark:hover:text-indigo-400">
-            Live Football on TV
-          </Link>
-        </header>
-
         {/* Main Content */}
         <main className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           {/* Match Header */}
@@ -496,7 +547,7 @@ export default function MatchPage() {
                     <TeamLogo 
                       logoUrl={match.home_team?.team_logo_url} 
                       teamName={homeTeamName} 
-                      size="lg" 
+                      size="xl" 
                     />
                   </div>
                   <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{homeTeamName}</span>
@@ -511,7 +562,7 @@ export default function MatchPage() {
                     <TeamLogo 
                       logoUrl={match.away_team?.team_logo_url} 
                       teamName={awayTeamName} 
-                      size="lg" 
+                      size="xl" 
                     />
                   </div>
                   <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{awayTeamName}</span>
@@ -546,13 +597,27 @@ export default function MatchPage() {
 
               {/* Broadcasters */}
               <div className="text-center mb-6">
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Broadcasters:</p>
-                <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">
-                  {hasBroadcasters 
-                    ? match.Event_Broadcasters.map((b: any) => b.Broadcasters?.name).filter(Boolean).join(', ')
-                    : 'N/A'
-                  }
-                </p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">Broadcasters:</p>
+                {hasBroadcasters ? (
+                  <div className="flex flex-wrap justify-center gap-4 mb-15">
+                    {match.Event_Broadcasters.map((eb: any, index: number) => {
+                      const broadcaster = eb.Broadcasters;
+                      if (!broadcaster?.name) return null;
+                      
+                      return (
+                        <BroadcasterLogo
+                          key={index}
+                          logoUrl={broadcaster.logo_url}
+                          broadcasterName={broadcaster.name}
+                          affiliateUrl={broadcaster.affiliate_url}
+                          size="md"
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">N/A</p>
+                )}
               </div>
 
               {/* Key Information Summary */}
@@ -573,6 +638,7 @@ export default function MatchPage() {
                 Explore the most competitive betting odds for the {homeTeamName} vs {awayTeamName} match. 
                 Compare all football betting options in the table below.
               </p>
+
               
               <div className="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-sm overflow-hidden">
                 <BestOddsSummary odds={match.Odds} />
@@ -637,36 +703,59 @@ export default function MatchPage() {
           user-select: none;
         }
         .odds-table th:first-child, .odds-table td:first-child {
-          padding-left: 0.75rem;
+          padding-left: 1rem;
         }
         .odds-table td:first-child {
           text-align: left;
         }
         .odds-table th:last-child, .odds-table td:last-child {
-          padding-right: 0.75rem;
+          padding-right: 1rem;
         }
         .odds-cell {
-          display: block;
-          padding: 0.5rem 0.75rem;
-          border-radius: 0.25rem;
+          display: inline-block;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
           text-align: center;
+          font-weight: 600;
+          min-width: 60px;
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          border: 1px solid #e2e8f0;
+          color: #1e293b;
+          text-decoration: none;
+        }
+        .dark .odds-cell {
+          background: linear-gradient(135deg, #334155 0%, #475569 100%);
+          border: 1px solid #475569;
+          color: #f1f5f9;
+        }
+        .odds-cell:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         .highlight-best-odd {
-          background-color: #dcfce7;
-          color: #166534;
-          font-weight: bold;
+          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+          color: #166534 !important;
+          font-weight: bold !important;
+          border: 2px solid #22c55e !important;
+          box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3) !important;
+          transform: scale(1.05) !important;
         }
         .dark .highlight-best-odd {
-          background-color: #14532d;
-          color: #dcfce7;
+          background: linear-gradient(135deg, #14532d 0%, #166534 100%) !important;
+          color: #dcfce7 !important;
+          border: 2px solid #22c55e !important;
+          box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4) !important;
         }
         .sort-arrow {
           display: inline-block;
           margin-left: 0.25rem;
           font-size: 0.75em;
           vertical-align: middle;
+          opacity: 0.7;
         }
-
+        .odds-table th:hover .sort-arrow {
+          opacity: 1;
+        }
       `}</style>
     </div>
   );

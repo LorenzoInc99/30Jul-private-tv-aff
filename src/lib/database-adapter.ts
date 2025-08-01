@@ -75,7 +75,7 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
   const end = new Date(start);
   end.setDate(start.getDate() + 1);
 
-  // Fetch fixtures with all related data
+  // Fetch fixtures with all related data using separate queries to avoid JOIN issues
   const { data: fixtures, error } = await supabase
     .from('fixtures')
     .select(`
@@ -83,9 +83,6 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
       league:leagues(*),
       home_team:teams_new!fixtures_home_team_id_fkey1(*),
       away_team:teams_new!fixtures_away_team_id_fkey1(*),
-      fixturetvstations(
-        tvstation:tvstations(*)
-      ),
       odds(
         id,
         label,
@@ -100,6 +97,33 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
 
   if (error) {
     throw error;
+  }
+
+  // Fetch TV stations separately to avoid JOIN issues
+  const fixtureIds = (fixtures || []).map((f: any) => f.id);
+  let tvStationsData: any[] = [];
+  
+  if (fixtureIds.length > 0) {
+    const { data: tvData, error: tvError } = await supabase
+      .from('fixturetvstations')
+      .select(`
+        fixture_id,
+        tvstation:tvstations(*)
+      `)
+      .in('fixture_id', fixtureIds);
+    
+    if (!tvError && tvData) {
+      tvStationsData = tvData;
+    }
+  }
+
+  // Group TV stations by fixture_id
+  const tvStationsByFixture = new Map();
+  for (const tvData of tvStationsData) {
+    if (!tvStationsByFixture.has(tvData.fixture_id)) {
+      tvStationsByFixture.set(tvData.fixture_id, []);
+    }
+    tvStationsByFixture.get(tvData.fixture_id).push(tvData.tvstation);
   }
 
   // Hardcoded country data from your database
@@ -129,6 +153,7 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
   // Transform to expected frontend format
   return (fixtures || []).map((fixture: any) => {
     const country = countriesMap.get(fixture.league.country_id);
+    const fixtureTvStations = tvStationsByFixture.get(fixture.id) || [];
     
     return {
       id: fixture.id,
@@ -144,9 +169,9 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
       },
       home_team: transformTeamData(fixture.home_team),
       away_team: transformTeamData(fixture.away_team),
-      Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
-        Broadcasters: transformTvStationData(ftv.tvstation)
-      })) || [],
+      Event_Broadcasters: fixtureTvStations.map((tvstation: any) => ({
+        Broadcasters: transformTvStationData(tvstation)
+      })),
       Odds: transformOdds(fixture.odds || [])
     };
   });
@@ -208,7 +233,7 @@ export async function getMatchById(matchId: string, supabase = supabaseServer())
     Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
       Broadcasters: transformTvStationData(ftv.tvstation)
     })) || [],
-    Odds: transformOdds(fixture.odds || [])
+    Odds: transformOddsByBookmaker(fixture.odds || [])
   };
 }
 
@@ -549,4 +574,63 @@ export async function getTeamForm(teamId: number, beforeDate: string, supabase =
     console.error('Error in getTeamForm:', error);
     return [];
   }
+} 
+
+export async function getAllBookmakers(supabase = supabaseServer()) {
+  try {
+    const { data: bookmakers, error } = await supabase
+      .from('bookmakers')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching bookmakers:', error);
+      return [];
+    }
+
+    return bookmakers || [];
+  } catch (error) {
+    console.error('Error in getAllBookmakers:', error);
+    return [];
+  }
+} 
+
+export function transformOddsByBookmaker(odds: NewOdds[]): any[] {
+  if (!odds || !Array.isArray(odds)) {
+    return [];
+  }
+
+  // Group odds by bookmaker
+  const oddsByBookmaker = new Map();
+
+  odds.forEach(odd => {
+    if (!odd.label || !odd.bookmaker) {
+      return;
+    }
+
+    const bookmakerId = odd.bookmaker.id;
+    const label = odd.label.toLowerCase();
+
+    if (!oddsByBookmaker.has(bookmakerId)) {
+      oddsByBookmaker.set(bookmakerId, {
+        Operators: transformBookmakerData(odd.bookmaker),
+        home_win: null,
+        draw: null,
+        away_win: null
+      });
+    }
+
+    const bookmakerOdds = oddsByBookmaker.get(bookmakerId);
+
+    // Assign odds to the correct outcome
+    if (label === 'home' || label === '1') {
+      bookmakerOdds.home_win = odd.value;
+    } else if (label === 'draw' || label === 'x') {
+      bookmakerOdds.draw = odd.value;
+    } else if (label === 'away' || label === '2') {
+      bookmakerOdds.away_win = odd.value;
+    }
+  });
+
+  return Array.from(oddsByBookmaker.values());
 } 
