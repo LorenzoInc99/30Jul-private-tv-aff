@@ -16,7 +16,7 @@ export default function MainLayoutClient({ competitions, children }: { competiti
 
   return (
     <div className="w-full md:flex md:justify-center min-h-screen">
-      <div className="flex w-full">
+      <div className="flex w-full min-h-screen">
         {/* Sidebar - hidden on mobile, visible on desktop */}
         {shouldShowSidebar && (
           <div className="hidden md:block">

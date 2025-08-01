@@ -110,8 +110,8 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
   console.log('======================');
 
   return (
-    <aside className="block w-64 bg-white dark:bg-gray-900">
-      <div className="p-4">
+    <aside className="block w-64 bg-white dark:bg-gray-900 h-full min-h-screen">
+      <div className="p-4 h-full">
         {/* Search bar */}
         <div className="mb-4 w-full">
           <div className="relative w-full">
