@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import TeamFormRectangles from './TeamFormRectangles';
 
 // Multiple template components for variety
 function WhereToWatchParagraph1({ homeTeam, awayTeam, competition, date, time }: { 
@@ -119,6 +120,40 @@ export default function MatchDetails({ match }: { match: any }) {
     hour: '2-digit',
     minute: '2-digit'
   });
+
+  // Get the center content (time or result)
+  const getCenterContent = () => {
+    if (match.status === 'Finished' || match.status === 'Live') {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <span className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
+            {match.home_score} - {match.away_score}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {match.status === 'Live' ? 'LIVE' : 'FULL TIME'}
+          </span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <span className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
+            {new Date(match.start_time).toLocaleTimeString('en-GB', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {new Date(match.start_time).toLocaleDateString('en-GB', {
+              month: 'short',
+              day: 'numeric'
+            })}
+          </span>
+        </div>
+      );
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Match Header */}
@@ -136,16 +171,11 @@ export default function MatchDetails({ match }: { match: any }) {
               {match.Competitions?.name}
             </Link>
           </div>
-          {/* Mobile: Table-like layout for teams/score/date */}
-          <div className="md:hidden flex flex-col items-center gap-2 mb-8 w-full">
-            {/* Date centered on top */}
-            <div className="text-xs text-gray-500 dark:text-gray-400 text-center w-full">
-              {new Date(match.start_time).toLocaleDateString('en-GB', {
-                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-              })} {new Date(match.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-            </div>
-            {/* Teams and score row */}
-            <div className="flex flex-row items-center justify-between w-full gap-2">
+          
+          {/* Mobile: Compact layout for teams/score/time */}
+          <div className="md:hidden flex flex-col items-center gap-4 mb-8 w-full">
+            {/* Teams and center content row */}
+            <div className="flex flex-row items-center justify-between w-full gap-4">
               {/* Team 1 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
                 <Image 
@@ -160,13 +190,17 @@ export default function MatchDetails({ match }: { match: any }) {
                 >
                   {match.home_team?.name}
                 </Link>
+                <TeamFormRectangles
+                  teamId={match.home_team_id}
+                  matchStartTime={match.start_time}
+                />
               </div>
-              {/* Score */}
-              <div className="flex flex-col items-center justify-center w-12 mx-2">
-                <span className="text-lg font-bold text-gray-900 dark:text-white">
-                  {match.status === 'Finished' || match.status === 'Live' ? `${match.home_score} - ${match.away_score}` : '-'}
-                </span>
+              
+              {/* Center content (time or result) */}
+              <div className="flex flex-col items-center justify-center w-16 mx-2">
+                {getCenterContent()}
               </div>
+              
               {/* Team 2 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
                 <Image 
@@ -181,10 +215,15 @@ export default function MatchDetails({ match }: { match: any }) {
                 >
                   {match.away_team?.name}
                 </Link>
+                <TeamFormRectangles
+                  teamId={match.away_team_id}
+                  matchStartTime={match.start_time}
+                />
               </div>
             </div>
           </div>
-          {/* Desktop: Teams, logos, and score row */}
+          
+          {/* Desktop: Teams, logos, and center content row */}
           <div className="hidden md:flex items-center justify-between mb-8 w-full">
             {/* Home Team */}
             <div className="flex flex-col items-center flex-1 min-w-0">
@@ -200,15 +239,17 @@ export default function MatchDetails({ match }: { match: any }) {
               >
                 {match.home_team?.name}
               </Link>
+              <TeamFormRectangles
+                teamId={match.home_team_id}
+                matchStartTime={match.start_time}
+              />
             </div>
-            {/* Score */}
-            <div className="flex flex-col items-center justify-center w-20 mx-4">
-              <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                {match.status === 'Finished' || match.status === 'Live'
-                  ? `${match.home_score} - ${match.away_score}`
-                  : '-'}
-              </span>
+            
+            {/* Center content (time or result) */}
+            <div className="flex flex-col items-center justify-center w-24 mx-6">
+              {getCenterContent()}
             </div>
+            
             {/* Away Team */}
             <div className="flex flex-col items-center flex-1 min-w-0">
               <Image
@@ -223,6 +264,10 @@ export default function MatchDetails({ match }: { match: any }) {
               >
                 {match.away_team?.name}
               </Link>
+              <TeamFormRectangles
+                teamId={match.away_team_id}
+                matchStartTime={match.start_time}
+              />
             </div>
           </div>
         </div>

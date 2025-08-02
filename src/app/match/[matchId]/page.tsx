@@ -7,128 +7,8 @@ import { getMatchById, getTeamForm, getAllBookmakers, transformOddsByBookmaker }
 import TeamLogo from '@/components/TeamLogo';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
 import BookmakerLogo from '@/components/BookmakerLogo';
+import TeamFormRectangles from '@/components/TeamFormRectangles';
 
-
-
-
-
-
-
-// Team form rectangles component
-function TeamFormRectangles({ teamId, matchStartTime }: { teamId: number, matchStartTime: string }) {
-  const [formResults, setFormResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchTeamForm = async () => {
-      try {
-        console.log('Fetching team form for teamId:', teamId, 'before date:', matchStartTime, 'type:', typeof matchStartTime);
-        const formData = await getTeamForm(teamId, matchStartTime);
-        console.log('Team form data received:', formData);
-        setFormResults(formData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching team form:', error);
-        setFormResults([]);
-        setLoading(false);
-      }
-    };
-
-    fetchTeamForm();
-  }, [teamId, matchStartTime]);
-
-  const handleMouseEnter = (index: number) => {
-    setHoveredIndex(index);
-    tooltipTimeoutRef.current = setTimeout(() => {
-      setShowTooltip(true);
-    }, 100); // 0.1 seconds
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredIndex(null);
-    setShowTooltip(false);
-    if (tooltipTimeoutRef.current) {
-      clearTimeout(tooltipTimeoutRef.current);
-    }
-  };
-
-  const handleClick = (form: any) => {
-    if (form?.matchUrl) {
-      console.log('Navigating to:', form.matchUrl);
-      router.push(form.matchUrl);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center mt-2 space-x-1">
-        {[...Array(5)].map((_, index) => (
-          <div
-            key={index}
-            className="w-5 h-4 bg-gray-300 dark:bg-gray-600 rounded-sm animate-pulse"
-          />
-        ))}
-      </div>
-    );
-  }
-
-  // Show 5 rectangles (filled or grey) - most recent on the right
-  console.log('Form results length:', formResults.length);
-  console.log('Form results:', formResults);
-  
-  const displayResults = Array(5).fill(null).map((_, index) => {
-    // Reverse the order so most recent is on the right
-    const reversedIndex = 4 - index;
-    const result = formResults[reversedIndex] || null;
-    console.log(`Rectangle ${index} (reversedIndex ${reversedIndex}):`, result);
-    return result;
-  });
-
-  return (
-    <div className="flex justify-center mt-2 space-x-1 relative">
-      {displayResults.map((form, index) => {
-        let bgColor = 'bg-gray-400 dark:bg-gray-500'; // Default grey for no data
-        
-        if (form?.result) {
-          if (form.result === 'win') {
-            bgColor = 'bg-green-500 dark:bg-green-600';
-          } else if (form.result === 'draw') {
-            bgColor = 'bg-orange-500 dark:bg-orange-600';
-          } else if (form.result === 'loss') {
-            bgColor = 'bg-red-500 dark:bg-red-600';
-          }
-        }
-
-        return (
-          <div
-            key={index}
-            className={`w-5 h-4 ${bgColor} rounded-sm transition-colors duration-200 cursor-pointer relative ${
-              form?.matchUrl ? 'hover:scale-110' : ''
-            }`}
-            onMouseEnter={() => handleMouseEnter(index)}
-            onMouseLeave={handleMouseLeave}
-            onClick={() => handleClick(form)}
-          >
-            {/* Custom tooltip */}
-            {hoveredIndex === index && showTooltip && form && (
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 dark:bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                vs {form.opponent}
-                {form.matchUrl && (
-                  <div className="text-blue-300 text-xs mt-1">Click to view match</div>
-                )}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800 dark:border-t-gray-900"></div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 // Best odds summary component
 function BestOddsSummary({ odds }: { odds: any[] }) {
@@ -169,6 +49,7 @@ function BestOddsSummary({ odds }: { odds: any[] }) {
           target="_blank"
           rel="noopener noreferrer"
           className="font-bold text-base text-indigo-600 dark:text-indigo-400 hover:underline"
+          aria-label={`Go to ${bestOdds['1'].operator?.name || 'bookmaker'} for best home odds`}
         >
           {bestOdds['1'].odds > 0 ? bestOdds['1'].odds.toFixed(2) : '-'}
         </a>
@@ -181,6 +62,7 @@ function BestOddsSummary({ odds }: { odds: any[] }) {
           target="_blank"
           rel="noopener noreferrer"
           className="font-bold text-base text-indigo-600 dark:text-indigo-400 hover:underline"
+          aria-label={`Go to ${bestOdds['X'].operator?.name || 'bookmaker'} for best draw odds`}
         >
           {bestOdds['X'].odds > 0 ? bestOdds['X'].odds.toFixed(2) : '-'}
         </a>
@@ -193,6 +75,7 @@ function BestOddsSummary({ odds }: { odds: any[] }) {
           target="_blank"
           rel="noopener noreferrer"
           className="font-bold text-base text-indigo-600 dark:text-indigo-400 hover:underline"
+          aria-label={`Go to ${bestOdds['2'].operator?.name || 'bookmaker'} for best away odds`}
         >
           {bestOdds['2'].odds > 0 ? bestOdds['2'].odds.toFixed(2) : '-'}
         </a>
@@ -309,6 +192,10 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
             <th
               className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200 rounded-tl-lg"
               onClick={() => handleSort('operator')}
+              tabIndex={0}
+              role="button"
+              aria-label="Sort by operator"
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('operator'); }}
             >
               <div className="flex items-center">
                 <span>Operator</span>
@@ -320,6 +207,10 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
             <th
               className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200"
               onClick={() => handleSort('1')}
+              tabIndex={0}
+              role="button"
+              aria-label={`Sort by odds for ${homeTeamName} win`}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('1'); }}
             >
               <div className="flex items-center justify-center">
                 <span>{homeTeamName} (1)</span>
@@ -331,6 +222,10 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
             <th
               className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200"
               onClick={() => handleSort('X')}
+              tabIndex={0}
+              role="button"
+              aria-label="Sort by odds for draw"
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('X'); }}
             >
               <div className="flex items-center justify-center">
                 <span>Draw (X)</span>
@@ -342,6 +237,10 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
             <th
               className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200 rounded-tr-lg"
               onClick={() => handleSort('2')}
+              tabIndex={0}
+              role="button"
+              aria-label={`Sort by odds for ${awayTeamName} win`}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('2'); }}
             >
               <div className="flex items-center justify-center">
                 <span>{awayTeamName} (2)</span>
@@ -383,6 +282,7 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${testHighlight} ${homeHighlight}`}
+                    aria-label={`Go to ${operatorName} for odds on ${homeTeamName} win`}
                   >
                     {oddSet?.home_win ? parseFloat(oddSet.home_win).toFixed(2) : '-'}
                   </a>
@@ -393,6 +293,7 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${drawHighlight}`}
+                    aria-label={`Go to ${operatorName} for odds on draw`}
                   >
                     {oddSet?.draw ? parseFloat(oddSet.draw).toFixed(2) : '-'}
                   </a>
@@ -403,6 +304,7 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${awayHighlight}`}
+                    aria-label={`Go to ${operatorName} for odds on ${awayTeamName} win`}
                   >
                     {oddSet?.away_win ? parseFloat(oddSet.away_win).toFixed(2) : '-'}
                   </a>
@@ -412,6 +314,47 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function MatchSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto p-4 md:p-8 max-w-7xl">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg animate-pulse">
+          {/* Status skeleton */}
+          <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded mb-4"></div>
+          
+          {/* Teams skeleton */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-6">
+            <div className="flex flex-col items-center w-full md:w-1/3">
+              <div className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full mb-2"></div>
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32 mb-2"></div>
+              <div className="flex space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-5 h-4 bg-gray-300 dark:bg-gray-600 rounded-sm"></div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-center w-full md:w-1/3">
+              <div className="h-12 bg-gray-300 dark:bg-gray-600 rounded w-24 mb-2"></div>
+              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
+            </div>
+            
+            <div className="flex flex-col items-center w-full md:w-1/3">
+              <div className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full mb-2"></div>
+              <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32 mb-2"></div>
+              <div className="flex space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-5 h-4 bg-gray-300 dark:bg-gray-600 rounded-sm"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -472,14 +415,7 @@ export default function MatchPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto p-4 md:p-8 max-w-7xl">
-          <div className="text-center py-10">
-            <p className="text-gray-500 dark:text-gray-400">Loading match details...</p>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mt-4"></div>
-          </div>
-        </div>
-      </div>
+      <MatchSkeleton />
     );
   }
 
@@ -489,7 +425,7 @@ export default function MatchPage() {
         <div className="container mx-auto p-4 md:p-8 max-w-7xl">
           <div className="text-center py-10 text-red-500 dark:text-red-400">
             <p>Could not load match details: {error}</p>
-            <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline mt-4 inline-block">
+            <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline mt-4 inline-block" aria-label="Return to homepage">
               Return to homepage
             </Link>
           </div>
@@ -526,107 +462,234 @@ export default function MatchPage() {
         <main className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           {/* Match Header */}
           <div className="bg-white dark:bg-gray-800 rounded-none shadow-none overflow-hidden mb-2 w-full">
-            <div className={`px-6 py-3 ${status.color} text-white text-sm font-semibold uppercase tracking-wide`}>
-              {status.text}
+            <div className="px-6 py-3 bg-indigo-600 text-white text-sm font-semibold uppercase tracking-wide">
+              <Link 
+                href={`/competition/${match.Competitions?.id}-${match.Competitions?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+                className="text-white hover:text-indigo-200 transition-colors duration-200"
+                aria-label={`Go to competition page for ${match.Competitions?.name}`}
+              >
+                {match.Competitions?.name}
+              </Link>
             </div>
             <div className="p-6">
-              {/* Competition */}
-              <div className="text-center mb-6">
-                <Link 
-                  href={`/competition/${match.Competitions?.id}-${match.Competitions?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
-                  className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
-                >
-                  {match.Competitions?.name}
-                </Link>
-              </div>
-
               {/* Teams and Score */}
-              <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 mb-6">
-                <div className="flex flex-col items-center">
-                  <div className="mb-2">
-                    <TeamLogo 
-                      logoUrl={match.home_team?.team_logo_url} 
-                      teamName={homeTeamName} 
-                      size="xl" 
-                    />
+              <div className="flex flex-col items-center justify-center mb-6">
+                
+                {/* Teams and Score Row - Grid layout for perfect alignment */}
+                <div className="grid grid-cols-3 items-center justify-center w-full max-w-4xl gap-2 md:gap-8">
+                  {/* Home Team */}
+                  <div className="flex flex-col items-center justify-center min-h-[200px] md:min-h-[240px]">
+                    {/* Logo Row */}
+                    <div className="flex items-center justify-center h-24 md:h-28 mb-2">
+                      <TeamLogo 
+                        logoUrl={match.home_team?.team_logo_url} 
+                        teamName={homeTeamName} 
+                        size="xl" 
+                      />
+                    </div>
+                    {/* Team Name Row */}
+                    <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
+                      <span className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg">
+                        {homeTeamName}
+                      </span>
+                    </div>
+                    {/* Form Row */}
+                    <div className="flex items-center justify-center h-6">
+                      <TeamFormRectangles
+                        teamId={match.home_team_id}
+                        matchStartTime={match.start_time}
+                      />
+                    </div>
                   </div>
-                  <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{homeTeamName}</span>
-                  <TeamFormRectangles
-                    teamId={match.home_team_id}
-                    matchStartTime={match.start_time}
-                  />
-                </div>
-                <span className="text-3xl font-extrabold text-gray-500 dark:text-gray-400">vs</span>
-                <div className="flex flex-col items-center">
-                  <div className="mb-2">
-                    <TeamLogo 
-                      logoUrl={match.away_team?.team_logo_url} 
-                      teamName={awayTeamName} 
-                      size="xl" 
-                    />
+                  
+                  {/* Center content */}
+                  <div className="flex flex-col items-center justify-center min-h-[200px] md:min-h-[240px] px-2 md:px-4">
+                    {(match.status === 'Full Time' || match.status === 'Live' || 
+                      match.status === 'After Extra Time' || match.status === 'After Penalties' ||
+                      (match.home_score !== null && match.away_score !== null)) ? (
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
+                          {match.home_score || 0} - {match.away_score || 0}
+                        </span>
+                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {match.status === 'Live' ? 'LIVE' : 'FULL TIME'}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
+                          {new Date(match.start_time).toLocaleTimeString('en-GB', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {new Date(match.start_time).toLocaleDateString('en-GB', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">{awayTeamName}</span>
-                  <TeamFormRectangles
-                    teamId={match.away_team_id}
-                    matchStartTime={match.start_time}
-                  />
+                  
+                  {/* Away Team */}
+                  <div className="flex flex-col items-center justify-center min-h-[200px] md:min-h-[240px]">
+                    {/* Logo Row */}
+                    <div className="flex items-center justify-center h-24 md:h-28 mb-2">
+                      <TeamLogo 
+                        logoUrl={match.away_team?.team_logo_url} 
+                        teamName={awayTeamName} 
+                        size="xl" 
+                      />
+                    </div>
+                    {/* Team Name Row */}
+                    <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
+                      <span className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg">
+                        {awayTeamName}
+                      </span>
+                    </div>
+                    {/* Form Row */}
+                    <div className="flex items-center justify-center h-6">
+                      <TeamFormRectangles
+                        teamId={match.away_team_id}
+                        matchStartTime={match.start_time}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Match Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-6">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Kick-off Time:</p>
-                  <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">{fullDate}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Status:</p>
-                  <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">{match.status}</p>
-                </div>
-              </div>
-
-              {/* Live Score */}
-              {(match.status === 'Live' || match.status === 'Finished') && (
-                <div className="text-center mb-6">
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Current Score:</p>
-                  <p className="font-bold text-gray-900 dark:text-white text-4xl">
-                    {match.home_score || 0} - {match.away_score || 0}
-                  </p>
-                </div>
-              )}
 
               {/* Broadcasters */}
               <div className="text-center mb-6">
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">Broadcasters:</p>
                 {hasBroadcasters ? (
-                  <div className="flex flex-wrap justify-center gap-4 mb-15">
-                    {match.Event_Broadcasters.map((eb: any, index: number) => {
-                      const broadcaster = eb.Broadcasters;
-                      if (!broadcaster?.name) return null;
-                      
-                      return (
-                        <BroadcasterLogo
-                          key={index}
-                          logoUrl={broadcaster.logo_url}
-                          broadcasterName={broadcaster.name}
-                          affiliateUrl={broadcaster.affiliate_url}
-                          size="md"
-                        />
-                      );
-                    })}
-                  </div>
+                  <>
+                    {/* Desktop Layout - Horizontal with logos */}
+                    <div className="hidden md:flex flex-wrap justify-center gap-4 mb-4">
+                      {match.Event_Broadcasters.map((eb: any, index: number) => {
+                        const broadcaster = eb.Broadcasters;
+                        if (!broadcaster?.name) return null;
+                        
+                        return (
+                          <BroadcasterLogo
+                            key={index}
+                            logoUrl={broadcaster.logo_url}
+                            broadcasterName={broadcaster.name}
+                            affiliateUrl={broadcaster.affiliate_url}
+                            size="md"
+                          />
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Mobile Layout - Bullet points with logos and names */}
+                    <div className="md:hidden">
+                      <ul className="list-none space-y-0 text-left max-w-sm mx-auto">
+                        {match.Event_Broadcasters.map((eb: any, index: number) => {
+                          const broadcaster = eb.Broadcasters;
+                          if (!broadcaster?.name) return null;
+                          
+                          return (
+                            <li key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                              <div className="flex-shrink-0">
+                                {broadcaster.affiliate_url ? (
+                                  <a
+                                    href={broadcaster.affiliate_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:scale-105 transition-transform duration-200"
+                                    aria-label={`Watch on ${broadcaster.name}`}
+                                  >
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                      {broadcaster.logo_url ? (
+                                        <Image
+                                          src={broadcaster.logo_url}
+                                          alt={`${broadcaster.name} logo`}
+                                          width={32}
+                                          height={32}
+                                          className="object-contain rounded bg-white border border-gray-200 dark:border-gray-700"
+                                          onError={(e) => {
+                                            // Fallback to letter if image fails to load
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            const parent = target.parentElement;
+                                            if (parent) {
+                                              parent.innerHTML = `
+                                                <div class="w-full h-full flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                                  ${broadcaster.name.charAt(0).toUpperCase()}
+                                                </div>
+                                              `;
+                                            }
+                                          }}
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                          {broadcaster.name.charAt(0).toUpperCase()}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </a>
+                                ) : (
+                                  <div className="w-8 h-8 flex items-center justify-center">
+                                    {broadcaster.logo_url ? (
+                                      <Image
+                                        src={broadcaster.logo_url}
+                                        alt={`${broadcaster.name} logo`}
+                                        width={32}
+                                        height={32}
+                                        className="object-contain rounded bg-white border border-gray-200 dark:border-gray-700"
+                                        onError={(e) => {
+                                          // Fallback to letter if image fails to load
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          const parent = target.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = `
+                                              <div class="w-full h-full flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                                ${broadcaster.name.charAt(0).toUpperCase()}
+                                              </div>
+                                            `;
+                                          }
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                        {broadcaster.name.charAt(0).toUpperCase()}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {broadcaster.name}
+                                </span>
+                                {broadcaster.affiliate_url && (
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Click to visit broadcaster
+                                  </div>
+                                )}
+                              </div>
+                              {broadcaster.affiliate_url && (
+                                <div className="flex-shrink-0">
+                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </>
                 ) : (
                   <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">N/A</p>
                 )}
               </div>
 
-              {/* Key Information Summary */}
-              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <strong>Where to watch {homeTeamName} vs {awayTeamName}:</strong> {statusText}
-                  Are you looking for the best odds and where to watch this anticipated {match.Competitions?.name || 'football'} match between {homeTeamName} and {awayTeamName}? We got you covered.
-                </p>
-              </div>
+
             </div>
           </div>
 
@@ -646,6 +709,7 @@ export default function MatchPage() {
                 <button
                   className="w-full flex justify-between items-center py-2 px-3 border-t border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
                   onClick={() => setShowAllOdds(!showAllOdds)}
+                  aria-label={showAllOdds ? 'Hide all odds table' : 'Show all odds table'}
                 >
                   <span className="font-semibold text-base">
                     {showAllOdds ? 'Hide All Odds' : 'View All Odds'}
@@ -655,6 +719,7 @@ export default function MatchPage() {
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>

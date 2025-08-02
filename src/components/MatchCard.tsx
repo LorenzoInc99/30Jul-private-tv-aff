@@ -79,7 +79,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   teamName={match.home_team?.name || 'Unknown'} 
                   size="sm" 
                 />
-                <span className="text-xs font-semibold truncate">{match.home_team?.name}</span>
+                <span className="text-xs font-semibold truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.home_team?.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <TeamLogo 
@@ -87,7 +87,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   teamName={match.away_team?.name || 'Unknown'} 
                   size="sm" 
                 />
-                <span className="text-xs font-semibold truncate">{match.away_team?.name}</span>
+                <span className="text-xs font-semibold truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.away_team?.name}</span>
               </div>
             </div>
             {/* Odds column (only if not finished) */}
@@ -108,12 +108,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                         href={data.operator?.url || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex flex-col items-center justify-center text-center w-full px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 transition-colors min-w-[64px] min-h-[36px]"
+                        className="flex flex-col items-center justify-center text-center w-full px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[64px] min-h-[36px]"
                         onClick={e => e.stopPropagation()}
                         tabIndex={0}
                         aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
                       >
-                        <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400">{parseFloat(data.value as any).toFixed(2)}</span>
+                        <span className="font-bold text-s text-indigo-600 dark:text-indigo-400">{parseFloat(data.value as any).toFixed(2)}</span>
                         <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{data.operator?.name || 'Unknown'}</span>
                       </a>
                     ) : (
@@ -170,7 +170,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                               href={b.affiliate_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors"
+                              className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out"
                               aria-label={`Watch on ${b.name}`}
                               onClick={e => { e.stopPropagation(); }}
                             >
@@ -230,7 +230,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 teamName={match.home_team?.name || 'Unknown'} 
                 size="sm" 
               />
-              <span className="font-semibold text-xs truncate">{match.home_team?.name}</span>
+              <span className="font-semibold text-xs truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.home_team?.name}</span>
             </div>
             <div className="flex items-center gap-2">
               <TeamLogo 
@@ -238,7 +238,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 teamName={match.away_team?.name || 'Unknown'} 
                 size="sm" 
               />
-              <span className="font-semibold text-xs truncate">{match.away_team?.name}</span>
+              <span className="font-semibold text-xs truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.away_team?.name}</span>
             </div>
           </div>
           {/* Odds */}
@@ -260,7 +260,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       href={data.operator?.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center text-center w-full px-2 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 transition-colors min-w-[58px] min-h-[36px]"
+                      className="flex flex-col items-center justify-center text-center w-full px-2 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[58px] min-h-[36px]"
                       onClick={e => e.stopPropagation()}
                       tabIndex={0}
                       aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
@@ -334,7 +334,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                         href={b.affiliate_url || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-shrink-0 flex items-center"
+                        className="flex-shrink-0 flex items-center hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out"
                         aria-label={`Watch on ${b.name}`}
                         onClick={e => { e.stopPropagation(); }}
                       >
