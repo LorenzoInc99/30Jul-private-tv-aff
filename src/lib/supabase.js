@@ -9,7 +9,8 @@ export const supabaseBrowser = createClient(supabaseUrl, supabaseAnonKey);
 
 // Server-side Supabase client (use only on the server, e.g. in server components, API routes, or getServerSideProps)
 export const supabaseServer = () => {
-  return createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
+  // Use anon key since we now have RLS policies
+  return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: false,
     },

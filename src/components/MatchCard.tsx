@@ -17,35 +17,63 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     }
     return timezone;
   }
+  
   function slugify(str: string) {
     return str
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
   }
+
+  // Check if match is live - including both "Live" status and actual live match statuses
+  const isLive = match.status === 'Live' || 
+                 match.status === '1st Half' || 
+                 match.status === '2nd Half' || 
+                 match.status === 'Half Time' ||
+                 match.status === 'ET - 2nd Half' ||
+                 match.status === 'Extra Time' ||
+                 match.status === 'Penalties';
+
+  const handleTeamClick = (e: React.MouseEvent, teamName: string) => {
+    e.stopPropagation();
+    console.log('Team clicked:', teamName);
+    const teamSlug = slugify(teamName);
+    console.log('Generated slug:', teamSlug);
+    const teamUrl = `/team/${teamSlug}`;
+    console.log('Opening URL:', teamUrl);
+    window.open(teamUrl, '_blank');
+  };
+
   return (
     <div className="w-full md:w-full">
       <div
-        className={`group w-full transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer`}
+        className={`group w-full transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer relative ${isLive ? 'border-l-0' : ''}`}
         tabIndex={0}
         aria-label={`View details for ${match.home_team?.name} vs ${match.away_team?.name}`}
         role="button"
         onClick={onClick}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onClick(e as any); }}
       >
+        {/* Live Match Indicator */}
+        {isLive && (
+          <div className="absolute left-0 top-1 bottom-1 w-2 bg-orange-500 rounded-r-xl"></div>
+        )}
+        
         {/* Mobile: Compact row layout */}
-        <div className="flex flex-col p-2 md:hidden w-full">
+        <div className="flex flex-col p-1 md:hidden w-full">
           {/* Time and TV icon row */}
           <div className="flex flex-row items-center justify-between mb-0 w-full">
-            <span className="text-xs font-bold text-left">
-              {match.status === 'Finished'
-                ? 'FT'
-                : new Date(match.start_time).toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: getTargetTimezone(),
-                  })}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-left">
+                {match.status === 'Finished'
+                  ? 'FT'
+                  : new Date(match.start_time).toLocaleTimeString('en-GB', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      timeZone: getTargetTimezone(),
+                    })}
+              </span>
+            </div>
             <button
               className="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none"
               aria-label={isExpanded ? 'Hide TV channels' : 'Show TV channels'}
@@ -79,7 +107,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   teamName={match.home_team?.name || 'Unknown'} 
                   size="sm" 
                 />
-                <span className="text-xs font-semibold truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.home_team?.name}</span>
+                <button
+                  onClick={(e) => handleTeamClick(e, match.home_team?.name)}
+                  className={`text-sm font-bold truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${isLive ? 'text-gray-300' : ''}`}
+                >
+                  {match.home_team?.name}
+                </button>
               </div>
               <div className="flex items-center gap-2">
                 <TeamLogo 
@@ -87,7 +120,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   teamName={match.away_team?.name || 'Unknown'} 
                   size="sm" 
                 />
-                <span className="text-xs font-semibold truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.away_team?.name}</span>
+                <button
+                  onClick={(e) => handleTeamClick(e, match.away_team?.name)}
+                  className={`text-sm font-bold truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${isLive ? 'text-gray-300' : ''}`}
+                >
+                  {match.away_team?.name}
+                </button>
               </div>
             </div>
             {/* Odds column (only if not finished) */}
@@ -127,18 +165,15 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
             )}
             {/* Score column */}
-            <span className="flex flex-col items-center justify-center text-xs text-center font-bold w-12 block">
+            <span className="flex flex-col items-center justify-center text-sm text-center font-bold w-12 block">
               {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
                 <>
-                  <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                  <span className={`font-bold text-base ${isLive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                     {match.home_score}
                   </span>
-                  <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                  <span className={`font-bold text-base ${isLive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                     {match.away_score}
                   </span>
-                  {match.status === 'Live' && (
-                    <span className="text-[8px] text-red-500 font-bold animate-pulse">LIVE</span>
-                  )}
                 </>
               ) : (
                 <>
@@ -198,16 +233,18 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           )}
         </div>
         {/* Desktop: Row layout */}
-        <div className="hidden md:grid w-full py-2 px-3 relative md:grid-cols-[3.5rem_11rem_12rem_3.5rem_11rem] items-center">
+        <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[3.5rem_11rem_12rem_3.5rem_11rem] items-center">
           {/* Time */}
           <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
-            {match.status === 'Finished'
-              ? 'FT'
-              : new Date(match.start_time).toLocaleTimeString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZone: getTargetTimezone(),
-                })}
+            <span>
+              {match.status === 'Finished'
+                ? 'FT'
+                : new Date(match.start_time).toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: getTargetTimezone(),
+                  })}
+            </span>
           </div>
           {/* Teams with logos */}
           <div className="flex flex-col"> {/* Teams column, fixed width by grid */}
@@ -230,7 +267,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 teamName={match.home_team?.name || 'Unknown'} 
                 size="sm" 
               />
-              <span className="font-semibold text-xs truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.home_team?.name}</span>
+              <button
+                onClick={(e) => handleTeamClick(e, match.home_team?.name)}
+                className={`font-bold text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${isLive ? 'text-gray-300' : ''}`}
+              >
+                {match.home_team?.name}
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <TeamLogo 
@@ -238,7 +280,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 teamName={match.away_team?.name || 'Unknown'} 
                 size="sm" 
               />
-              <span className="font-semibold text-xs truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm">{match.away_team?.name}</span>
+              <button
+                onClick={(e) => handleTeamClick(e, match.away_team?.name)}
+                className={`font-bold text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${isLive ? 'text-gray-300' : ''}`}
+              >
+                {match.away_team?.name}
+              </button>
             </div>
           </div>
           {/* Odds */}
@@ -287,18 +334,15 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             )}
           </div>
           {/* Score */}
-          <div className="flex flex-col items-center justify-center font-semibold text-xs text-gray-800 dark:text-gray-200"> {/* Result column, fixed width by grid */}
+          <div className="flex flex-col items-center justify-center font-semibold text-sm text-gray-800 dark:text-gray-200"> {/* Result column, fixed width by grid */}
             {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
-                <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                <span className={`font-bold text-base ${isLive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                   {match.home_score}
                 </span>
-                <span className={`font-bold ${match.status === 'Live' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                <span className={`font-bold text-base ${isLive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                   {match.away_score}
                 </span>
-                {match.status === 'Live' && (
-                  <span className="text-[8px] text-red-500 font-bold animate-pulse">LIVE</span>
-                )}
               </>
             ) : (
               <>

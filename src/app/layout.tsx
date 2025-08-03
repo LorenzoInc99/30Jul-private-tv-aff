@@ -84,10 +84,21 @@ export default async function RootLayout({
 
   // Fetch all competitions for sidebar
   const supabase = supabaseServer();
-  const { data: competitions, error } = await supabase
-    .from('leagues')
-    .select('*')
-    .order('name', { ascending: true });
+  let competitions = [];
+  let error = null;
+  
+  try {
+    const result = await supabase
+      .from('leagues')
+      .select('*')
+      .order('name', { ascending: true });
+    
+    competitions = result.data || [];
+    error = result.error;
+  } catch (err) {
+    console.warn('Failed to fetch competitions:', err);
+    error = err;
+  }
 
   console.log('Layout Debug - Database query result:', {
     competitionsCount: competitions?.length || 0,
