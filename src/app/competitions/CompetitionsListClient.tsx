@@ -6,8 +6,10 @@ import CountryFlag from '../../components/CountryFlag';
 function slugify(str: string) {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 function CompetitionsStructuredData({ competitions }: { competitions: any[] }) {

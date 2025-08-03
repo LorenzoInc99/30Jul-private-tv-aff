@@ -6,13 +6,16 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import MatchCard from '@/components/MatchCard';
 import MatchDetails from '@/components/MatchDetails';
 import TeamLogo from '@/components/TeamLogo';
+import TeamFormRectangles from '@/components/TeamFormRectangles';
 import { getMatchStatus } from '@/lib/database-config';
 
 function slugify(str: string) {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 function transformMatchForCard(match: any) {
@@ -46,6 +49,10 @@ function transformMatchForCard(match: any) {
 }
 
 function NextMatchDetails({ match }: { match: any }) {
+  if (!match) {
+    return <div>No match data available</div>;
+  }
+
   const getMatchStatus = () => {
     if (match.status === 'Live') return { text: 'LIVE', color: 'bg-red-500' };
     if (match.status === 'Finished') return { text: 'FULL TIME', color: 'bg-gray-500' };
@@ -126,11 +133,10 @@ function NextMatchDetails({ match }: { match: any }) {
             <div className="flex flex-row items-center justify-between w-full gap-4">
               {/* Team 1 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
-                <TeamLogo 
-                  logoUrl={match.home_team?.team_logo_url} 
-                  teamName={match.home_team?.name || 'Unknown'} 
-                  size="lg" 
-                  className="w-10 h-10 mb-1"
+                <img 
+                  src={match.home_team?.team_logo_url || 'https://placehold.co/40x40/f3f4f6/f3f4f6'} 
+                  alt={match.home_team?.name || 'Home team logo'} 
+                  className="w-10 h-10 object-contain mb-1" 
                 />
                 <Link
                   href={`/team/${slugify(match.home_team?.name || '')}`}
@@ -138,6 +144,10 @@ function NextMatchDetails({ match }: { match: any }) {
                 >
                   {match.home_team?.name}
                 </Link>
+                <TeamFormRectangles
+                  teamId={match.home_team?.id}
+                  matchStartTime={match.start_time}
+                />
               </div>
               
               {/* Center content (time or result) */}
@@ -147,11 +157,10 @@ function NextMatchDetails({ match }: { match: any }) {
               
               {/* Team 2 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
-                <TeamLogo 
-                  logoUrl={match.away_team?.team_logo_url} 
-                  teamName={match.away_team?.name || 'Unknown'} 
-                  size="lg" 
-                  className="w-10 h-10 mb-1"
+                <img 
+                  src={match.away_team?.team_logo_url || 'https://placehold.co/40x40/f3f4f6/f3f4f6'} 
+                  alt={match.away_team?.name || 'Away team logo'} 
+                  className="w-10 h-10 object-contain mb-1" 
                 />
                 <Link
                   href={`/team/${slugify(match.away_team?.name || '')}`}
@@ -159,6 +168,10 @@ function NextMatchDetails({ match }: { match: any }) {
                 >
                   {match.away_team?.name}
                 </Link>
+                <TeamFormRectangles
+                  teamId={match.away_team?.id}
+                  matchStartTime={match.start_time}
+                />
               </div>
             </div>
           </div>
@@ -167,11 +180,10 @@ function NextMatchDetails({ match }: { match: any }) {
           <div className="hidden md:flex items-center justify-between mb-8 w-full">
             {/* Home Team */}
             <div className="flex flex-col items-center flex-1 min-w-0">
-              <TeamLogo 
-                logoUrl={match.home_team?.team_logo_url} 
-                teamName={match.home_team?.name || 'Unknown'} 
-                size="lg" 
-                className="w-14 h-14 mb-1"
+              <img
+                src={match.home_team?.team_logo_url || 'https://placehold.co/60x60/f3f4f6/f3f4f6'}
+                alt={match.home_team?.name || 'Home team logo'}
+                className="w-14 h-14 object-contain mb-1"
               />
               <Link
                 href={`/team/${slugify(match.home_team?.name || '')}`}
@@ -179,6 +191,10 @@ function NextMatchDetails({ match }: { match: any }) {
               >
                 {match.home_team?.name}
               </Link>
+              <TeamFormRectangles
+                teamId={match.home_team?.id}
+                matchStartTime={match.start_time}
+              />
             </div>
             
             {/* Center content (time or result) */}
@@ -188,11 +204,10 @@ function NextMatchDetails({ match }: { match: any }) {
             
             {/* Away Team */}
             <div className="flex flex-col items-center flex-1 min-w-0">
-              <TeamLogo 
-                logoUrl={match.away_team?.team_logo_url} 
-                teamName={match.away_team?.name || 'Unknown'} 
-                size="lg" 
-                className="w-14 h-14 mb-1"
+              <img
+                src={match.away_team?.team_logo_url || 'https://placehold.co/60x60/f3f4f6/f3f4f6'}
+                alt={match.away_team?.name || 'Away team logo'}
+                className="w-14 h-14 object-contain mb-1"
               />
               <Link
                 href={`/team/${slugify(match.away_team?.name || '')}`}
@@ -200,6 +215,10 @@ function NextMatchDetails({ match }: { match: any }) {
               >
                 {match.away_team?.name}
               </Link>
+              <TeamFormRectangles
+                teamId={match.away_team?.id}
+                matchStartTime={match.start_time}
+              />
             </div>
           </div>
         </div>
@@ -286,22 +305,25 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
           <div className="mb-8">
             {transformedPreviousMatches.length > 0 ? (
               <div className="space-y-2">
-                {transformedPreviousMatches.map((match) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    timezone={timezone}
-                    isExpanded={false}
-                    onExpandToggle={() => {}}
-                    onClick={() => {
-                      const homeSlug = slugify(match.home_team?.name || 'home');
-                      const awaySlug = slugify(match.away_team?.name || 'away');
-                      const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
-                      window.open(matchUrl, '_blank');
-                    }}
-                    hideCompetitionName={false}
-                  />
-                ))}
+                {transformedPreviousMatches.map((match) => {
+                  if (!match) return null;
+                  return (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      timezone={timezone}
+                      isExpanded={false}
+                      onExpandToggle={() => {}}
+                      onClick={() => {
+                        const homeSlug = slugify(match.home_team?.name || 'home');
+                        const awaySlug = slugify(match.away_team?.name || 'away');
+                        const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                        window.open(matchUrl, '_blank');
+                      }}
+                      hideCompetitionName={false}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center text-gray-500 py-8">

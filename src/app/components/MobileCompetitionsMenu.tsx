@@ -20,7 +20,12 @@ export default function MobileCompetitionsMenu({ competitions }: { competitions:
   }, [competitions]);
 
   function slugify(name: string) {
-    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return name
+      .toLowerCase()
+      .normalize('NFD') // Normalize unicode characters
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
   }
 
   const handlePinToggle = (league: any) => {

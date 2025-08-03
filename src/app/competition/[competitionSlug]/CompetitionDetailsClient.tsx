@@ -10,8 +10,10 @@ import MatchCard from '@/components/MatchCard';
 function slugify(str: string) {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 function CompetitionStructuredData({ competition, matches }: { competition: any; matches: any[] }) {

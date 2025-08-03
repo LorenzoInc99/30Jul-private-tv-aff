@@ -7,22 +7,43 @@ import { SITE_TITLE } from '../../../lib/constants';
 function slugify(str: string) {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ teamName: string }> }): Promise<Metadata> {
   const { teamName } = await params;
   const supabase = supabaseServer();
   
-  // Convert slug back to team name
+  // Convert slug back to team name - handle special characters
   const teamNameFromSlug = teamName.replace(/-/g, ' ');
   
-  const { data: team } = await supabase
-    .from('teams_new')
-    .select('*')
-    .ilike('name', `%${teamNameFromSlug}%`)
-    .single();
+  // Also try with common character replacements for better matching
+  const alternativeSearchTerms = [
+    teamNameFromSlug,
+    teamNameFromSlug.replace(/o/g, 'ø'),
+    teamNameFromSlug.replace(/ae/g, 'æ'),
+    teamNameFromSlug.replace(/aa/g, 'å'),
+    teamNameFromSlug.replace(/oe/g, 'ö'),
+    teamNameFromSlug.replace(/ue/g, 'ü'),
+    teamNameFromSlug.replace(/ss/g, 'ß'),
+  ];
+  
+  // Try to find team with multiple search terms
+  let team = null;
+  for (const searchTerm of alternativeSearchTerms) {
+    const { data } = await supabase
+      .from('teams_new')
+      .select('*')
+      .ilike('name', `%${searchTerm}%`)
+      .single();
+    if (data) {
+      team = data;
+      break;
+    }
+  }
 
   if (!team) return { title: 'Team Not Found' };
 
@@ -37,18 +58,38 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
   const { teamName } = await params;
   const supabase = supabaseServer();
   
-  // Convert slug back to team name
+  // Convert slug back to team name - handle special characters
   const teamNameFromSlug = teamName.replace(/-/g, ' ');
   
-  console.log('Looking for team with slug:', teamName);
-  console.log('Converted to search term:', teamNameFromSlug);
+  // Also try with common character replacements for better matching
+  const alternativeSearchTerms = [
+    teamNameFromSlug,
+    teamNameFromSlug.replace(/o/g, 'ø'),
+    teamNameFromSlug.replace(/ae/g, 'æ'),
+    teamNameFromSlug.replace(/aa/g, 'å'),
+    teamNameFromSlug.replace(/oe/g, 'ö'),
+    teamNameFromSlug.replace(/ue/g, 'ü'),
+    teamNameFromSlug.replace(/ss/g, 'ß'),
+  ];
   
-  // Get team details
-  const { data: team, error } = await supabase
-    .from('teams_new')
-    .select('*')
-    .ilike('name', `%${teamNameFromSlug}%`)
-    .single();
+  console.log('Looking for team with slug:', teamName);
+  console.log('Converted to search terms:', alternativeSearchTerms);
+  
+  // Try to find team with multiple search terms
+  let team = null;
+  let error = null;
+  for (const searchTerm of alternativeSearchTerms) {
+    const { data, err } = await supabase
+      .from('teams_new')
+      .select('*')
+      .ilike('name', `%${searchTerm}%`)
+      .single();
+    if (data) {
+      team = data;
+      break;
+    }
+    if (err) error = err;
+  }
     
   console.log('Team lookup result:', { team, error });
 

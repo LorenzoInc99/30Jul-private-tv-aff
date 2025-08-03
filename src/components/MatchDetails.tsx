@@ -4,6 +4,15 @@ import Image from 'next/image';
 import { useState } from 'react';
 import TeamFormRectangles from './TeamFormRectangles';
 
+function slugify(str: string) {
+  return str
+    .toLowerCase()
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
 // Multiple template components for variety
 function WhereToWatchParagraph1({ homeTeam, awayTeam, competition, date, time }: { 
   homeTeam: string; awayTeam: string; competition: string; date: string; time: string; 
@@ -184,12 +193,19 @@ export default function MatchDetails({ match }: { match: any }) {
                   width={40} height={40} className="w-10 h-10 object-contain mb-1" 
                   loading="lazy"
                 />
-                <Link
-                  href={`/team/${match.home_team?.id}-${match.home_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center"
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Home team clicked:', match.home_team?.name);
+                    const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                    console.log('Navigating to:', teamUrl);
+                    window.open(teamUrl, '_blank');
+                  }}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
                 >
                   {match.home_team?.name}
-                </Link>
+                </button>
                 <TeamFormRectangles
                   teamId={match.home_team_id}
                   matchStartTime={match.start_time}
@@ -209,12 +225,19 @@ export default function MatchDetails({ match }: { match: any }) {
                   width={40} height={40} className="w-10 h-10 object-contain mb-1" 
                   loading="lazy"
                 />
-                <Link
-                  href={`/team/${match.away_team?.id}-${match.away_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center"
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Away team clicked:', match.away_team?.name);
+                    const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                    console.log('Navigating to:', teamUrl);
+                    window.open(teamUrl, '_blank');
+                  }}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
                 >
                   {match.away_team?.name}
-                </Link>
+                </button>
                 <TeamFormRectangles
                   teamId={match.away_team_id}
                   matchStartTime={match.start_time}
@@ -233,12 +256,19 @@ export default function MatchDetails({ match }: { match: any }) {
                 width={60} height={60} className="w-14 h-14 object-contain mb-1"
                 loading="lazy"
               />
-              <Link
-                href={`/team/${match.home_team?.id}-${match.home_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center"
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Home team clicked:', match.home_team?.name);
+                  const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                  console.log('Navigating to:', teamUrl);
+                  window.open(teamUrl, '_blank');
+                }}
+                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
               >
                 {match.home_team?.name}
-              </Link>
+              </button>
               <TeamFormRectangles
                 teamId={match.home_team_id}
                 matchStartTime={match.start_time}
@@ -258,12 +288,19 @@ export default function MatchDetails({ match }: { match: any }) {
                 width={60} height={60} className="w-14 h-14 object-contain mb-1"
                 loading="lazy"
               />
-              <Link
-                href={`/team/${match.away_team?.id}-${match.away_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center"
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Away team clicked:', match.away_team?.name);
+                  const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                  console.log('Navigating to:', teamUrl);
+                  window.open(teamUrl, '_blank');
+                }}
+                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
               >
                 {match.away_team?.name}
-              </Link>
+              </button>
               <TeamFormRectangles
                 teamId={match.away_team_id}
                 matchStartTime={match.start_time}

@@ -7,8 +7,10 @@ import TeamLogo from '@/components/TeamLogo';
 function slugify(str: string) {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 interface Team {
@@ -92,7 +94,7 @@ export default function TeamsListClient({ grouped }: TeamsListClientProps) {
                             size="sm" 
                           />
                           <Link
-                            href={`/team/${team.id}-${slugify(team.name)}`}
+                            href={`/team/${slugify(team.name)}`}
                             className="font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-base"
                           >
                             {team.name}

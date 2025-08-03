@@ -9,8 +9,10 @@ import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pin
 function slugify(str: string) {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 export default function LeagueSchedule({ competitions, timezone = 'auto' }: { competitions: any[]; timezone?: string }) {
@@ -126,7 +128,7 @@ export default function LeagueSchedule({ competitions, timezone = 'auto' }: { co
                   const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
                   const isExpanded = expandedMatch === match.id;
                   return (
-                    <div key={match.id} className="overflow-x-auto w-full">
+                    <div key={match.id} className="overflow-x-auto w-full mb-1 mt-1 last:mb-0">
                       <MatchCard
                         match={match}
                         timezone={timezone}

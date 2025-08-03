@@ -19,11 +19,13 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   }
   
   function slugify(str: string) {
-    return str
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
+  return str
+    .toLowerCase()
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
 
   // Check if match is live - including both "Live" status and actual live match statuses
   const isLive = match.status === 'Live' || 
@@ -65,7 +67,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           <div className="flex flex-row items-center justify-between mb-0 w-full">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-left">
-                {match.status === 'Finished'
+                {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
                   ? 'FT'
                   : new Date(match.start_time).toLocaleTimeString('en-GB', {
                       hour: '2-digit',
@@ -237,7 +239,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           {/* Time */}
           <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
             <span>
-              {match.status === 'Finished'
+              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
                 ? 'FT'
                 : new Date(match.start_time).toLocaleTimeString('en-GB', {
                     hour: '2-digit',
