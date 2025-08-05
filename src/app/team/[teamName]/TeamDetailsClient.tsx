@@ -112,7 +112,7 @@ function NextMatchDetails({ match }: { match: any }) {
   return (
     <div className="w-full">
       {/* Match Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-none shadow-none overflow-hidden mb-2 w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-none shadow-none overflow-hidden mb-1 w-full">
         <div className={`px-6 py-3 ${status.color} text-white text-sm font-semibold uppercase tracking-wide`}>
           {status.text}
         </div>

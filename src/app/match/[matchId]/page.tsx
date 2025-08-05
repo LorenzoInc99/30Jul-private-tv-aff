@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getMatchById, getTeamForm, getAllBookmakers, transformOddsByBookmaker } from '@/lib/database-adapter';
+import { getTeamForm, transformOddsByBookmaker } from '@/lib/database-adapter';
 import TeamLogo from '@/components/TeamLogo';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
 import BookmakerLogo from '@/components/BookmakerLogo';
@@ -96,8 +96,12 @@ function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeam
   useEffect(() => {
     const fetchBookmakers = async () => {
       try {
-        const bookmakers = await getAllBookmakers();
-        setAllBookmakers(bookmakers);
+        const response = await fetch('/api/bookmakers');
+        if (!response.ok) {
+          throw new Error('Failed to fetch bookmakers');
+        }
+        const data = await response.json();
+        setAllBookmakers(data.bookmakers);
       } catch (error) {
         console.error('Error fetching bookmakers:', error);
       }
@@ -385,9 +389,13 @@ export default function MatchPage() {
 
       try {
         setLoading(true);
-        const matchData = await getMatchById(matchId);
-        console.log('🔍 Match data received:', matchData);
-        setMatch(matchData);
+        const response = await fetch(`/api/match/${matchId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch match data');
+        }
+        const data = await response.json();
+        console.log('🔍 Match data received:', data.match);
+        setMatch(data.match);
       } catch (err: any) {
         console.error('🔍 Error fetching match:', err);
         setError(err.message);

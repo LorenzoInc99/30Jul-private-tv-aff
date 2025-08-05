@@ -1,6 +1,7 @@
 import React from 'react';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
 import TeamLogo from './TeamLogo';
+import BlurredOdds from './BlurredOdds';
 import CountryFlag from './CountryFlag';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false }: {
@@ -271,12 +272,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               />
               <button
                 onClick={(e) => handleTeamClick(e, match.home_team?.name)}
-                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
-                  isLive ? 'text-gray-300 font-bold' : 
-                  match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-extrabold' : 'font-normal') :
-                  'font-bold'
-                }`}
+                className={`font-bold text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${isLive ? 'text-gray-300' : ''}`}
               >
                 {match.home_team?.name}
               </button>
@@ -289,12 +285,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               />
               <button
                 onClick={(e) => handleTeamClick(e, match.away_team?.name)}
-                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
-                  isLive ? 'text-gray-300 font-bold' : 
-                  match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-extrabold' : 'font-normal') :
-                  'font-bold'
-                }`}
+                className={`font-bold text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${isLive ? 'text-gray-300' : ''}`}
               >
                 {match.away_team?.name}
               </button>
@@ -302,7 +293,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           {/* Odds */}
           <div className="flex flex-row items-center gap-1"> {/* Odds column, fixed width by grid */}
-            {match.status !== 'Finished' && match.status !== 'Full Time' && match.status !== 'After Extra Time' && match.status !== 'After Penalties' ? (
+            {match.status !== 'Finished' ? (
               (() => {
                 const bestOdds = getBestOddsFromTransformed(match.Odds || []);
                 const oddsTypes = [
@@ -336,28 +327,23 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 });
               })()
             ) : (
-              // Hide odds completely for finished matches - render empty space for alignment
-              <div className="flex-1"></div>
+              // Always render 3 empty boxes for finished matches for alignment
+              [0,1,2].map(idx => (
+                <div key={idx} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[58px] min-h-[36px]" aria-label="No odds available">
+                  <span className="font-bold text-xs text-gray-400 dark:text-gray-500">-</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight w-full">N/A</span>
+                </div>
+              ))
             )}
           </div>
           {/* Score */}
           <div className="flex flex-col items-center justify-center font-semibold text-sm text-gray-800 dark:text-gray-200"> {/* Result column, fixed width by grid */}
             {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
-                <span className={`text-base ${
-                  isLive ? 'text-white font-bold' : 
-                  match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score > match.away_score ? 'font-extrabold text-gray-900 dark:text-gray-100' : 'font-normal text-gray-600 dark:text-gray-400') :
-                  'font-bold text-gray-800 dark:text-gray-200'
-                }`}>
+                <span className={`font-bold text-base ${isLive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                   {match.home_score}
                 </span>
-                <span className={`text-base ${
-                  isLive ? 'text-white font-bold' : 
-                  match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.away_score > match.home_score ? 'font-extrabold text-gray-900 dark:text-gray-100' : 'font-normal text-gray-600 dark:text-gray-400') :
-                  'font-bold text-gray-800 dark:text-gray-200'
-                }`}>
+                <span className={`font-bold text-base ${isLive ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                   {match.away_score}
                 </span>
               </>

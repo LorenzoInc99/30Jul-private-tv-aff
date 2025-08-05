@@ -124,7 +124,7 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 px-2 md:px-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2 px-2 md:px-8">
         <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
         <div className="flex items-center gap-2">
           <TimezoneSelector value={timezone} onChange={setTimezone} />

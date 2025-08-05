@@ -146,7 +146,7 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
     [404, { id: 404, name: 'Turkey', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/tr.png' }],
     [462, { id: 462, name: 'England', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/en.png' }],
     [556, { id: 556, name: 'Belgium', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/be.png' }],
-    [1161, { id: 1161, name: 'Scotland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/sc.png' }],
+    [1161, { id: 1161, name: 'Scotland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/scotland.png' }],
     [1578, { id: 1578, name: 'Norway', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/no.png' }]
   ]);
 
@@ -278,6 +278,7 @@ export async function getAllCompetitions(supabase = supabaseServer()) {
     id: league.id,
     name: league.name,
     country: countriesMap.get(league.country_id) || null,
+    league_logo: league.league_logo || null,
     Events: [{ count: league.fixtures?.[0]?.count || 0 }]
   }));
 }
@@ -313,20 +314,22 @@ export async function getCompetitionDetails(competitionId: string, supabase = su
   return {
     id: league.id,
     name: league.name,
-    Events: (league.fixtures || []).map((fixture: any) => ({
-      id: fixture.id,
-      name: fixture.name,
-      start_time: fixture.starting_at,
-      home_score: fixture.home_score,
-      away_score: fixture.away_score,
-      status: getMatchStatus(fixture.state_id),
-      home_team: transformTeamData(fixture.home_team),
-      away_team: transformTeamData(fixture.away_team),
-      Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
-        Broadcasters: transformTvStationData(ftv.tvstation)
-      })) || [],
-      Odds: transformOdds(fixture.odds || [])
-    }))
+    Events: (league.fixtures || [])
+      .map((fixture: any) => ({
+        id: fixture.id,
+        name: fixture.name,
+        start_time: fixture.starting_at,
+        home_score: fixture.home_score,
+        away_score: fixture.away_score,
+        status: getMatchStatus(fixture.state_id),
+        home_team: transformTeamData(fixture.home_team),
+        away_team: transformTeamData(fixture.away_team),
+        Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
+          Broadcasters: transformTvStationData(ftv.tvstation)
+        })) || [],
+        Odds: transformOdds(fixture.odds || [])
+      }))
+      .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()) // Sort by date ascending (oldest first)
   };
 }
 

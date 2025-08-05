@@ -6,6 +6,8 @@ import Head from 'next/head';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useState } from 'react';
 import MatchCard from '@/components/MatchCard';
+import StandingsTable from '@/components/StandingsTable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function slugify(str: string) {
   return str
@@ -72,20 +74,40 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
 
   // Add competition property to each match for consistent MatchCard rendering
   const matchesWithCompetition = matches.map(m => ({ ...m, competition }));
-  // Group by date
-  const matchesByDate: Record<string, any[]> = {};
-  matchesWithCompetition.forEach(match => {
-    const date = new Date(match.start_time).toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+  
+  // Separate matches into results (past/current) and fixtures (future)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+  
+  const results = matchesWithCompetition.filter(match => new Date(match.start_time) <= today);
+  const fixtures = matchesWithCompetition.filter(match => new Date(match.start_time) > today);
+  
+  // Sort results: most recent first (descending)
+  const sortedResults = results.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+  
+  // Sort fixtures: next match first (ascending)
+  const sortedFixtures = fixtures.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+  
+  // Group by date function
+  const groupMatchesByDate = (matches: any[]) => {
+    const matchesByDate: Record<string, any[]> = {};
+    matches.forEach(match => {
+      const date = new Date(match.start_time).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      if (!matchesByDate[date]) {
+        matchesByDate[date] = [];
+      }
+      matchesByDate[date].push(match);
     });
-    if (!matchesByDate[date]) {
-      matchesByDate[date] = [];
-    }
-    matchesByDate[date].push(match);
-  });
+    return matchesByDate;
+  };
+  
+  const resultsByDate = groupMatchesByDate(sortedResults);
+  const fixturesByDate = groupMatchesByDate(sortedFixtures);
 
   return (
     <>
@@ -121,62 +143,119 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
             <main className="p-0 w-full bg-gray-50 dark:bg-gray-900">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {competition.name}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Complete schedule, live matches, and betting odds
-              </p>
-            </div>
-            {matches.length === 0 ? (
-              <div className="text-center text-gray-500 py-10">
-                No matches found for this competition.
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  {competition.name}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Complete schedule, live matches, and betting odds
+                </p>
               </div>
-            ) : (
+              
+              {matches.length === 0 ? (
+                <div className="text-center text-gray-500 py-10">
+                  No matches found for this competition.
+                </div>
+              ) : (
                 <div className="bg-gray-50 dark:bg-gray-900">
-                  {/* Desktop-only max-width wrapper for DateNavigator and match cards */}
                   <div className="w-full md:max-w-3xl mx-auto">
-                    {/* If you use DateNavigator here, place it inside this wrapper too */}
-                    {/* <DateNavigator ... /> */}
-              <div className="space-y-8">
-                {Object.entries(matchesByDate).map(([date, dateMatches]) => (
-                        <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
-                          <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
-                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {date}
-                      </h2>
-                    </div>
-                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                      {dateMatches.map((match, idx) => {
-                        const homeSlug = slugify(match.home_team?.name || 'home');
-                        const awaySlug = slugify(match.away_team?.name || 'away');
-                        const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
-                        return (
-                          <MatchCard
-                            key={match.id}
-                            match={match}
-                            timezone={timezone}
-                            isExpanded={expandedMatch === match.id}
-                            onExpandToggle={e => {
-                              e.stopPropagation();
-                              setExpandedMatch(expandedMatch === match.id ? null : match.id);
-                            }}
-                            onClick={e => {
-                              window.open(matchUrl, '_blank');
-                            }}
-                            hideCompetitionName={true}
-                          />
-                        );
-                      })}
-                    </div>
+                    <Tabs defaultValue="results" className="w-full">
+                      <TabsList className="flex w-full border-b border-gray-200 dark:border-gray-700 mb-6 bg-transparent">
+                        <TabsTrigger value="results" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Results</TabsTrigger>
+                        <TabsTrigger value="fixtures" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Fixtures</TabsTrigger>
+                        <TabsTrigger value="standings" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Standings</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="results" className="space-y-8">
+                        {Object.keys(resultsByDate).length === 0 ? (
+                          <div className="text-center text-gray-500 py-10">
+                            No results available yet.
+                          </div>
+                        ) : (
+                          Object.entries(resultsByDate).map(([date, dateMatches]) => (
+                            <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
+                              <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                  {date}
+                                </h2>
+                              </div>
+                              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                                {(dateMatches as any[]).map((match: any) => {
+                                  const homeSlug = slugify(match.home_team?.name || 'home');
+                                  const awaySlug = slugify(match.away_team?.name || 'away');
+                                  const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                                  return (
+                                    <MatchCard
+                                      key={match.id}
+                                      match={match}
+                                      timezone={timezone}
+                                      isExpanded={expandedMatch === match.id}
+                                      onExpandToggle={e => {
+                                        e.stopPropagation();
+                                        setExpandedMatch(expandedMatch === match.id ? null : match.id);
+                                      }}
+                                      onClick={e => {
+                                        window.open(matchUrl, '_blank');
+                                      }}
+                                      hideCompetitionName={true}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="fixtures" className="space-y-8">
+                        {Object.keys(fixturesByDate).length === 0 ? (
+                          <div className="text-center text-gray-500 py-10">
+                            No upcoming fixtures available.
+                          </div>
+                        ) : (
+                          Object.entries(fixturesByDate).map(([date, dateMatches]) => (
+                            <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
+                              <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                  {date}
+                                </h2>
+                              </div>
+                              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                                {(dateMatches as any[]).map((match: any) => {
+                                  const homeSlug = slugify(match.home_team?.name || 'home');
+                                  const awaySlug = slugify(match.away_team?.name || 'away');
+                                  const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                                  return (
+                                    <MatchCard
+                                      key={match.id}
+                                      match={match}
+                                      timezone={timezone}
+                                      isExpanded={expandedMatch === match.id}
+                                      onExpandToggle={e => {
+                                        e.stopPropagation();
+                                        setExpandedMatch(expandedMatch === match.id ? null : match.id);
+                                      }}
+                                      onClick={e => {
+                                        window.open(matchUrl, '_blank');
+                                      }}
+                                      hideCompetitionName={true}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="standings" className="space-y-8">
+                        <StandingsTable leagueId={competition.id} />
+                      </TabsContent>
+                    </Tabs>
                   </div>
-                ))}
-                    </div>
-                  </div>
-              </div>
-            )}
-          </main>
+                </div>
+              )}
+            </main>
           </div>
         </div>
       </div>

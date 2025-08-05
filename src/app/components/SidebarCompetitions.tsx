@@ -1,12 +1,22 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../../lib/pinned-leagues';
+import LeagueLogo from '../../components/LeagueLogo';
 
 export default function SidebarCompetitions({ competitions }: { competitions: any[] }) {
   const [showAll, setShowAll] = useState(false);
   const [search, setSearch] = useState('');
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
+
+  // Popular leagues data
+  const popularLeagues = [
+    { id: 8, name: 'Premier League', league_logo: 'https://cdn.sportmonks.com/images/soccer/leagues/8.png' },
+    { id: 564, name: 'La Liga', league_logo: 'https://cdn.sportmonks.com/images/soccer/leagues/564.png' },
+    { id: 82, name: 'Bundesliga', league_logo: 'https://cdn.sportmonks.com/images/soccer/leagues/82.png' },
+    { id: 384, name: 'Serie A', league_logo: 'https://cdn.sportmonks.com/images/soccer/leagues/384.png' },
+    { id: 301, name: 'Ligue 1', league_logo: 'https://cdn.sportmonks.com/images/soccer/leagues/301.png' }
+  ];
 
   // Load pinned leagues on mount and when competitions change
   useEffect(() => {
@@ -53,8 +63,15 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     <li key={comp.id} className="flex items-center justify-between group">
       <a
         href={`/competition/${comp.id}-${comp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
-        className="flex-1 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:text-sm py-1"
+        className="flex-1 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:text-sm py-1 flex items-center"
       >
+        <LeagueLogo 
+          logoUrl={comp.league_logo} 
+          leagueName={comp.name} 
+          leagueId={comp.id}
+          size="sm" 
+          className="mr-2 flex-shrink-0"
+        />
         {comp.name}
       </a>
       <button
@@ -87,6 +104,51 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     </li>
   );
 
+  const renderPopularLeagueItem = (comp: any) => (
+    <li key={comp.id} className="flex items-center justify-between group">
+      <a
+        href={`/competition/${comp.id}-${comp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+        className="flex-1 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:text-sm py-1 flex items-center"
+      >
+        <LeagueLogo 
+          logoUrl={comp.league_logo} 
+          leagueName={comp.name} 
+          leagueId={comp.id}
+          size="sm" 
+          className="mr-2 flex-shrink-0"
+        />
+        {comp.name}
+      </a>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          handlePinToggle(comp);
+        }}
+        className={`ml-2 p-1 rounded transition-colors ${
+          isLeaguePinned(comp.id)
+            ? 'text-yellow-500 hover:text-yellow-600' 
+            : 'text-gray-400 hover:text-yellow-500 opacity-0 group-hover:opacity-100'
+        }`}
+        title={isLeaguePinned(comp.id) ? 'Unpin league' : 'Pin league'}
+        aria-label={isLeaguePinned(comp.id) ? 'Unpin league' : 'Pin league'}
+      >
+        <svg 
+          className="w-4 h-4" 
+          fill={isLeaguePinned(comp.id) ? "currentColor" : "none"} 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          viewBox="0 0 24 24"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" 
+          />
+        </svg>
+      </button>
+    </li>
+  );
+
   // Determine what to show based on pinned leagues
   const hasPinnedLeagues = mounted && pinnedLeagues.length > 0;
   
@@ -96,14 +158,11 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     : hasPinnedLeagues 
       ? pinnedLeagues 
       : displayed;
-      
-  const sectionTitle = hasPinnedLeagues ? "Pinned Leagues" : "Pinned Leagues";
 
   console.log('=== SIDEBAR RENDER ===');
   console.log('Mounted:', mounted);
   console.log('Has pinned leagues:', hasPinnedLeagues);
   console.log('Pinned leagues count:', pinnedLeagues.length);
-  console.log('Section title:', sectionTitle);
   console.log('Leagues to show count:', leaguesToShow.length);
   console.log('Competitions count:', competitions.length);
   console.log('Leagues to show:', JSON.stringify(leaguesToShow.map(c => ({ id: c.id, name: c.name })), null, 2));
@@ -132,25 +191,52 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
           </div>
         </div>
 
-        {/* Leagues Section */}
-        <div>
+        {/* Standings Link */}
+        <div className="mb-6">
+          <a
+            href="/standings"
+            className="flex items-center text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:text-sm py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <svg className="w-5 h-5 mr-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="font-medium">League Standings</span>
+          </a>
+        </div>
+
+        {/* Popular Leagues Section */}
+        <div className="mb-6">
           <h2 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center">
-            {sectionTitle}
+            Popular Leagues
           </h2>
           <ul className="space-y-1">
-            {leaguesToShow.map((comp: any) => renderLeagueItem(comp, isLeaguePinned(comp.id)))}
+            {popularLeagues.map((comp: any) => renderPopularLeagueItem(comp))}
           </ul>
-          
-          {/* Show "See more" button only when showing all competitions (not pinned) */}
-          {!hasPinnedLeagues && filtered.length > 5 && (
-            <button
-              className="mt-4 w-full text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-semibold bg-transparent"
-              onClick={() => setShowAll(s => !s)}
-            >
-              {showAll ? 'Show less' : 'See more'}
-            </button>
-          )}
         </div>
+
+        {/* Pinned Leagues Section */}
+        {hasPinnedLeagues && (
+          <div className="mb-6">
+            <h2 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center">
+              Pinned Leagues
+            </h2>
+            <ul className="space-y-1">
+              {leaguesToShow.map((comp: any) => renderLeagueItem(comp, isLeaguePinned(comp.id)))}
+            </ul>
+          </div>
+        )}
+
+        {/* Pinned Leagues Section - show message when no pinned leagues */}
+        {!hasPinnedLeagues && (
+          <div>
+            <h2 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center">
+              Pinned Leagues
+            </h2>
+            <div className="text-gray-500 dark:text-gray-400 text-sm py-2">
+              Add your favourite league
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );

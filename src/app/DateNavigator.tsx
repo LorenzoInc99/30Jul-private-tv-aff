@@ -30,7 +30,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
         <span
           className="flex items-center justify-center rounded-lg px-10 py-1 min-w-[180px] md:min-w-[220px] mx-2 text-base md:text-lg font-bold text-gray-100 md:bg-transparent md:dark:bg-transparent"
         >
-          {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : `${selectedDate.getDate().toString().padStart(2, '0')}/${(selectedDate.getMonth()+1).toString().padStart(2, '0')}`}
+          {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : `${selectedDate.toLocaleDateString('en-GB', { weekday: 'short' })}, ${selectedDate.getDate().toString().padStart(2, '0')} ${selectedDate.toLocaleDateString('en-GB', { month: 'short' })}`}
         </span>
         {showDatePicker && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setShowDatePicker(false)}>

@@ -1,485 +1,353 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Trophy, BarChart3, Zap, Users, Database, Settings, Calendar, Clock } from 'lucide-react';
 
-interface OperationResult {
-  success: boolean;
-  message: string;
-  apiCalls?: number;
-  duration?: string;
-  details?: any;
-  error?: string;
-}
-
-interface DatabaseStats {
-  bookmakers: { count: number; lastUpdate: string | null };
-  leagues: { count: number; lastUpdate: string | null };
-  tvstations: { count: number; lastUpdate: string | null };
-  teams_new: { count: number; lastUpdate: string | null; teamsWithLogos?: number };
-  fixtures: { count: number; lastUpdate: string | null };
-  countries: { count: number; lastUpdate: string | null };
-  latestFixtureDate?: string;
+interface Operation {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  status: 'idle' | 'loading' | 'success' | 'error';
+  config?: {
+    daysBack?: number;
+    daysForward?: number;
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
 export default function AdminPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentOperation, setCurrentOperation] = useState<string>('');
-  const [result, setResult] = useState<OperationResult | null>(null);
-  const [databaseStats, setDatabaseStats] = useState<DatabaseStats | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-  
-  // Form states
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [daysAhead, setDaysAhead] = useState(7);
-
-  // Set default date range
-  useEffect(() => {
-    const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - 7); // 7 days ago
-    
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + 7); // 7 days from now
-    
-    setStartDate(startDate.toISOString().split('T')[0]);
-    setEndDate(endDate.toISOString().split('T')[0]);
-  }, []);
-
-  // Load database stats on component mount
-  useEffect(() => {
-    loadDatabaseStats();
-  }, []);
-
-  const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
-  };
-
-  const loadDatabaseStats = async () => {
-    try {
-      const response = await fetch('/api/admin/database-stats');
-      const data = await response.json();
-      
-      if (data.success) {
-        setDatabaseStats(data.stats);
-        addLog('Database statistics loaded');
-      } else {
-        addLog(`Failed to load database stats: ${data.message}`);
+  const [operations, setOperations] = useState<Operation[]>([
+    {
+      id: 'fixtures',
+      name: 'Fetch Fixtures',
+      description: 'Retrieves upcoming and live football matches with scores, dates, and match details for all configured leagues.',
+      icon: <Trophy className="h-5 w-5" />,
+      status: 'idle',
+      config: {
+        daysBack: 7,
+        daysForward: 30
       }
-    } catch (error) {
-      addLog(`Error loading database stats: ${error}`);
+    },
+    {
+      id: 'standings',
+      name: 'Fetch League Standings',
+      description: 'Downloads current league standings and table positions for all configured leagues, showing team rankings and points.',
+      icon: <BarChart3 className="h-5 w-5" />,
+      status: 'idle'
+    },
+    {
+      id: 'odds',
+      name: 'Fetch Odds',
+      description: 'Retrieves betting odds for upcoming matches from various bookmakers.',
+      icon: <Zap className="h-5 w-5" />,
+      status: 'idle'
+    },
+    {
+      id: 'teams',
+      name: 'Update Teams',
+      description: 'Updates team information including logos, names, and metadata.',
+      icon: <Users className="h-5 w-5" />,
+      status: 'idle'
+    },
+    {
+      id: 'static-data',
+      name: 'Update Static Data',
+      description: 'Updates leagues, countries, and other static reference data.',
+      icon: <Database className="h-5 w-5" />,
+      status: 'idle'
     }
-  };
+  ]);
 
-  const executeOperation = async (operation: string, params: any = {}) => {
-    setIsLoading(true);
-    setCurrentOperation(operation);
-    setResult(null);
-    addLog(`Starting operation: ${operation}`);
-    
+  const [showConfig, setShowConfig] = useState<string | null>(null);
+
+  const executeOperation = async (operation: Operation) => {
+    setOperations(prev => prev.map(op => 
+      op.id === operation.id ? { ...op, status: 'loading' } : op
+    ));
+
     try {
-      const response = await fetch(`/api/admin/${operation}`, {
+      let endpoint = '';
+      let body: any = {};
+
+      switch (operation.id) {
+        case 'fixtures':
+          endpoint = '/api/admin/fixtures';
+          body = {
+            daysBack: operation.config?.daysBack || 7,
+            daysForward: operation.config?.daysForward || 30
+          };
+          break;
+        case 'standings':
+          endpoint = '/api/admin/standings';
+          break;
+        case 'odds':
+          endpoint = '/api/admin/odds';
+          break;
+        case 'teams':
+          endpoint = '/api/admin/update-teams';
+          break;
+        case 'static-data':
+          endpoint = '/api/admin/static-data';
+          body = {
+            includeLeagues: true,
+            includeCountries: true,
+            includeTeams: false,
+            includeBookmakers: false,
+            includeTvStations: false
+          };
+          break;
+        default:
+          throw new Error('Unknown operation');
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(params),
+        body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined,
       });
-      
-      const data = await response.json();
-      setResult(data);
-      
-      if (data.success) {
-        addLog(`✅ ${operation} completed successfully`);
-        addLog(`   Duration: ${data.duration}, API Calls: ${data.apiCalls}`);
-        if (data.details) {
-          addLog(`   Details: ${JSON.stringify(data.details)}`);
-        }
+
+      const result = await response.json();
+
+      if (result.success) {
+        setOperations(prev => prev.map(op => 
+          op.id === operation.id ? { ...op, status: 'success' } : op
+        ));
+        
+        // Reset success status after 3 seconds
+        setTimeout(() => {
+          setOperations(prev => prev.map(op => 
+            op.id === operation.id ? { ...op, status: 'idle' } : op
+          ));
+        }, 3000);
       } else {
-        addLog(`❌ ${operation} failed: ${data.message}`);
-      }
-      
-      // Refresh database stats after operation
-      await loadDatabaseStats();
-      
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setResult({ 
-        success: false, 
-        error: errorMessage,
-        message: 'Network Error'
-      });
-      addLog(`❌ Network error during ${operation}: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-      setCurrentOperation('');
-    }
-  };
-
-  const getFixtures = () => {
-    executeOperation('get-fixtures', { daysAhead });
-  };
-
-  const updateOdds = () => {
-    if (!startDate || !endDate) {
-      setResult({ success: false, message: 'Please select both start and end dates' });
-      return;
-    }
-    executeOperation('update-odds', { startDate, endDate });
-  };
-
-  const updateTvChannels = () => {
-    if (!startDate || !endDate) {
-      setResult({ success: false, message: 'Please select both start and end dates' });
-      return;
-    }
-    executeOperation('update-tv-channels', { startDate, endDate });
-  };
-
-  const updateFixtures = () => {
-    if (!startDate || !endDate) {
-      setResult({ success: false, message: 'Please select both start and end dates' });
-      return;
-    }
-    executeOperation('update-fixtures', { startDate, endDate });
-  };
-
-  const updateLeagues = () => {
-    executeOperation('update-leagues');
-  };
-
-  const updateTeams = () => {
-    executeOperation('update-teams');
-  };
-
-  const updateCountries = () => {
-    executeOperation('update-countries');
-  };
-
-  const updateBookmakers = () => {
-    executeOperation('bookmakers');
-  };
-
-  const updateTvStations = () => {
-    executeOperation('tv-stations');
-  };
-
-  const testConnection = () => {
-    executeOperation('test-connection');
-  };
-
-  const testSchema = async () => {
-    try {
-      const response = await fetch('/api/admin/test-schema');
-      const data = await response.json();
-      
-      if (data.success) {
-        addLog('Database schema test completed');
-        setResult({
-          success: true,
-          message: 'Schema test completed successfully',
-          details: data.schemaInfo
-        });
-      } else {
-        addLog(`Schema test failed: ${data.message}`);
-        setResult({
-          success: false,
-          message: data.message
-        });
+        throw new Error(result.error || 'Operation failed');
       }
     } catch (error) {
-      addLog(`Schema test error: ${error}`);
-      setResult({
-        success: false,
-        message: 'Schema test failed'
-      });
+      console.error(`Error executing ${operation.name}:`, error);
+      setOperations(prev => prev.map(op => 
+        op.id === operation.id ? { ...op, status: 'error' } : op
+      ));
+      
+      // Reset error status after 5 seconds
+      setTimeout(() => {
+        setOperations(prev => prev.map(op => 
+          op.id === operation.id ? { ...op, status: 'idle' } : op
+        ));
+      }, 5000);
     }
   };
 
-  const clearLogs = () => {
-    setLogs([]);
+  const updateConfig = (operationId: string, field: string, value: any) => {
+    setOperations(prev => prev.map(op => 
+      op.id === operationId 
+        ? { 
+            ...op, 
+            config: { 
+              ...op.config, 
+              [field]: value 
+            } 
+          } 
+        : op
+    ));
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'loading': return 'bg-blue-500';
+      case 'success': return 'bg-green-500';
+      case 'error': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'loading': return 'Running...';
+      case 'success': return 'Completed';
+      case 'error': return 'Failed';
+      default: return 'Ready';
+    }
   };
 
   return (
-    <div className="container mx-auto p-8 max-w-7xl">
-      <h1 className="text-3xl font-bold mb-8">Football Data Admin Dashboard</h1>
-      
-      {/* Database Statistics */}
-      {databaseStats && (
-        <div className="mb-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">📊 Database Statistics</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{databaseStats.bookmakers.count}</div>
-              <div className="text-sm text-gray-600">Bookmakers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{databaseStats.leagues.count}</div>
-              <div className="text-sm text-gray-600">Leagues</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{databaseStats.tvstations.count}</div>
-              <div className="text-sm text-gray-600">TV Stations</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{databaseStats.teams_new.count}</div>
-              <div className="text-sm text-gray-600">Teams</div>
-              {databaseStats.teams_new.teamsWithLogos && (
-                <div className="text-xs text-gray-500">
-                  {databaseStats.teams_new.teamsWithLogos} with logos
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your football data and API operations
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {operations.map((operation) => (
+            <div key={operation.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                    {operation.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {operation.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {operation.description}
+                    </p>
+                  </div>
+                </div>
+                <div className={`w-3 h-3 rounded-full ${getStatusColor(operation.status)}`} />
+              </div>
+
+              {/* Configuration Section */}
+              {operation.config && (
+                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Configuration
+                    </span>
+                    <button
+                      onClick={() => setShowConfig(showConfig === operation.id ? null : operation.id)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                    >
+                      {showConfig === operation.id ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  
+                  {showConfig === operation.id && (
+                    <div className="space-y-3">
+                      {operation.config.daysBack !== undefined && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            Days Back
+                          </label>
+                          <input
+                            type="number"
+                            value={operation.config.daysBack}
+                            onChange={(e) => updateConfig(operation.id, 'daysBack', parseInt(e.target.value))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            min="1"
+                            max="365"
+                          />
+                        </div>
+                      )}
+                      
+                      {operation.config.daysForward !== undefined && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            Days Forward
+                          </label>
+                          <input
+                            type="number"
+                            value={operation.config.daysForward}
+                            onChange={(e) => updateConfig(operation.id, 'daysForward', parseInt(e.target.value))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            min="1"
+                            max="365"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
+
+              <div className="flex items-center justify-between">
+                <span className={`text-sm px-2 py-1 rounded-full ${
+                  operation.status === 'loading' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                  operation.status === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                  operation.status === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                }`}>
+                  {getStatusText(operation.status)}
+                </span>
+                
+                <button
+                  onClick={() => executeOperation(operation)}
+                  disabled={operation.status === 'loading'}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    operation.status === 'loading'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                  }`}
+                >
+                  {operation.status === 'loading' ? 'Running...' : 'Execute'}
+                </button>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{databaseStats.fixtures.count}</div>
-              <div className="text-sm text-gray-600">Fixtures</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-indigo-600">{databaseStats.countries.count}</div>
-              <div className="text-sm text-gray-600">Countries</div>
-            </div>
-          </div>
-          {databaseStats.latestFixtureDate && (
-            <div className="mt-4 text-sm text-gray-600">
-              Latest fixture: {new Date(databaseStats.latestFixtureDate).toLocaleDateString()}
-            </div>
-          )}
-        </div>
-      )}
-      
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-            <p className="text-center font-semibold">Running: {currentOperation}</p>
-            <p className="text-center text-sm text-gray-600 mt-2">Please wait...</p>
-          </div>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        {/* Connection Test */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">🔗 Connection Test</h2>
-          <p className="text-gray-600 mb-4">Test database and API connectivity</p>
-          
-          <div className="space-y-3">
-            <button
-              onClick={testConnection}
-              disabled={isLoading}
-              className="w-full bg-gray-500 hover:bg-gray-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Test Connection
-            </button>
-            
-            <button
-              onClick={testSchema}
-              disabled={isLoading}
-              className="w-full bg-gray-600 hover:bg-gray-800 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Test Database Schema
-            </button>
-          </div>
+          ))}
         </div>
 
-        {/* Static Data Updates */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">🏗️ Static Data Updates</h2>
-          <p className="text-gray-600 mb-4">Update reference data (run monthly)</p>
-          
-          <div className="space-y-3">
+        {/* Quick Actions */}
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            Quick Actions
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
-              onClick={updateBookmakers}
-              disabled={isLoading}
-              className="w-full bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
+              onClick={() => {
+                const fixturesOp = operations.find(op => op.id === 'fixtures');
+                if (fixturesOp) {
+                  updateConfig('fixtures', 'daysBack', 30);
+                  updateConfig('fixtures', 'daysForward', 30);
+                  executeOperation(fixturesOp);
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             >
-              Update Bookmakers
+              <Calendar className="h-4 w-4" />
+              <span>Fetch Last 30 Days</span>
             </button>
             
             <button
-              onClick={updateLeagues}
-              disabled={isLoading}
-              className="w-full bg-green-500 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
+              onClick={() => {
+                const fixturesOp = operations.find(op => op.id === 'fixtures');
+                if (fixturesOp) {
+                  updateConfig('fixtures', 'daysBack', 90);
+                  updateConfig('fixtures', 'daysForward', 30);
+                  executeOperation(fixturesOp);
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
             >
-              Update Leagues
+              <Clock className="h-4 w-4" />
+              <span>Fetch Last 90 Days</span>
             </button>
             
-            <button
-              onClick={updateTvStations}
-              disabled={isLoading}
-              className="w-full bg-purple-500 hover:bg-purple-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Update TV Stations
-            </button>
+                         <button
+               onClick={() => {
+                 const fixturesOp = operations.find(op => op.id === 'fixtures');
+                 if (fixturesOp) {
+                   updateConfig('fixtures', 'daysBack', 90);
+                   updateConfig('fixtures', 'daysForward', 30);
+                   executeOperation(fixturesOp);
+                 }
+               }}
+               className="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+             >
+               <Settings className="h-4 w-4" />
+               <span>Fetch Last 3 Months</span>
+             </button>
             
             <button
-              onClick={updateTeams}
-              disabled={isLoading}
-              className="w-full bg-orange-500 hover:bg-orange-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
+              onClick={() => {
+                const standingsOp = operations.find(op => op.id === 'standings');
+                if (standingsOp) {
+                  executeOperation(standingsOp);
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              Update Teams (Optimized)
-            </button>
-
-            <button
-              onClick={updateCountries}
-              disabled={isLoading}
-              className="w-full bg-indigo-500 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Update Countries
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Data Updates */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">⚽ Dynamic Data Updates</h2>
-          <p className="text-gray-600 mb-4">Update match data (run daily/weekly)</p>
-          
-          <div className="space-y-3">
-            <button
-              onClick={getFixtures}
-              disabled={isLoading}
-              className="w-full bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Get Fixtures ({daysAhead} days)
-            </button>
-            
-            <button
-              onClick={updateFixtures}
-              disabled={isLoading}
-              className="w-full bg-green-500 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Update Fixtures
-            </button>
-            
-            <button
-              onClick={updateOdds}
-              disabled={isLoading}
-              className="w-full bg-purple-500 hover:bg-purple-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Update Odds
-            </button>
-            
-            <button
-              onClick={updateTvChannels}
-              disabled={isLoading}
-              className="w-full bg-orange-500 hover:bg-orange-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-            >
-              Update TV Channels
+              <BarChart3 className="h-4 w-4" />
+              <span>Update Standings</span>
             </button>
           </div>
-        </div>
-
-        {/* Date Range Controls */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">📅 Date Range Settings</h2>
-          <p className="text-gray-600 mb-4">Configure date ranges for operations</p>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Days Ahead (for Get Fixtures)
-              </label>
-              <input
-                type="number"
-                value={daysAhead}
-                onChange={(e) => setDaysAhead(parseInt(e.target.value) || 7)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="1"
-                max="30"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Results Display */}
-      {result && (
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Results</h2>
-          
-          <div className={`p-4 rounded ${result.success ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'}`}>
-            <strong>{result.success ? 'Success!' : 'Error:'}</strong> {result.message}
-            
-            {result.apiCalls && (
-              <p className="mt-2"><strong>API Calls:</strong> {result.apiCalls}</p>
-            )}
-            
-            {result.duration && (
-              <p className="mt-2"><strong>Duration:</strong> {result.duration}</p>
-            )}
-            
-            {result.details && (
-              <details className="mt-4">
-                <summary className="cursor-pointer font-semibold">Details</summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
-                  {JSON.stringify(result.details, null, 2)}
-                </pre>
-              </details>
-            )}
-            
-            {result.error && (
-              <details className="mt-4">
-                <summary className="cursor-pointer font-semibold">Error Details</summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
-                  {result.error}
-                </pre>
-              </details>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Real-time Logs */}
-      <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">📋 Operation Logs</h2>
-          <button
-            onClick={clearLogs}
-            className="text-sm bg-gray-500 hover:bg-gray-700 text-white px-3 py-1 rounded"
-          >
-            Clear Logs
-          </button>
-        </div>
-        
-        <div className="bg-gray-100 p-4 rounded max-h-60 overflow-y-auto">
-          {logs.length === 0 ? (
-            <p className="text-gray-500 text-sm">No logs yet. Start an operation to see logs here.</p>
-          ) : (
-            <div className="space-y-1">
-              {logs.map((log, index) => (
-                <div key={index} className="text-sm font-mono">
-                  {log}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>

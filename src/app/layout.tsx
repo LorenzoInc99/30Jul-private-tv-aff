@@ -7,6 +7,7 @@ import SidebarCompetitions from './components/SidebarCompetitions';
 import MainLayoutClient from './components/MainLayoutClient';
 import FooterNavClient from './components/FooterNavClient';
 import MobileCompetitionsMenu from './components/MobileCompetitionsMenu';
+import AdminWrapper from './components/AdminWrapper';
 import BannerAd from '../components/BannerAd';
 import ADVLeft from '../components/ADVLeft';
 import ADVTop from '../components/ADVTop';
@@ -159,53 +160,57 @@ export default async function RootLayout({
             </div>
           </header>
           {/* Main layout below header and banner */}
-          <MainLayoutClient competitions={competitions || []}>
+          <AdminWrapper 
+            competitions={competitions || []}
+            header={null}
+            footer={
+              <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 mt-12 py-8 text-sm text-gray-700 dark:text-gray-300">
+                <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-8 px-2 md:px-4">
+                  {/* Main Navigation */}
+                  <FooterNavClient />
+                  {/* Popular Competitions */}
+                  <nav aria-label="Popular competitions">
+                    <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Popular Leagues</h3>
+                    <ul className="space-y-1">
+                      {['Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Champions League'].map((league) => {
+                        const comp = (competitions || []).find((c: { id: number|string; name: string }) => c.name.toLowerCase() === league.toLowerCase());
+                        if (!comp) return null;
+                        const slug = `${comp.id}-${comp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+                        return (
+                          <li key={comp.id}>
+                            <a href={`/competition/${slug}`} className="hover:underline">{comp.name}</a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </nav>
+                  {/* About & Legal */}
+                  <nav aria-label="About and legal">
+                    <h3 className="font-bold mb-2 text-gray-900 dark:text-white">About</h3>
+                    <ul className="space-y-1">
+                      <li><a href="/about" className="hover:underline">About Us</a></li>
+                      <li><a href="/contact" className="hover:underline">Contact</a></li>
+                      <li><a href="/privacy-policy" className="hover:underline">Privacy Policy</a></li>
+                      <li><a href="/terms-of-service" className="hover:underline">Terms of Service</a></li>
+                    </ul>
+                  </nav>
+                  {/* Social or Call to Action */}
+                  <div>
+                    <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Follow Us</h3>
+                    <ul className="space-y-1">
+                      <li><a href="https://twitter.com/yourhandle" target="_blank" rel="noopener" className="hover:underline">Twitter</a></li>
+                      <li><a href="https://facebook.com/yourpage" target="_blank" rel="noopener" className="hover:underline">Facebook</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="text-center mt-8 text-xs text-gray-500 dark:text-gray-400">
+                  © {new Date().getFullYear()} Live Football TV Guide. All rights reserved.
+                </div>
+              </footer>
+            }
+          >
             {children}
-          </MainLayoutClient>
-          {/* SEO-optimized Footer */}
-          <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 mt-12 py-8 text-sm text-gray-700 dark:text-gray-300">
-            <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-8 px-2 md:px-4">
-              {/* Main Navigation */}
-              <FooterNavClient />
-              {/* Popular Competitions */}
-              <nav aria-label="Popular competitions">
-                <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Popular Leagues</h3>
-                <ul className="space-y-1">
-                  {['Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Champions League'].map((league) => {
-                    const comp = (competitions || []).find((c: { id: number|string; name: string }) => c.name.toLowerCase() === league.toLowerCase());
-                    if (!comp) return null;
-                    const slug = `${comp.id}-${comp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-                    return (
-                      <li key={comp.id}>
-                        <a href={`/competition/${slug}`} className="hover:underline">{comp.name}</a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </nav>
-              {/* About & Legal */}
-              <nav aria-label="About and legal">
-                <h3 className="font-bold mb-2 text-gray-900 dark:text-white">About</h3>
-                <ul className="space-y-1">
-                  <li><a href="/about" className="hover:underline">About Us</a></li>
-                  <li><a href="/contact" className="hover:underline">Contact</a></li>
-                  <li><a href="/privacy-policy" className="hover:underline">Privacy Policy</a></li>
-                  <li><a href="/terms-of-service" className="hover:underline">Terms of Service</a></li>
-                </ul>
-              </nav>
-              {/* Social or Call to Action */}
-              <div>
-                <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Follow Us</h3>
-                <ul className="space-y-1">
-                  <li><a href="https://twitter.com/yourhandle" target="_blank" rel="noopener" className="hover:underline">Twitter</a></li>
-                  <li><a href="https://facebook.com/yourpage" target="_blank" rel="noopener" className="hover:underline">Facebook</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="text-center mt-8 text-xs text-gray-500 dark:text-gray-400">
-              © {new Date().getFullYear()} Live Football TV Guide. All rights reserved.
-            </div>
-          </footer>
+          </AdminWrapper>
         </div>
       </body>
     </html>

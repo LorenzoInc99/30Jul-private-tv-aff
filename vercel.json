@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/sportmonks",
-      "schedule": "0 */6 * * *"
-    }
-  ]
-} 

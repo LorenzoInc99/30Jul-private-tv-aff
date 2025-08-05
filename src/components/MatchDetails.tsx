@@ -187,12 +187,25 @@ export default function MatchDetails({ match }: { match: any }) {
             <div className="flex flex-row items-center justify-between w-full gap-4">
               {/* Team 1 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
-                <Image 
-                  src={match.home_team?.logo_url || 'https://placehold.co/40x40/f3f4f6/f3f4f6'} 
-                  alt={match.home_team?.name || 'Home team logo'} 
-                  width={40} height={40} className="w-10 h-10 object-contain mb-1" 
-                  loading="lazy"
-                />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Home team logo clicked:', match.home_team?.name);
+                    const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                    console.log('Navigating to:', teamUrl);
+                    window.open(teamUrl, '_blank');
+                  }}
+                  className="cursor-pointer transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:opacity-80"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Image 
+                    src={match.home_team?.logo_url || 'https://placehold.co/40x40/f3f4f6/f3f4f6'} 
+                    alt={match.home_team?.name || 'Home team logo'} 
+                    width={40} height={40} className="w-10 h-10 object-contain mb-1" 
+                    loading="lazy"
+                  />
+                </button>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -202,7 +215,8 @@ export default function MatchDetails({ match }: { match: any }) {
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                  style={{ cursor: 'pointer' }}
                 >
                   {match.home_team?.name}
                 </button>
@@ -219,12 +233,25 @@ export default function MatchDetails({ match }: { match: any }) {
               
               {/* Team 2 */}
               <div className="flex flex-col items-center flex-1 min-w-0">
-                <Image 
-                  src={match.away_team?.logo_url || 'https://placehold.co/40x40/f3f4f6/f3f4f6'} 
-                  alt={match.away_team?.name || 'Away team logo'} 
-                  width={40} height={40} className="w-10 h-10 object-contain mb-1" 
-                  loading="lazy"
-                />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Away team logo clicked:', match.away_team?.name);
+                    const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                    console.log('Navigating to:', teamUrl);
+                    window.open(teamUrl, '_blank');
+                  }}
+                  className="cursor-pointer transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:opacity-80"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Image 
+                    src={match.away_team?.logo_url || 'https://placehold.co/40x40/f3f4f6/f3f4f6'} 
+                    alt={match.away_team?.name || 'Away team logo'} 
+                    width={40} height={40} className="w-10 h-10 object-contain mb-1" 
+                    loading="lazy"
+                  />
+                </button>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -234,7 +261,8 @@ export default function MatchDetails({ match }: { match: any }) {
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                  style={{ cursor: 'pointer' }}
                 >
                   {match.away_team?.name}
                 </button>
@@ -250,12 +278,25 @@ export default function MatchDetails({ match }: { match: any }) {
           <div className="hidden md:flex items-center justify-between mb-8 w-full">
             {/* Home Team */}
             <div className="flex flex-col items-center flex-1 min-w-0">
-              <Image
-                src={match.home_team?.logo_url || 'https://placehold.co/60x60/f3f4f6/f3f4f6'}
-                alt={match.home_team?.name || 'Home team logo'}
-                width={60} height={60} className="w-14 h-14 object-contain mb-1"
-                loading="lazy"
-              />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Home team logo clicked:', match.home_team?.name);
+                  const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                  console.log('Navigating to:', teamUrl);
+                  window.open(teamUrl, '_blank');
+                }}
+                className="cursor-pointer transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:opacity-80"
+                style={{ cursor: 'pointer' }}
+              >
+                <Image
+                  src={match.home_team?.logo_url || 'https://placehold.co/60x60/f3f4f6/f3f4f6'}
+                  alt={match.home_team?.name || 'Home team logo'}
+                  width={60} height={60} className="w-14 h-14 object-contain mb-1"
+                  loading="lazy"
+                />
+              </button>
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -265,7 +306,8 @@ export default function MatchDetails({ match }: { match: any }) {
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
-                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
+                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                style={{ cursor: 'pointer' }}
               >
                 {match.home_team?.name}
               </button>
@@ -282,12 +324,25 @@ export default function MatchDetails({ match }: { match: any }) {
             
             {/* Away Team */}
             <div className="flex flex-col items-center flex-1 min-w-0">
-              <Image
-                src={match.away_team?.logo_url || 'https://placehold.co/60x60/f3f4f6/f3f4f6'}
-                alt={match.away_team?.name || 'Away team logo'}
-                width={60} height={60} className="w-14 h-14 object-contain mb-1"
-                loading="lazy"
-              />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Away team logo clicked:', match.away_team?.name);
+                  const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                  console.log('Navigating to:', teamUrl);
+                  window.open(teamUrl, '_blank');
+                }}
+                className="cursor-pointer transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:opacity-80"
+                style={{ cursor: 'pointer' }}
+              >
+                <Image
+                  src={match.away_team?.logo_url || 'https://placehold.co/60x60/f3f4f6/f3f4f6'}
+                  alt={match.away_team?.name || 'Away team logo'}
+                  width={60} height={60} className="w-14 h-14 object-contain mb-1"
+                  loading="lazy"
+                />
+              </button>
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -297,7 +352,8 @@ export default function MatchDetails({ match }: { match: any }) {
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
-                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer"
+                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                style={{ cursor: 'pointer' }}
               >
                 {match.away_team?.name}
               </button>
