@@ -9,7 +9,11 @@ const dbConfig = {
   database: "postgres",
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  // Pool configuration to prevent connection limits
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
 };
 
 // Create a connection pool
@@ -17,25 +21,33 @@ const pool = new Pool(dbConfig);
 
 // Test the connection
 export async function testConnection() {
+  let client;
   try {
-    const client = await pool.connect();
+    client = await pool.connect();
     const result = await client.query('SELECT NOW()');
-    client.release();
     return { success: true, timestamp: result.rows[0].now };
   } catch (error: any) {
     return { success: false, error: error.message };
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
 
 // Generic query function
 export async function executeQuery(query: string, params: any[] = []) {
+  let client;
   try {
-    const client = await pool.connect();
+    client = await pool.connect();
     const result = await client.query(query, params);
-    client.release();
     return { success: true, data: result.rows, rowCount: result.rowCount };
   } catch (error: any) {
     return { success: false, error: error.message };
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
 

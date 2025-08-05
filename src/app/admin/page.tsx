@@ -229,8 +229,8 @@ export default function AdminPage() {
                           </label>
                           <input
                             type="number"
-                            value={operation.config.daysBack}
-                            onChange={(e) => updateConfig(operation.id, 'daysBack', parseInt(e.target.value))}
+                            value={operation.config.daysBack || ''}
+                            onChange={(e) => updateConfig(operation.id, 'daysBack', parseInt(e.target.value) || 7)}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             min="1"
                             max="365"
@@ -245,8 +245,8 @@ export default function AdminPage() {
                           </label>
                           <input
                             type="number"
-                            value={operation.config.daysForward}
-                            onChange={(e) => updateConfig(operation.id, 'daysForward', parseInt(e.target.value))}
+                            value={operation.config.daysForward || ''}
+                            onChange={(e) => updateConfig(operation.id, 'daysForward', parseInt(e.target.value) || 30)}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             min="1"
                             max="365"

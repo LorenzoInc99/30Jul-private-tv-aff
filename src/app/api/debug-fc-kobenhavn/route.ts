@@ -64,6 +64,52 @@ export async function GET() {
       ORDER BY t.name
     `);
     
+    // Let's see some actual Superliga fixtures to understand the data
+    const sampleSuperligaFixtures = await executeQuery(`
+      SELECT 
+        f.id,
+        f.name,
+        f.start_time,
+        f.home_score,
+        f.away_score,
+        f.state_id,
+        ht.name as home_team,
+        at.name as away_team
+      FROM fixtures f
+      JOIN teams_new ht ON f.home_team_id = ht.id
+      JOIN teams_new at ON f.away_team_id = at.id
+      WHERE f.season_id = 25536
+      ORDER BY f.start_time DESC
+      LIMIT 10
+    `);
+    
+    // Let's check what fixtures we actually have without joins first
+    const rawFixtures = await executeQuery(`
+      SELECT 
+        id,
+        name,
+        start_time,
+        home_team_id,
+        away_team_id,
+        season_id,
+        state_id
+      FROM fixtures
+      WHERE season_id = 25536
+      ORDER BY start_time DESC
+      LIMIT 5
+    `);
+    
+    // Let's check what season IDs are actually in the fixtures table
+    const seasonIdsInFixtures = await executeQuery(`
+      SELECT DISTINCT 
+        season_id,
+        COUNT(*) as fixture_count
+      FROM fixtures
+      GROUP BY season_id
+      ORDER BY fixture_count DESC
+      LIMIT 10
+    `);
+    
     // Check if FC København appears in any fixtures at all
     const fcKobenhavnAllFixtures = await executeQuery(`
       SELECT 
@@ -106,7 +152,10 @@ export async function GET() {
       superligaSeasons: superligaSeasons.data || [],
       superligaTeams: superligaTeams.data || [],
       fcKobenhavnAllFixtures: fcKobenhavnAllFixtures.data || [],
-      fcKobenhavnStandings: fcKobenhavnStandings.data || []
+      fcKobenhavnStandings: fcKobenhavnStandings.data || [],
+      sampleSuperligaFixtures: sampleSuperligaFixtures.data || [],
+      rawFixtures: rawFixtures.data || [],
+      seasonIdsInFixtures: seasonIdsInFixtures.data || []
     });
 
   } catch (error: any) {
