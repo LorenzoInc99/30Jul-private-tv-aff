@@ -3,15 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import TeamFormRectangles from './TeamFormRectangles';
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-}
+import BroadcasterLogo from './BroadcasterLogo';
+import { slugify } from '../lib/utils';
 
 // Multiple template components for variety
 function WhereToWatchParagraph1({ homeTeam, awayTeam, competition, date, time }: { 
@@ -388,16 +381,6 @@ export default function MatchDetails({ match }: { match: any }) {
               {match.Event_Broadcasters.map((eb: any, i: number) => {
                 const b = eb.Broadcasters;
                 if (!b?.name) return null;
-                const logo = b.logo_url || '';
-                const logoEl = logo ? (
-                  <img
-                    src={logo}
-                    alt={b.name}
-                    className="w-7 h-7 object-contain bg-white rounded mr-2 border border-gray-200 dark:border-gray-700"
-                  />
-                ) : (
-                  <div className="w-7 h-7 bg-white rounded mr-2 border border-gray-200 dark:border-gray-700" />
-                );
                 return b.affiliate_url ? (
                   <a
                     key={i}
@@ -407,12 +390,28 @@ export default function MatchDetails({ match }: { match: any }) {
                     className="flex items-center text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors text-sm"
                     aria-label={`Watch on ${b.name}`}
                   >
-                    {logoEl}
+                    <div className="mr-2">
+                      <BroadcasterLogo
+                        logoUrl={b.logo_url}
+                        broadcasterName={b.name}
+                        size="sm"
+                        className="!w-7 !h-7"
+                        showLabel={false}
+                      />
+                    </div>
                     <span className="text-xs">{b.name}</span>
                   </a>
                 ) : (
                   <span key={i} className="flex items-center text-gray-400 text-sm">
-                    {logoEl}
+                    <div className="mr-2">
+                      <BroadcasterLogo
+                        logoUrl={b.logo_url}
+                        broadcasterName={b.name}
+                        size="sm"
+                        className="!w-7 !h-7"
+                        showLabel={false}
+                      />
+                    </div>
                     <span className="text-xs">{b.name}</span>
                   </span>
                 );

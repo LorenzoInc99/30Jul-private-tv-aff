@@ -1,7 +1,30 @@
-export const metadata = {
-  title: "About Us | Live Football TV Guide",
-  description: "Learn more about Live Football TV Guide, our mission, and our team.",
-};
+import { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const today = new Date();
+  const dateString = today.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const description = `Learn more about Live Football TV Guide, your ultimate source for live football schedules, TV broadcasters, and betting odds on ${dateString}. Our mission is to help football fans never miss a game.`;
+  
+  return {
+    title: "About Us | Live Football TV Guide",
+    description,
+    keywords: `about us, live football, TV guide, football schedules, betting odds, ${dateString}`,
+    openGraph: {
+      title: "About Us | Live Football TV Guide",
+      description,
+      type: 'website',
+    },
+    twitter: {
+      title: "About Us | Live Football TV Guide",
+      description,
+    },
+  };
+}
 
 export default function AboutPage() {
   return (

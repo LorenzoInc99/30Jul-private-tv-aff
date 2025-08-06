@@ -26,9 +26,28 @@ export async function generateMetadata({ params }: { params: Promise<{ competiti
   
   try {
     const competition = await getCompetitionDetails(competitionId);
+    const today = new Date();
+    const dateString = today.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    const description = `Get the complete ${competition.name} schedule, live matches, broadcasters, and betting odds for ${dateString}. Never miss a ${competition.name} game! Find where to watch ${competition.name} matches and get the best odds from licensed bookmakers.`;
+    
     return {
       title: `${competition.name} - Live Matches & Fixtures`,
-      description: `Get the complete ${competition.name} schedule, live matches, broadcasters, and betting odds. Never miss a ${competition.name} game!`,
+      description,
+      keywords: `${competition.name}, football, soccer, fixtures, schedule, odds, broadcasters, ${dateString}`,
+      openGraph: {
+        title: `${competition.name} - Live Matches & Fixtures`,
+        description,
+        type: 'website',
+      },
+      twitter: {
+        title: `${competition.name} - Live Matches & Fixtures`,
+        description,
+      },
     };
   } catch (error) {
     return { title: 'Competition Not Found' };

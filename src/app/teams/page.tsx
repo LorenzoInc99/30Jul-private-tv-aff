@@ -3,11 +3,31 @@ import { Metadata } from 'next';
 import TeamsListClient from './TeamsListClient';
 import { SITE_TITLE } from '../../lib/constants';
 
-export const metadata: Metadata = {
-  title: 'All Competitions - League & Tournament Profiles',
-  description: 'Browse all football competitions, leagues, and tournaments. Find live matches, schedules, broadcasters, and betting odds for every competition.',
-  keywords: 'football competitions, soccer leagues, tournaments, match schedules, broadcasters, betting odds',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const today = new Date();
+  const dateString = today.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const description = `Browse all football teams, leagues, and tournaments on ${dateString}. Find live matches, schedules, broadcasters, and betting odds for every team. Complete team profiles and match information.`;
+  
+  return {
+    title: 'All Football Teams - Team Profiles & Match Schedules',
+    description,
+    keywords: `football teams, soccer teams, team profiles, match schedules, broadcasters, betting odds, ${dateString}`,
+    openGraph: {
+      title: 'All Football Teams - Team Profiles & Match Schedules',
+      description,
+      type: 'website',
+    },
+    twitter: {
+      title: 'All Football Teams - Team Profiles & Match Schedules',
+      description,
+    },
+  };
+}
 
 // Add Team type
 interface Team {

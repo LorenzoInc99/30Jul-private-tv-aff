@@ -7,16 +7,9 @@ import MatchCard from '@/components/MatchCard';
 import MatchDetails from '@/components/MatchDetails';
 import TeamLogo from '@/components/TeamLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
+import BroadcasterLogo from '@/components/BroadcasterLogo';
 import { getMatchStatus } from '@/lib/database-config';
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-}
+import { slugify } from '../../../lib/utils';
 
 function transformMatchForCard(match: any) {
   if (!match) return null;
@@ -244,7 +237,15 @@ function NextMatchDetails({ match }: { match: any }) {
                 const b = eb.Broadcasters;
                 if (!b?.name) return null;
                 return (
-                  <div key={i} className="flex items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <div key={i} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                    <BroadcasterLogo
+                      logoUrl={b.logo_url}
+                      broadcasterName={b.name}
+                      affiliateUrl={b.affiliate_url}
+                      size="sm"
+                      className="!w-6 !h-6"
+                      showLabel={false}
+                    />
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{b.name}</span>
                   </div>
                 );

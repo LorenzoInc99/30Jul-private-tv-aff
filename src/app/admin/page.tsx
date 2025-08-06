@@ -20,6 +20,13 @@ interface Operation {
 export default function AdminPage() {
   const [operations, setOperations] = useState<Operation[]>([
     {
+      id: 'live-updates',
+      name: 'Live Updates',
+      description: 'Updates scores and status for live and recent matches. Perfect for keeping scores current during matches.',
+      icon: <Clock className="h-5 w-5" />,
+      status: 'idle'
+    },
+    {
       id: 'fixtures',
       name: 'Fetch Fixtures',
       description: 'Retrieves upcoming and live football matches with scores, dates, and match details for all configured leagues.',
@@ -72,6 +79,9 @@ export default function AdminPage() {
       let body: any = {};
 
       switch (operation.id) {
+        case 'live-updates':
+          endpoint = '/api/admin/live-updates';
+          break;
         case 'fixtures':
           endpoint = '/api/admin/fixtures';
           body = {
@@ -110,7 +120,24 @@ export default function AdminPage() {
         body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined,
       });
 
-      const result = await response.json();
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`HTTP ${response.status}: ${errorText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      let result;
+      try {
+        const responseText = await response.text();
+        if (!responseText) {
+          throw new Error('Empty response from server');
+        }
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (result.success) {
         setOperations(prev => prev.map(op => 
@@ -128,6 +155,11 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error(`Error executing ${operation.name}:`, error);
+      
+      // Show more detailed error information
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error(`Operation ${operation.name} failed:`, errorMessage);
+      
       setOperations(prev => prev.map(op => 
         op.id === operation.id ? { ...op, status: 'error' } : op
       ));

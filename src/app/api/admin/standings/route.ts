@@ -221,7 +221,8 @@ export async function POST(request: NextRequest) {
       const insertResult = await insertData('standings', allStandings);
 
       if (!insertResult.success) {
-        throw new Error(`Error inserting standings: ${insertResult.error}`);
+        const errorMsg = 'error' in insertResult ? insertResult.error : 'Unknown error';
+        throw new Error(`Error inserting standings: ${errorMsg}`);
       }
 
       logs.push(`  Inserted ${allStandings.length} standings records`);

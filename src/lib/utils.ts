@@ -40,3 +40,62 @@ export function getLeagueLogoClassName(leagueId: number, baseClassName: string =
   
   return `${baseClassName} object-contain bg-gray-50 dark:bg-gray-800 rounded-sm p-0.5 border border-gray-200 dark:border-gray-600`.trim();
 } 
+
+/**
+ * Creates a clean URL slug without hyphens
+ * Example: "FC København" -> "fckobenhavn"
+ */
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/ø/g, 'o') // Replace ø with o
+    .replace(/ö/g, 'o') // Replace ö with o
+    .replace(/ü/g, 'u') // Replace ü with u
+    .replace(/ä/g, 'a') // Replace ä with a
+    .replace(/ß/g, 'ss') // Replace ß with ss
+    .replace(/æ/g, 'ae') // Replace æ with ae
+    .replace(/å/g, 'aa') // Replace å with aa
+    .replace(/[^a-z0-9]/g, '') // Remove all non-alphanumeric characters (no hyphens)
+    .trim();
+}
+
+/**
+ * Gets the correct URL slug for a team name
+ * This helps users understand the correct format
+ */
+export function getTeamUrlSlug(teamName: string): string {
+  return slugify(teamName);
+}
+
+/**
+ * Suggests the correct URL for a team based on common typos
+ */
+export function suggestTeamUrl(teamName: string): string {
+  const suggestions: { [key: string]: string } = {
+    'fckbenhavn': 'fckobenhavn', // FC København
+    'fckobenhavn': 'fckobenhavn', // FC København (correct)
+    'malm': 'malmo', // Malmö
+    'malmo': 'malmo', // Malmö (correct)
+    'goteborg': 'goteborg', // Göteborg
+    'manchesterunited': 'manchesterunited', // Manchester United
+    'realmadrid': 'realmadrid', // Real Madrid
+  };
+  
+  const normalized = teamName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return suggestions[normalized] || normalized;
+}
+
+/**
+ * Legacy slugify function that uses hyphens (for backward compatibility)
+ * Example: "FC København" -> "fc-kobenhavn"
+ */
+export function slugifyWithHyphens(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+} 

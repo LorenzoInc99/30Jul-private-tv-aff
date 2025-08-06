@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../../lib/pinned-leagues';
+import { slugify } from '../../lib/utils';
 
 export default function MobileCompetitionsMenu({ competitions }: { competitions: { id: number; name: string }[] }) {
   const [open, setOpen] = useState(false);
@@ -18,15 +19,6 @@ export default function MobileCompetitionsMenu({ competitions }: { competitions:
     );
     setPinnedLeagues(pinnedCompetitions);
   }, [competitions]);
-
-  function slugify(name: string) {
-    return name
-      .toLowerCase()
-      .normalize('NFD') // Normalize unicode characters
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-  }
 
   const handlePinToggle = (league: any) => {
     togglePinnedLeague(league);
@@ -81,7 +73,7 @@ export default function MobileCompetitionsMenu({ competitions }: { competitions:
   // Determine what to show based on pinned leagues
   const hasPinnedLeagues = mounted && pinnedLeagues.length > 0;
   const leaguesToShow = hasPinnedLeagues ? pinnedLeagues : competitions;
-  const sectionTitle = hasPinnedLeagues ? "Pinned Leagues" : "All Competitions";
+  const sectionTitle = hasPinnedLeagues ? "Pinned Leagues" : "Competitions";
 
   return (
     <>

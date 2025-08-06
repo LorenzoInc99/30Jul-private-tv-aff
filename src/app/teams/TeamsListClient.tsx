@@ -3,15 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import TeamLogo from '@/components/TeamLogo';
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-}
+import { slugify } from '../../lib/utils';
 
 interface Team {
   id: number | string;

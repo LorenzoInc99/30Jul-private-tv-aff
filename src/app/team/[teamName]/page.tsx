@@ -3,97 +3,135 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import TeamDetailsClient from './TeamDetailsClient';
 import { SITE_TITLE } from '../../../lib/constants';
+import { slugify } from '../../../lib/utils';
 
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+// Generic team lookup function that works for all teams
+async function findTeamByName(teamNameSlug: string) {
+  const supabase = supabaseServer();
+  
+  // Strategy 1: Get all teams and find the one that slugifies to our target
+  const { data: allTeams } = await supabase
+    .from('teams_new')
+    .select('*')
+    .limit(1000); // Get a reasonable number of teams
+  
+  if (allTeams) {
+    // Find the team whose slugified name matches our target
+    const matchingTeam = allTeams.find((team: any) => {
+      const teamSlug = slugify(team.name);
+      return teamSlug === teamNameSlug;
+    });
+    
+    if (matchingTeam) {
+      return matchingTeam;
+    }
+  }
+  
+  // Strategy 2: Try exact match first (fallback)
+  let { data: team } = await supabase
+    .from('teams_new')
+    .select('*')
+    .ilike('name', teamNameSlug)
+    .single();
+  
+  if (team) return team;
+  
+  // Strategy 3: Try with common prefixes and variations
+  const variations = [
+    // Add common prefixes
+    `FC ${teamNameSlug}`,
+    `FCK ${teamNameSlug}`,
+    `FK ${teamNameSlug}`,
+    // Try with spaces (camelCase to spaces)
+    teamNameSlug.replace(/([a-z])([A-Z])/g, '$1 $2'),
+    // Try with common team name patterns
+    teamNameSlug.replace(/united/i, ' United'),
+    teamNameSlug.replace(/city/i, ' City'),
+    teamNameSlug.replace(/athletic/i, ' Athletic'),
+    teamNameSlug.replace(/real/i, 'Real '),
+    teamNameSlug.replace(/atletico/i, 'Atlético '),
+    // Try with common suffixes
+    `${teamNameSlug} FC`,
+    `${teamNameSlug} United`,
+    `${teamNameSlug} City`,
+  ];
+  
+  for (const variation of variations) {
+    const { data } = await supabase
+      .from('teams_new')
+      .select('*')
+      .ilike('name', variation)
+      .single();
+    if (data) return data;
+  }
+  
+  // Strategy 4: Try partial matches with fuzzy search
+  const { data: partialMatches } = await supabase
+    .from('teams_new')
+    .select('*')
+    .or(`name.ilike.%${teamNameSlug}%,name.ilike.${teamNameSlug}%`)
+    .limit(10);
+  
+  if (partialMatches && partialMatches.length > 0) {
+    // Find the best match by comparing slugified names
+    const bestMatch = partialMatches.find((t: any) => {
+      const teamSlug = slugify(t.name);
+      return teamSlug === teamNameSlug || 
+             teamSlug.includes(teamNameSlug) || 
+             teamNameSlug.includes(teamSlug);
+    });
+    
+    if (bestMatch) return bestMatch;
+    
+    // If no exact slug match, return the first partial match
+    return partialMatches[0];
+  }
+  
+  return null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ teamName: string }> }): Promise<Metadata> {
   const { teamName } = await params;
-  const supabase = supabaseServer();
   
-  // Convert slug back to team name - handle special characters
-  const teamNameFromSlug = teamName.replace(/-/g, ' ');
+  const team = await findTeamByName(teamName);
   
-  // Also try with common character replacements for better matching
-  const alternativeSearchTerms = [
-    teamNameFromSlug,
-    teamNameFromSlug.replace(/o/g, 'ø'),
-    teamNameFromSlug.replace(/ae/g, 'æ'),
-    teamNameFromSlug.replace(/aa/g, 'å'),
-    teamNameFromSlug.replace(/oe/g, 'ö'),
-    teamNameFromSlug.replace(/ue/g, 'ü'),
-    teamNameFromSlug.replace(/ss/g, 'ß'),
-  ];
-  
-  // Try to find team with multiple search terms
-  let team = null;
-  for (const searchTerm of alternativeSearchTerms) {
-    const { data } = await supabase
-      .from('teams_new')
-      .select('*')
-      .ilike('name', `%${searchTerm}%`)
-      .single();
-    if (data) {
-      team = data;
-      break;
-    }
-  }
-
   if (!team) return { title: 'Team Not Found' };
 
+  const today = new Date();
+  const dateString = today.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const description = `Get ${team.name} team profile, recent matches, upcoming fixtures, and live betting odds. Follow ${team.name} performance, results, and find where to watch their games on ${dateString}. Complete team statistics and match schedules.`;
+  
   return {
     title: `${team.name} - Team Profile, Matches & Stats`,
-    description: `Get ${team.name} team profile, recent matches, upcoming fixtures, players, stats, and live betting odds. Follow ${team.name} performance and results!`,
-    keywords: `${team.name}, football team, soccer, matches, fixtures, players, stats, betting odds`,
+    description,
+    keywords: `${team.name}, football team, soccer, matches, fixtures, players, stats, betting odds, ${dateString}`,
+    openGraph: {
+      title: `${team.name} - Team Profile, Matches & Stats`,
+      description,
+      type: 'website',
+    },
+    twitter: {
+      title: `${team.name} - Team Profile, Matches & Stats`,
+      description,
+    },
   };
 }
 
 export default async function TeamPage({ params }: { params: Promise<{ teamName: string }> }) {
   const { teamName } = await params;
-  const supabase = supabaseServer();
   
-  // Convert slug back to team name - handle special characters
-  const teamNameFromSlug = teamName.replace(/-/g, ' ');
+  const team = await findTeamByName(teamName);
   
-  // Also try with common character replacements for better matching
-  const alternativeSearchTerms = [
-    teamNameFromSlug,
-    teamNameFromSlug.replace(/o/g, 'ø'),
-    teamNameFromSlug.replace(/ae/g, 'æ'),
-    teamNameFromSlug.replace(/aa/g, 'å'),
-    teamNameFromSlug.replace(/oe/g, 'ö'),
-    teamNameFromSlug.replace(/ue/g, 'ü'),
-    teamNameFromSlug.replace(/ss/g, 'ß'),
-  ];
-  
-  console.log('Looking for team with slug:', teamName);
-  console.log('Converted to search terms:', alternativeSearchTerms);
-  
-  // Try to find team with multiple search terms
-  let team = null;
-  let error = null;
-  for (const searchTerm of alternativeSearchTerms) {
-    const { data, err } = await supabase
-      .from('teams_new')
-      .select('*')
-      .ilike('name', `%${searchTerm}%`)
-      .single();
-    if (data) {
-      team = data;
-      break;
-    }
-    if (err) error = err;
+  if (!team) {
+    return notFound();
   }
-    
-  console.log('Team lookup result:', { team, error });
 
-  if (!team) return notFound();
+  const supabase = supabaseServer();
 
   // Get next match for this team (scheduled, not finished)
   const { data: nextMatch } = await supabase
@@ -137,10 +175,6 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     .in('state_id', [5, 7, 8]) // Finished matches: Full Time, After Extra Time, After Penalties
     .order('starting_at', { ascending: false })
     .limit(10);
-
-  const canonicalUrl = `https://your-domain.com/team/${slugify(team.name)}`;
-  const description = `Get ${team.name} team profile, recent matches, upcoming fixtures, players, stats, and live betting odds. Follow ${team.name} performance and results!`;
-  const keywords = `${team.name}, football team, soccer, matches, fixtures, players, stats, betting odds`;
 
   return (
     <TeamDetailsClient 

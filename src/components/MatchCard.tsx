@@ -2,6 +2,8 @@ import React from 'react';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
 import TeamLogo from './TeamLogo';
 import CountryFlag from './CountryFlag';
+import BroadcasterLogo from './BroadcasterLogo';
+import { slugify } from '../lib/utils';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false }: {
   match: any;
@@ -18,14 +20,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     return timezone;
   }
   
-  function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-}
+
 
   // Check if match is live - including both "Live" status and actual live match statuses
   const isLive = match.status === 'Live' || 
@@ -148,16 +143,16 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                         href={data.operator?.url || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex flex-col items-center justify-center text-center w-full px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[64px] min-h-[36px]"
+                        className="flex flex-col items-center justify-center text-center w-full px-1.5 py-1 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[48px] min-h-[28px]"
                         onClick={e => e.stopPropagation()}
                         tabIndex={0}
                         aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
                       >
-                        <span className="font-bold text-s text-indigo-600 dark:text-indigo-400">{parseFloat(data.value as any).toFixed(2)}</span>
+                        <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400">{parseFloat(data.value as any).toFixed(2)}</span>
                         <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight text-ellipsis overflow-hidden whitespace-nowrap w-full">{data.operator?.name || 'Unknown'}</span>
                       </a>
                     ) : (
-                      <div key={key} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[32px]" aria-label="No odds available">
+                      <div key={key} className="flex flex-col items-center justify-center text-center w-full px-0.5 py-0.5 min-w-[24px]" aria-label="No odds available">
                         <span className="font-bold text-xs text-gray-400 dark:text-gray-500">-</span>
                         <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight w-full">N/A</span>
                       </div>
@@ -201,22 +196,33 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                         {visible.map((eb: any, i: number) => {
                           const b = eb.Broadcasters;
                           if (!b?.name) return null;
-                          return b.affiliate_url ? (
-                            <a
-                              key={i}
-                              href={b.affiliate_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out"
-                              aria-label={`Watch on ${b.name}`}
-                              onClick={e => { e.stopPropagation(); }}
-                            >
-                              {b.name}
-                            </a>
-                          ) : (
-                            <span key={i} className="bg-indigo-50 dark:bg-indigo-900 rounded px-1 py-0.5 text-[12px] text-center text-gray-400">
-                              {b.name}
-                            </span>
+                          return (
+                            <div key={i} className="flex items-center gap-2">
+                              <BroadcasterLogo
+                                logoUrl={b.logo_url}
+                                broadcasterName={b.name}
+                                affiliateUrl={b.affiliate_url}
+                                size="sm"
+                                className="!w-6 !h-6"
+                                showLabel={false}
+                              />
+                              {b.affiliate_url ? (
+                                <a
+                                  href={b.affiliate_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[12px] text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200 hover:scale-105 transition-all duration-100 ease-in-out"
+                                  aria-label={`Watch on ${b.name}`}
+                                  onClick={e => { e.stopPropagation(); }}
+                                >
+                                  {b.name}
+                                </a>
+                              ) : (
+                                <span className="text-[12px] text-gray-400">
+                                  {b.name}
+                                </span>
+                              )}
+                            </div>
                           );
                         })}
                         {hasMore && (
@@ -368,12 +374,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </>
             )}
           </div>
-          {/* TV Stream Logos (fixed-width, up to 4, with "see more" indicator) */}
+          {/* TV Stream Logos (fixed-width, up to 3, with "see more" indicator) */}
           <div className="flex flex-row-reverse items-center gap-1 justify-end overflow-hidden"> {/* TV streams column, fixed width by grid */}
             {(() => {
               const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
               const count = broadcasters.length;
-              const maxToShow = 4; // Limit to 4 visible channels to prevent horizontal scrolling
+              const maxToShow = 3; // Reduced to 3 visible channels to accommodate bigger logos
               const visible = broadcasters.slice(0, maxToShow);
               const hasMore = count > maxToShow;
               
@@ -381,7 +387,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 <>
                   {/* "See more" indicator */}
                   {hasMore && (
-                    <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded bg-indigo-100 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded bg-indigo-100 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       +{count - maxToShow}
                     </div>
                   )}
@@ -390,21 +396,20 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   {visible.map((eb: any, idx: number) => {
                     const b = eb.Broadcasters;
                     return (
-                      <a
+                      <div
                         key={b.name + idx}
-                        href={b.affiliate_url || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 flex items-center hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out"
-                        aria-label={`Watch on ${b.name}`}
+                        className="flex-shrink-0 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out"
                         onClick={e => { e.stopPropagation(); }}
                       >
-                        {b.logo_url ? (
-                          <img src={b.logo_url} alt={b.name} className="w-6 h-6 object-contain rounded bg-white border border-gray-200 dark:border-gray-700" />
-                        ) : (
-                          <span className="w-6 h-6 inline-block rounded bg-white border border-gray-200 dark:border-gray-700" />
-                        )}
-                      </a>
+                        <BroadcasterLogo
+                          logoUrl={b.logo_url}
+                          broadcasterName={b.name}
+                          affiliateUrl={b.affiliate_url}
+                          size="sm"
+                          className="!w-8 !h-8"
+                          showLabel={false}
+                        />
+                      </div>
                     );
                   })}
                 </>

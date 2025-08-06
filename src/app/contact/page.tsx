@@ -1,7 +1,30 @@
-export const metadata = {
-  title: "Contact | Live Football TV Guide",
-  description: "Contact Live Football TV Guide for questions, feedback, or support.",
-};
+import { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const today = new Date();
+  const dateString = today.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const description = `Contact Live Football TV Guide for questions, feedback, or support on ${dateString}. Get help with football schedules, TV broadcasters, and betting odds.`;
+  
+  return {
+    title: "Contact | Live Football TV Guide",
+    description,
+    keywords: `contact us, live football, TV guide, support, feedback, ${dateString}`,
+    openGraph: {
+      title: "Contact | Live Football TV Guide",
+      description,
+      type: 'website',
+    },
+    twitter: {
+      title: "Contact | Live Football TV Guide",
+      description,
+    },
+  };
+}
 
 export default function ContactPage() {
   return (

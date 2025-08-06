@@ -3,23 +3,92 @@ import { supabaseServer } from '../../lib/supabase';
 export default async function TestTeamLookup() {
   const supabase = supabaseServer();
   
-  // Test different team name variations
-  const testNames = ['randers', 'randers-fc', 'Randers FC', 'Randers'];
+  // Test different team name variations including FC København
+  const testNames = [
+    'fckobenhavn', 
+    'fckbenhavn', // Typo: missing 'o'
+    'fc-kobenhavn', 
+    'fc-k-benhavn',
+    'randers', 
+    'randersfc', 
+    'Randers FC', 
+    'Randers'
+  ];
   
   const results = [];
   
   for (const testName of testNames) {
-    const { data: team, error } = await supabase
-      .from('teams_new')
-      .select('*')
-      .ilike('name', `%${testName}%`)
-      .limit(5);
+    // Simulate the same logic as the team page
+    // For the new format, we need to try different variations since the slug is compact
+    // Example: "fckobenhavn" could be "FC København", "FCK København", etc.
+    
+    const alternativeSearchTerms = [
+      // Try exact match first
+      testName,
+      // Try with common prefixes
+      `FC ${testName}`,
+      `FCK ${testName}`,
+      // Try with spaces in different positions
+      testName.replace(/([a-z])([A-Z])/g, '$1 $2'), // camelCase to spaces
+      // Handle specific cases for FC København
+      testName.replace(/fc/i, 'FC '),
+      testName.replace(/kobenhavn/i, 'København'),
+      testName.replace(/fckobenhavn/i, 'FC København'),
+      // Handle typos and missing characters
+      testName.replace(/fckbenhavn/i, 'FC København'), // Missing 'o'
+      testName.replace(/kbenhavn/i, 'København'), // Missing 'o'
+      // Try with common team name patterns
+      testName.replace(/united/i, ' United'),
+      testName.replace(/city/i, ' City'),
+      testName.replace(/athletic/i, ' Athletic'),
+      testName.replace(/real/i, 'Real '),
+      testName.replace(/atletico/i, 'Atlético '),
+    ];
+    
+    let foundTeam = null;
+    let searchMethod = '';
+    
+    // First try exact matches
+    for (const searchTerm of alternativeSearchTerms) {
+      const { data } = await supabase
+        .from('teams_new')
+        .select('*')
+        .ilike('name', searchTerm)
+        .single();
+      if (data) {
+        foundTeam = data;
+        searchMethod = `exact match: "${searchTerm}"`;
+        break;
+      }
+    }
+    
+    // If no exact match, try partial matches
+    if (!foundTeam) {
+      for (const searchTerm of alternativeSearchTerms) {
+        const { data } = await supabase
+          .from('teams_new')
+          .select('*')
+          .ilike('name', `%${searchTerm}%`)
+          .limit(5);
+        if (data && data.length > 0) {
+          // Find the best match (exact or closest)
+          const bestMatch = data.find(t => 
+            t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            searchTerm.toLowerCase().includes(t.name.toLowerCase())
+          ) || data[0];
+          foundTeam = bestMatch;
+          searchMethod = `partial match: "${searchTerm}" (found ${data.length} teams)`;
+          break;
+        }
+      }
+    }
     
     results.push({
       searchTerm: testName,
-      found: team?.length || 0,
-      teams: team || [],
-      error: error?.message
+      found: foundTeam ? 1 : 0,
+      team: foundTeam,
+      searchMethod,
+      alternativeSearchTerms
     });
   }
   
@@ -39,15 +108,22 @@ export default async function TestTeamLookup() {
           <div key={index} className="mb-4 p-4 border rounded">
             <h3 className="font-bold">Search: "{result.searchTerm}"</h3>
             <p>Found: {result.found} teams</p>
-            {result.error && <p className="text-red-500">Error: {result.error}</p>}
-            {result.teams.length > 0 && (
-              <ul className="mt-2">
-                {result.teams.map((team: any, teamIndex: number) => (
-                  <li key={teamIndex} className="text-sm">
-                    ID: {team.id}, Name: "{team.name}"
-                  </li>
-                ))}
-              </ul>
+            {result.team && (
+              <div className="mt-2 p-2 bg-green-50 rounded">
+                <p><strong>Found Team:</strong> ID: {result.team.id}, Name: "{result.team.name}"</p>
+                <p><strong>Search Method:</strong> {result.searchMethod}</p>
+              </div>
+            )}
+            {!result.team && (
+              <div className="mt-2 p-2 bg-red-50 rounded">
+                <p className="text-red-600">❌ No team found</p>
+                <p><strong>Search Terms Tried:</strong></p>
+                <ul className="text-sm">
+                  {result.alternativeSearchTerms.map((term, termIndex) => (
+                    <li key={termIndex}>• "{term}"</li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         ))}

@@ -172,16 +172,22 @@ export default async function RootLayout({
                   <nav aria-label="Popular competitions">
                     <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Popular Leagues</h3>
                     <ul className="space-y-1">
-                      {['Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Champions League'].map((league) => {
-                        const comp = (competitions || []).find((c: { id: number|string; name: string }) => c.name.toLowerCase() === league.toLowerCase());
-                        if (!comp) return null;
-                        const slug = `${comp.id}-${comp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-                        return (
-                          <li key={comp.id}>
-                            <a href={`/competition/${slug}`} className="hover:underline">{comp.name}</a>
-                          </li>
-                        );
-                      })}
+                      {[
+                        { id: 8, name: 'Premier League' },
+                        { id: 564, name: 'La Liga' },
+                        { id: 82, name: 'Bundesliga' },
+                        { id: 384, name: 'Serie A' },
+                        { id: 301, name: 'Ligue 1' }
+                      ].map((league) => (
+                        <li key={league.id}>
+                          <a 
+                            href={`/competition/${league.id}-${league.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`} 
+                            className="hover:underline"
+                          >
+                            {league.name}
+                          </a>
+                        </li>
+                      ))}
                     </ul>
                   </nav>
                   {/* About & Legal */}

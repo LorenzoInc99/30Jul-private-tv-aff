@@ -7,6 +7,7 @@ interface BroadcasterLogoProps {
   affiliateUrl?: string | null;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  showLabel?: boolean;
 }
 
 export default function BroadcasterLogo({ 
@@ -14,7 +15,8 @@ export default function BroadcasterLogo({
   broadcasterName, 
   affiliateUrl, 
   size = 'md', 
-  className = '' 
+  className = '',
+  showLabel = true
 }: BroadcasterLogoProps) {
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -26,7 +28,7 @@ export default function BroadcasterLogo({
 
   const logoElement = (
     <div className={`${sizeClass} ${className} flex flex-col items-center`}>
-      <div className="relative flex items-center justify-center mb-1">
+      <div className="relative flex items-center justify-center w-full h-full">
         {!logoUrl ? (
           // Fallback: Show first letter of broadcaster name in a circle
           <div className="w-full h-full flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
@@ -38,7 +40,7 @@ export default function BroadcasterLogo({
             alt={`${broadcasterName} logo`}
             width={size === 'sm' ? 32 : size === 'md' ? 48 : 64}
             height={size === 'sm' ? 32 : size === 'md' ? 48 : 64}
-            className="object-contain rounded bg-white border border-gray-200 dark:border-gray-700"
+            className="w-full h-full object-contain rounded bg-white border border-gray-200 dark:border-gray-700"
             onError={(e) => {
               // Fallback to letter if image fails to load
               const target = e.target as HTMLImageElement;
@@ -55,9 +57,11 @@ export default function BroadcasterLogo({
           />
         )}
       </div>
-      <span className="text-xs text-gray-700 dark:text-gray-300 text-center font-medium">
-        {broadcasterName}
-      </span>
+      {showLabel && (
+        <span className="text-xs text-gray-700 dark:text-gray-300 text-center font-medium mt-1">
+          {broadcasterName}
+        </span>
+      )}
     </div>
   );
 

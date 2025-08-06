@@ -8,15 +8,7 @@ import { useState } from 'react';
 import MatchCard from '@/components/MatchCard';
 import StandingsTable from '@/components/StandingsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-}
+import { slugify } from '../../../lib/utils';
 
 function CompetitionStructuredData({ competition, matches }: { competition: any; matches: any[] }) {
   if (!competition || !matches.length) return null;
@@ -159,10 +151,10 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
               ) : (
                 <div className="bg-gray-50 dark:bg-gray-900">
                   <div className="w-full md:max-w-3xl mx-auto">
-                    <Tabs defaultValue="results" className="w-full">
+                    <Tabs defaultValue="fixtures" className="w-full">
                       <TabsList className="flex w-full border-b border-gray-200 dark:border-gray-700 mb-6 bg-transparent">
-                        <TabsTrigger value="results" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Results</TabsTrigger>
                         <TabsTrigger value="fixtures" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Fixtures</TabsTrigger>
+                        <TabsTrigger value="results" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Results</TabsTrigger>
                         <TabsTrigger value="standings" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Standings</TabsTrigger>
                       </TabsList>
                       

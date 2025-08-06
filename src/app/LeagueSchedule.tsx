@@ -5,15 +5,7 @@ import Link from 'next/link';
 import MatchCard from '../components/MatchCard';
 import CountryFlag from '../components/CountryFlag';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .normalize('NFD') // Normalize unicode characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-}
+import { slugify } from '../lib/utils';
 
 export default function LeagueSchedule({ competitions, timezone = 'auto' }: { competitions: any[]; timezone?: string }) {
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);

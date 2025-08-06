@@ -6,7 +6,6 @@ export default function FooterNavClient() {
   const pathname = usePathname();
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/teams", label: "All Competitions" },
     { href: "/sitemap.xml", label: "Sitemap" },
   ];
   return (
