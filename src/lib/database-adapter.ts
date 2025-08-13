@@ -479,9 +479,16 @@ export function getBestOddsFromTransformed(transformedOdds: any[]) {
 
 export async function getTeamForm(teamId: number, beforeDate: string, supabase = supabaseBrowser) {
   try {
-    console.log('Fetching team form for:', { teamId, beforeDate });
+    console.log('Fetching team form for:', { teamId, beforeDate, supabaseType: typeof supabase });
+    
+    // Validate inputs
+    if (!teamId || !beforeDate) {
+      console.warn('Invalid inputs for getTeamForm:', { teamId, beforeDate });
+      return [];
+    }
     
     // Fetch the last 5 matches for this team before the given date
+    console.log('Executing team form query for teamId:', teamId);
     const { data: fixtures, error } = await supabase
       .from('fixtures')
       .select(`
@@ -500,6 +507,8 @@ export async function getTeamForm(teamId: number, beforeDate: string, supabase =
       .not('away_score', 'is', null)
       .order('starting_at', { ascending: false })
       .limit(5);
+    
+    console.log('Query completed. Fixtures count:', fixtures?.length || 0, 'Error:', error ? 'Yes' : 'No');
 
     // Also check total matches for this team (for debugging)
     const { data: totalMatches, error: totalError } = await supabase
@@ -524,20 +533,15 @@ export async function getTeamForm(teamId: number, beforeDate: string, supabase =
     });
 
     if (error) {
-      console.error('Error fetching team form:', error);
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
+      console.error('Error fetching team form:', {
+        message: error.message || 'Unknown error',
+        code: error.code || 'No code',
+        details: error.details || 'No details',
+        hint: error.hint || 'No hint'
       });
       
-      // If it's a permission error, return empty results (will show grey circles)
-      if (error.code === '42501') {
-        console.log('Database permission denied - showing grey circles for form');
-        return [];
-      }
-      
+      // If it's a permission error or any other error, return empty results (will show grey circles)
+      console.log('Database error - showing grey circles for form');
       return [];
     }
 
@@ -574,7 +578,11 @@ export async function getTeamForm(teamId: number, beforeDate: string, supabase =
     console.log('Transformed form results:', formResults);
     return formResults;
   } catch (error) {
-    console.error('Error in getTeamForm:', error);
+    console.error('Error in getTeamForm:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      error: error
+    });
     return [];
   }
 } 

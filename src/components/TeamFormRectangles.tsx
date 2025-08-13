@@ -20,7 +20,13 @@ export default function TeamFormRectangles({ teamId, matchStartTime }: { teamId:
         setFormResults(formData);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching team form:', error);
+        console.error('Error fetching team form:', {
+          teamId,
+          matchStartTime,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : 'No stack trace'
+        });
+        // On error, show grey circles (empty results)
         setFormResults([]);
         setLoading(false);
       }

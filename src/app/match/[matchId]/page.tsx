@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import MatchPageClient from './MatchPageClient';
-import { supabaseServer } from '../../../lib/supabase';
+import { getMatchById } from '../../../lib/database-adapter';
 
 export async function generateMetadata({ params }: { params: Promise<{ matchId: string }> }): Promise<Metadata> {
   const { matchId } = await params;
@@ -13,26 +13,12 @@ export async function generateMetadata({ params }: { params: Promise<{ matchId: 
   }
 
   try {
-    const supabase = supabaseServer();
-    const { data: match, error } = await supabase
-      .from('fixtures')
-      .select(`
-        *,
-        home_team: home_team_id(name),
-        away_team: away_team_id(name),
-        Competitions: league_id(name)
-      `)
-      .eq('id', numericMatchId)
-      .single();
-
-    if (error || !match) {
-      return { title: 'Match Not Found' };
-    }
+    const match = await getMatchById(numericMatchId);
 
     const homeTeamName = match.home_team?.name || 'Unknown Team';
     const awayTeamName = match.away_team?.name || 'Unknown Team';
     const leagueName = match.Competitions?.name || 'Football';
-    const matchDate = new Date(match.starting_at);
+    const matchDate = new Date(match.start_time);
     const dateString = matchDate.toLocaleDateString('en-US', { 
       weekday: 'long', 
       year: 'numeric', 
@@ -79,25 +65,10 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
   
   if (!numericMatchId) {
     return notFound();
-      }
+  }
 
-      try {
-    const supabase = supabaseServer();
-    const { data: match, error } = await supabase
-      .from('fixtures')
-      .select(`
-        *,
-        home_team: home_team_id(name),
-        away_team: away_team_id(name),
-        Competitions: league_id(name)
-      `)
-      .eq('id', numericMatchId)
-      .single();
-
-  if (error || !match) {
-      return notFound();
-    }
-
+  try {
+    const match = await getMatchById(numericMatchId);
     return <MatchPageClient match={match} />;
   } catch (error) {
     return notFound();

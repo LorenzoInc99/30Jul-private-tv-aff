@@ -433,7 +433,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     <div className="flex items-center justify-center h-6">
                       <TeamFormRectangles
                         teamId={match.home_team_id}
-                        matchStartTime={match.starting_at}
+                        matchStartTime={match.start_time}
                       />
                     </div>
                   </div>
@@ -454,13 +454,13 @@ export default function MatchPageClient({ match }: { match: any }) {
                     ) : (
                       <div className="flex flex-col items-center justify-center">
                         <span className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
-                          {new Date(match.starting_at).toLocaleTimeString('en-GB', { 
+                          {new Date(match.start_time).toLocaleTimeString('en-GB', { 
                             hour: '2-digit', 
                             minute: '2-digit' 
                           })}
                         </span>
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {new Date(match.starting_at).toLocaleDateString('en-GB', {
+                          {new Date(match.start_time).toLocaleDateString('en-GB', {
                             month: 'short',
                             day: 'numeric'
                           })}
@@ -489,7 +489,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     <div className="flex items-center justify-center h-6">
                       <TeamFormRectangles
                         teamId={match.away_team_id}
-                        matchStartTime={match.starting_at}
+                        matchStartTime={match.start_time}
                       />
                     </div>
                   </div>
