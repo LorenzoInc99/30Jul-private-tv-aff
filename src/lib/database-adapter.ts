@@ -1,5 +1,6 @@
 import { supabaseBrowser, supabaseServer } from './supabase';
 import { getMatchStatus, transformTeamData, transformTvStationData, transformBookmakerData } from './database-config';
+import { ProviderFactory } from './providers/provider-factory';
 
 // Type definitions for the new database schema
 export interface NewFixture {
@@ -644,4 +645,25 @@ export function transformOddsByBookmaker(odds: NewOdds[]): any[] {
   });
 
   return Array.from(oddsByBookmaker.values());
+}
+
+// New provider-based functions for API abstraction
+export async function getMatchesForDateViaProvider(date: Date) {
+  const provider = ProviderFactory.getProvider();
+  return await provider.getMatchesForDate(date);
+}
+
+export async function getMatchByIdViaProvider(id: string) {
+  const provider = ProviderFactory.getProvider();
+  return await provider.getMatchById(id);
+}
+
+export async function getTeamByIdViaProvider(id: string) {
+  const provider = ProviderFactory.getProvider();
+  return await provider.getTeamById(id);
+}
+
+export async function getLeagueByIdViaProvider(id: string) {
+  const provider = ProviderFactory.getProvider();
+  return await provider.getLeagueById(id);
 } 

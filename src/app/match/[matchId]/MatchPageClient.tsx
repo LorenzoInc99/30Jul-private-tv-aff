@@ -8,316 +8,11 @@ import TeamLogo from '@/components/TeamLogo';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
 import BookmakerLogo from '@/components/BookmakerLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
+import OddsComparisonTable from '@/components/OddsComparisonTable';
 
-// Best odds summary component
-function BestOddsSummary({ odds }: { odds: any[] }) {
-  const findBestOdds = (oddsArray: any[]) => {
-    const bestOdds = {
-      '1': { odds: 0, operator: null as any },
-      'X': { odds: 0, operator: null as any },
-      '2': { odds: 0, operator: null as any }
-    };
 
-    if (!oddsArray) return bestOdds;
 
-    oddsArray.forEach(oddSet => {
-      if (oddSet.Operators) {
-        if (oddSet.home_win && oddSet.home_win > bestOdds['1'].odds) {
-          bestOdds['1'] = { odds: oddSet.home_win, operator: oddSet.Operators };
-        }
-        if (oddSet.draw && oddSet.draw > bestOdds['X'].odds) {
-          bestOdds['X'] = { odds: oddSet.draw, operator: oddSet.Operators };
-        }
-        if (oddSet.away_win && oddSet.away_win > bestOdds['2'].odds) {
-          bestOdds['2'] = { odds: oddSet.away_win, operator: oddSet.Operators };
-        }
-      }
-    });
 
-    return bestOdds;
-  };
-
-  const bestOdds = findBestOdds(odds);
-
-  return (
-    <div className="grid grid-cols-3 gap-2 text-center p-4">
-      <div className="flex flex-col items-center py-2">
-        <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Home (1)</span>
-        <a
-          href={bestOdds['1'].operator?.affiliate_url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-bold text-base text-indigo-600 dark:text-indigo-400 hover:underline"
-          aria-label={`Go to ${bestOdds['1'].operator?.name || 'bookmaker'} for best home odds`}
-        >
-          {bestOdds['1'].odds > 0 ? bestOdds['1'].odds.toFixed(2) : '-'}
-        </a>
-        <span className="text-xs text-gray-500 dark:text-gray-400">{bestOdds['1'].operator?.name || 'N/A'}</span>
-      </div>
-      <div className="flex flex-col items-center py-2">
-        <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Draw (X)</span>
-        <a
-          href={bestOdds['X'].operator?.affiliate_url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-bold text-base text-indigo-600 dark:text-indigo-400 hover:underline"
-          aria-label={`Go to ${bestOdds['X'].operator?.name || 'bookmaker'} for best draw odds`}
-        >
-          {bestOdds['X'].odds > 0 ? bestOdds['X'].odds.toFixed(2) : '-'}
-        </a>
-        <span className="text-xs text-gray-500 dark:text-gray-400">{bestOdds['X'].operator?.name || 'N/A'}</span>
-      </div>
-      <div className="flex flex-col items-center py-2">
-        <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Away (2)</span>
-        <a
-          href={bestOdds['2'].operator?.affiliate_url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-bold text-base text-indigo-600 dark:text-indigo-400 hover:underline"
-          aria-label={`Go to ${bestOdds['2'].operator?.name || 'bookmaker'} for best away odds`}
-        >
-          {bestOdds['2'].odds > 0 ? bestOdds['2'].odds.toFixed(2) : '-'}
-        </a>
-        <span className="text-xs text-gray-500 dark:text-gray-400">{bestOdds['2'].operator?.name || 'N/A'}</span>
-      </div>
-    </div>
-  );
-}
-
-// Full odds table component
-function OddsTable({ odds, homeTeamName, awayTeamName }: { odds: any[], homeTeamName: string, awayTeamName: string }) {
-  
-  const [sortColumn, setSortColumn] = useState('operator');
-  const [sortDirection, setSortDirection] = useState('asc');
-  const [allBookmakers, setAllBookmakers] = useState<any[]>([]);
-
-  // Fetch all bookmakers when component mounts
-  useEffect(() => {
-    const fetchBookmakers = async () => {
-      try {
-        const response = await fetch('/api/bookmakers');
-        if (!response.ok) {
-          throw new Error('Failed to fetch bookmakers');
-        }
-        const data = await response.json();
-        setAllBookmakers(data.bookmakers);
-      } catch (error) {
-        console.error('Error fetching bookmakers:', error);
-      }
-    };
-    fetchBookmakers();
-  }, []);
-
-  const findBestOdds = (oddsArray: any[]) => {
-    const bestOdds = {
-      '1': { odds: 0, operator: null as any },
-      'X': { odds: 0, operator: null as any },
-      '2': { odds: 0, operator: null as any }
-    };
-
-    if (!oddsArray) return bestOdds;
-
-    oddsArray.forEach(oddSet => {
-      if (oddSet.Operators) {
-        // Check home win odds
-        if (oddSet.home_win && parseFloat(oddSet.home_win) > bestOdds['1'].odds) {
-          bestOdds['1'] = { odds: parseFloat(oddSet.home_win), operator: oddSet.Operators };
-        }
-        // Check draw odds
-        if (oddSet.draw && parseFloat(oddSet.draw) > bestOdds['X'].odds) {
-          bestOdds['X'] = { odds: parseFloat(oddSet.draw), operator: oddSet.Operators };
-        }
-        // Check away win odds
-        if (oddSet.away_win && parseFloat(oddSet.away_win) > bestOdds['2'].odds) {
-          bestOdds['2'] = { odds: parseFloat(oddSet.away_win), operator: oddSet.Operators };
-        }
-      }
-    });
-
-    return bestOdds;
-  };
-
-  const bestOdds = findBestOdds(odds);
-
-  const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(column);
-      setSortDirection(column === 'operator' ? 'asc' : 'desc');
-    }
-  };
-
-  // Create a map of odds by bookmaker ID for quick lookup
-  const oddsByBookmaker = new Map();
-  odds.forEach(oddSet => {
-    if (oddSet.Operators) {
-      oddsByBookmaker.set(oddSet.Operators.id, oddSet);
-    }
-  });
-
-  // Filter bookmakers to only show those that have odds for this match
-  const bookmakersWithOdds = allBookmakers.filter(bookmaker => {
-    const oddSet = oddsByBookmaker.get(bookmaker.id);
-    return oddSet && (oddSet.home_win !== null || oddSet.draw !== null || oddSet.away_win !== null);
-  });
-
-  // Sort bookmakers with odds
-  const sortedBookmakers = [...bookmakersWithOdds].sort((a, b) => {
-    const oddSetA = oddsByBookmaker.get(a.id);
-    const oddSetB = oddsByBookmaker.get(b.id);
-    
-    if (sortColumn === 'operator') {
-      return sortDirection === 'asc' 
-        ? a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-        : b.name.toLowerCase().localeCompare(a.name.toLowerCase());
-    } else if (sortColumn === '1') {
-      const valueA = oddSetA?.home_win ? parseFloat(oddSetA.home_win) : 0;
-      const valueB = oddSetB?.home_win ? parseFloat(oddSetB.home_win) : 0;
-      return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-    } else if (sortColumn === 'X') {
-      const valueA = oddSetA?.draw ? parseFloat(oddSetA.draw) : 0;
-      const valueB = oddSetB?.draw ? parseFloat(oddSetB.draw) : 0;
-      return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-    } else if (sortColumn === '2') {
-      const valueA = oddSetA?.away_win ? parseFloat(oddSetA.away_win) : 0;
-      const valueB = oddSetB?.away_win ? parseFloat(oddSetB.away_win) : 0;
-      return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-    }
-    return 0;
-  });
-
-  return (
-    <div className="overflow-x-auto bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-      <table className="odds-table w-full table-auto border-collapse">
-        <thead>
-          <tr className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-            <th
-              className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200 rounded-tl-lg"
-              onClick={() => handleSort('operator')}
-              tabIndex={0}
-              role="button"
-              aria-label="Sort by operator"
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('operator'); }}
-            >
-              <div className="flex items-center">
-                <span>Operator</span>
-                <span className="sort-arrow ml-2 text-xs">
-                  {sortColumn === 'operator' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
-                </span>
-              </div>
-            </th>
-            <th
-              className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200"
-              onClick={() => handleSort('1')}
-              tabIndex={0}
-              role="button"
-              aria-label={`Sort by odds for ${homeTeamName} win`}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('1'); }}
-            >
-              <div className="flex items-center justify-center">
-                <span>{homeTeamName} (1)</span>
-                <span className="sort-arrow ml-2 text-xs">
-                  {sortColumn === '1' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
-                </span>
-              </div>
-            </th>
-            <th
-              className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200"
-              onClick={() => handleSort('X')}
-              tabIndex={0}
-              role="button"
-              aria-label="Sort by odds for draw"
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('X'); }}
-            >
-              <div className="flex items-center justify-center">
-                <span>Draw (X)</span>
-                <span className="sort-arrow ml-2 text-xs">
-                  {sortColumn === 'X' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
-                </span>
-              </div>
-            </th>
-            <th
-              className="px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-indigo-600 transition-colors duration-200 rounded-tr-lg"
-              onClick={() => handleSort('2')}
-              tabIndex={0}
-              role="button"
-              aria-label={`Sort by odds for ${awayTeamName} win`}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleSort('2'); }}
-            >
-              <div className="flex items-center justify-center">
-                <span>{awayTeamName} (2)</span>
-                <span className="sort-arrow ml-2 text-xs">
-                  {sortColumn === '2' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
-                </span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedBookmakers.map((bookmaker, index) => {
-            const oddSet = oddsByBookmaker.get(bookmaker.id);
-            const operatorName = bookmaker.name;
-            const affiliateUrl = bookmaker.url || '#';
-            const homeHighlight = oddSet && oddSet.home_win && Math.abs(parseFloat(oddSet.home_win) - bestOdds['1'].odds) < 0.001 ? 'highlight-best-odd' : '';
-            const drawHighlight = oddSet && oddSet.draw && Math.abs(parseFloat(oddSet.draw) - bestOdds['X'].odds) < 0.001 ? 'highlight-best-odd' : '';
-            const awayHighlight = oddSet && oddSet.away_win && Math.abs(parseFloat(oddSet.away_win) - bestOdds['2'].odds) < 0.001 ? 'highlight-best-odd' : '';
-
-            return (
-              <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                <td className="px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap border-b border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <BookmakerLogo
-                      logoUrl={bookmaker.image_path}
-                      bookmakerName={operatorName}
-                      size="md"
-                    />
-                    <span className="text-gray-800 dark:text-gray-200 font-medium">
-                      {operatorName}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-center border-b border-gray-100 dark:border-gray-700">
-                  <a
-                    href={affiliateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${homeHighlight}`}
-                    aria-label={`Go to ${operatorName} for odds on ${homeTeamName} win`}
-                  >
-                    {oddSet?.home_win ? parseFloat(oddSet.home_win).toFixed(2) : '-'}
-                  </a>
-                </td>
-                <td className="px-4 py-3 text-center border-b border-gray-100 dark:border-gray-700">
-                  <a
-                    href={affiliateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${drawHighlight}`}
-                    aria-label={`Go to ${operatorName} for odds on draw`}
-                  >
-                    {oddSet?.draw ? parseFloat(oddSet.draw).toFixed(2) : '-'}
-                  </a>
-                </td>
-                <td className="px-4 py-3 text-center border-b border-gray-100 dark:border-gray-700">
-                  <a
-                    href={affiliateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`odds-cell transition-all duration-200 hover:scale-105 hover:shadow-md ${awayHighlight}`}
-                    aria-label={`Go to ${operatorName} for odds on ${awayTeamName} win`}
-                  >
-                    {oddSet?.away_win ? parseFloat(oddSet.away_win).toFixed(2) : '-'}
-                  </a>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 function MatchSkeleton() {
   return (
@@ -362,7 +57,6 @@ function MatchSkeleton() {
 
 export default function MatchPageClient({ match }: { match: any }) {
   const searchParams = useSearchParams();
-  const [showAllOdds, setShowAllOdds] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const timezone = searchParams.get('timezone') || 'auto';
@@ -596,35 +290,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                 Compare all football betting options in the table below.
               </p>
 
-              
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-sm overflow-hidden">
-                <BestOddsSummary odds={match.Odds} />
-                
-                <button
-                  className="w-full flex justify-between items-center py-2 px-3 border-t border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  onClick={() => setShowAllOdds(!showAllOdds)}
-                  aria-label={showAllOdds ? 'Hide all odds table' : 'Show all odds table'}
-                >
-                  <span className="font-semibold text-base">
-                    {showAllOdds ? 'Hide All Odds' : 'View All Odds'}
-                  </span>
-                  <svg
-                    className={`w-5 h-5 transition-transform duration-300 transform ${showAllOdds ? 'rotate-180' : 'rotate-0'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-
-              {showAllOdds && (
-                <div className="mt-4">
-                  <OddsTable odds={match.Odds} homeTeamName={homeTeamName} awayTeamName={awayTeamName} />
-                </div>
-              )}
+              <OddsComparisonTable odds={match.Odds} homeTeamName={homeTeamName} awayTeamName={awayTeamName} />
             </div>
           )}
 
@@ -635,15 +301,51 @@ export default function MatchPageClient({ match }: { match: any }) {
             </div>
           )}
 
-          {/* General Info Section */}
+          {/* SEO Content Section */}
           <section className="bg-gray-100 dark:bg-gray-800 py-6 mt-8">
-            <div className="text-left">
-              <p className="text-left text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
-                Sports TV Guide is your ultimate resource for comprehensive live football on TV schedules, 
-                detailed match information, and competitive betting odds comparisons for all major football 
-                leagues and competitions worldwide. Whether you're looking for today's football matches or 
-                future fixtures, we've got you covered.
-              </p>
+            <div className="max-w-4xl mx-auto">
+              {/* Match Info */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  {homeTeamName} vs {awayTeamName} - {match.Competitions?.name || 'Match'}
+                </h3>
+                <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                  <p><strong>Date:</strong> {new Date(match.start_time).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  <p><strong>Time:</strong> {new Date(match.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p><strong>Status:</strong> {match.status}</p>
+                  {match.home_score !== null && match.away_score !== null && (
+                    <p><strong>Score:</strong> {match.home_score} - {match.away_score}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Where to Watch */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Where to Watch {homeTeamName} vs {awayTeamName}
+                </h3>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  {hasBroadcasters ? (
+                    <p>The {homeTeamName} vs {awayTeamName} match will be broadcast on {match.Event_Broadcasters.length} channel{match.Event_Broadcasters.length > 1 ? 's' : ''}.</p>
+                  ) : (
+                    <p>Broadcasting details for {homeTeamName} vs {awayTeamName} will be confirmed closer to kick-off.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Best Odds Info */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Best Odds for {homeTeamName} vs {awayTeamName}
+                </h3>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  {hasOdds ? (
+                    <p>Compare odds from {match.Odds.length} bookmaker{match.Odds.length > 1 ? 's' : ''} for the {homeTeamName} vs {awayTeamName} match.</p>
+                  ) : (
+                    <p>Odds for {homeTeamName} vs {awayTeamName} will be available closer to kick-off.</p>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         </main>

@@ -165,12 +165,69 @@ export default async function RootLayout({
             header={null}
             footer={
               <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 mt-12 py-8 text-sm text-gray-700 dark:text-gray-300">
-                <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-8 px-2 md:px-4">
-                  {/* Main Navigation */}
-                  <FooterNavClient />
-                  {/* Popular Competitions */}
-                  <nav aria-label="Popular competitions">
-                    <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Popular Leagues</h3>
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-2 md:px-4">
+                  {/* Live Football Today - Rich Content Section */}
+                  <div>
+                    <h3 className="font-bold mb-3 text-gray-900 dark:text-white text-base">Live Football Today</h3>
+                    <p className="text-sm leading-relaxed mb-3">
+                      Get the complete live football TV schedule for today with real-time updates. 
+                      Watch Premier League, La Liga, Bundesliga, Serie A, Champions League, Europa League, 
+                      and more live matches. Find where to watch football today with our comprehensive 
+                      TV guide covering Sky Sports, BT Sport, Amazon Prime, BBC, ITV, and international 
+                      broadcasters.
+                    </p>
+                    <p className="text-sm leading-relaxed">
+                      Get live scores, match statistics, and the best betting odds from 
+                      top bookmakers including bet365, William Hill, and Ladbrokes. Never miss a game 
+                      with our up-to-date football schedule and TV listings.
+                    </p>
+                  </div>
+
+                  {/* Football TV Guide & Streaming */}
+                  <div>
+                    <h3 className="font-bold mb-3 text-gray-900 dark:text-white text-base">Football TV Guide & Streaming</h3>
+                    <p className="text-sm leading-relaxed mb-3">
+                      Your complete guide to watching football on TV today. Find live streams, 
+                      TV channels, and broadcast information for all major football leagues and competitions. 
+                      Whether you're looking for Premier League live streams, Champions League coverage, 
+                      or international football matches.
+                    </p>
+                    <p className="text-sm leading-relaxed">
+                      We provide up-to-date TV schedules and streaming options. Compare betting odds 
+                      from multiple bookmakers to get the best value on your football bets. 
+                      Access comprehensive match previews and live score updates.
+                    </p>
+                  </div>
+
+                  {/* Best Football Betting Odds */}
+                  <div>
+                    <h3 className="font-bold mb-3 text-gray-900 dark:text-white text-base">Best Football Betting Odds</h3>
+                    <p className="text-sm leading-relaxed mb-3">
+                      Compare the best football betting odds from leading bookmakers. Get real-time 
+                      odds for match results, goals, cards, and more. Our odds comparison tool helps you 
+                      find the best value bets across Premier League, Champions League, and international 
+                      football matches.
+                    </p>
+                    <p className="text-sm leading-relaxed">
+                      Track odds movements and get betting tips for today's football matches. 
+                      Find the highest paying odds for home wins, away wins, draws, and special markets 
+                      like both teams to score and over/under goals.
+                    </p>
+                  </div>
+
+                  {/* Navigation & Links */}
+                  <div>
+                    <h3 className="font-bold mb-3 text-gray-900 dark:text-white text-base">Navigation</h3>
+                    <ul className="space-y-2 mb-4">
+                      <li><a href="/" className="hover:underline text-sm">Home</a></li>
+                      <li><a href="/sitemap.xml" className="hover:underline text-sm">Sitemap</a></li>
+                      <li><a href="/about" className="hover:underline text-sm">About Us</a></li>
+                      <li><a href="/contact" className="hover:underline text-sm">Contact</a></li>
+                      <li><a href="/privacy-policy" className="hover:underline text-sm">Privacy Policy</a></li>
+                      <li><a href="/terms-of-service" className="hover:underline text-sm">Terms of Service</a></li>
+                    </ul>
+                    
+                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-white text-sm">Popular Leagues</h4>
                     <ul className="space-y-1">
                       {[
                         { id: 8, name: 'Premier League' },
@@ -182,33 +239,16 @@ export default async function RootLayout({
                         <li key={league.id}>
                           <a 
                             href={`/competition/${league.id}-${league.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`} 
-                            className="hover:underline"
+                            className="hover:underline text-sm"
                           >
                             {league.name}
                           </a>
                         </li>
                       ))}
                     </ul>
-                  </nav>
-                  {/* About & Legal */}
-                  <nav aria-label="About and legal">
-                    <h3 className="font-bold mb-2 text-gray-900 dark:text-white">About</h3>
-                    <ul className="space-y-1">
-                      <li><a href="/about" className="hover:underline">About Us</a></li>
-                      <li><a href="/contact" className="hover:underline">Contact</a></li>
-                      <li><a href="/privacy-policy" className="hover:underline">Privacy Policy</a></li>
-                      <li><a href="/terms-of-service" className="hover:underline">Terms of Service</a></li>
-                    </ul>
-                  </nav>
-                  {/* Social or Call to Action */}
-                  <div>
-                    <h3 className="font-bold mb-2 text-gray-900 dark:text-white">Follow Us</h3>
-                    <ul className="space-y-1">
-                      <li><a href="https://twitter.com/yourhandle" target="_blank" rel="noopener" className="hover:underline">Twitter</a></li>
-                      <li><a href="https://facebook.com/yourpage" target="_blank" rel="noopener" className="hover:underline">Facebook</a></li>
-                    </ul>
                   </div>
                 </div>
+                
                 <div className="text-center mt-8 text-xs text-gray-500 dark:text-gray-400">
                   © {new Date().getFullYear()} Live Football TV Guide. All rights reserved.
                 </div>

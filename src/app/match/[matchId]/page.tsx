@@ -37,19 +37,19 @@ export async function generateMetadata({ params }: { params: Promise<{ matchId: 
       statusText = `On ${dateString}, there is a ${leagueName} match between ${homeTeamName} and ${awayTeamName}.`;
     }
 
-    const description = `${statusText} Find where to watch this game and get the best betting odds from licensed operators. Live TV schedule and match details.`;
+    const description = `${statusText} Find where to watch ${homeTeamName} vs ${awayTeamName} and get the best odds for ${homeTeamName} vs ${awayTeamName} from top bookmakers. Live TV schedule, streaming info, and betting odds for ${homeTeamName} vs ${awayTeamName} ${leagueName} match.`;
 
     return {
-      title: `${homeTeamName} vs ${awayTeamName} - ${dateString}`,
+      title: `${homeTeamName} vs ${awayTeamName} - Where to Watch & Best Odds | ${leagueName}`,
       description,
-      keywords: `${homeTeamName}, ${awayTeamName}, ${leagueName}, football match, live streaming, betting odds, TV schedule, ${dateString}`,
+      keywords: `${homeTeamName} vs ${awayTeamName}, where to watch ${homeTeamName} vs ${awayTeamName}, best odds ${homeTeamName} vs ${awayTeamName}, ${homeTeamName} ${awayTeamName} ${leagueName}, ${homeTeamName}, ${awayTeamName}, ${leagueName}, football match, live streaming, betting odds, TV schedule, ${dateString}`,
       openGraph: {
-        title: `${homeTeamName} vs ${awayTeamName} - ${dateString}`,
+        title: `${homeTeamName} vs ${awayTeamName} - Where to Watch & Best Odds`,
         description,
         type: 'website',
       },
       twitter: {
-        title: `${homeTeamName} vs ${awayTeamName} - ${dateString}`,
+        title: `${homeTeamName} vs ${awayTeamName} - Where to Watch & Best Odds`,
         description,
       },
     };
