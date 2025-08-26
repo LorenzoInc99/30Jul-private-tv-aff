@@ -7,7 +7,7 @@ import CountryFlag from '../components/CountryFlag';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
 import { slugify } from '../lib/utils';
 
-export default function LeagueSchedule({ competitions, timezone = 'auto', showOdds = true }: { competitions: any[]; timezone?: string; showOdds?: boolean }) {
+export default function LeagueSchedule({ competitions, timezone = 'auto', showOdds = true, showTv = true }: { competitions: any[]; timezone?: string; showOdds?: boolean; showTv?: boolean }) {
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
@@ -126,6 +126,7 @@ export default function LeagueSchedule({ competitions, timezone = 'auto', showOd
                         timezone={timezone}
                         isExpanded={isExpanded}
                         showOdds={showOdds}
+                        showTv={showTv}
                         onExpandToggle={e => {
                           e.stopPropagation();
                           setExpandedMatch(isExpanded ? null : match.id);

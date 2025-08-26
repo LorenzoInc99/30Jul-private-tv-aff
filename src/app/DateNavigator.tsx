@@ -18,17 +18,17 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <nav className="w-full py-1 px-1 md:px-4 flex items-center justify-between">
+    <nav className="w-full py-0 px-0 flex items-center justify-between">
       <div className="flex items-center w-full justify-between">
         <button
-          className="p-1 md:p-2.5 rounded bg-transparent text-gray-600 dark:text-gray-300 focus:outline-none transition-colors md:hover:bg-transparent md:active:bg-transparent"
+          className="p-1 rounded bg-transparent text-gray-600 dark:text-gray-300 focus:outline-none transition-colors hover:bg-transparent active:bg-transparent"
           onClick={() => onChange(new Date(selectedDate.getTime() - 86400000))}
           aria-label="Previous day"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
         </button>
         <span
-          className="flex items-center justify-center rounded-lg px-10 py-1 min-w-[180px] md:min-w-[220px] mx-2 text-base md:text-lg font-bold text-gray-100 md:bg-transparent md:dark:bg-transparent"
+          className="flex items-center justify-center rounded-lg px-4 py-1 min-w-[140px] mx-2 text-sm font-bold text-gray-100 bg-transparent dark:bg-transparent"
         >
           {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : `${selectedDate.toLocaleDateString('en-GB', { weekday: 'short' })}, ${selectedDate.getDate().toString().padStart(2, '0')} ${selectedDate.toLocaleDateString('en-GB', { month: 'short' })}`}
         </span>
@@ -57,28 +57,28 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
           </div>
         )}
         <button
-          className="p-2 md:p-2.5 rounded bg-transparent text-gray-600 dark:text-gray-300 focus:outline-none transition-colors md:hover:bg-transparent md:active:bg-transparent"
+          className="p-1 rounded bg-transparent text-gray-600 dark:text-gray-300 focus:outline-none transition-colors hover:bg-transparent active:bg-transparent"
           onClick={() => onChange(new Date(selectedDate.getTime() + 86400000))}
           aria-label="Next day"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
         </button>
       </div>
-      <div className="hidden md:flex items-center space-x-2">
+      <div className="hidden md:flex items-center space-x-1">
         <button
-          className="px-4 py-2 rounded bg-transparent text-gray-700 dark:text-gray-200 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 md:border-0 md:hover:bg-transparent md:active:bg-transparent"
+          className="px-2 py-1 rounded bg-transparent text-gray-700 dark:text-gray-200 font-semibold text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 border-0 hover:bg-transparent active:bg-transparent"
           onClick={() => onChange(new Date(today))}
           disabled={isToday}
         >
           Today
         </button>
         <button
-          className="p-2 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:border-0 md:hover:bg-transparent md:active:bg-transparent"
+          className="p-1 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-0 hover:bg-transparent active:bg-transparent"
           aria-label="Open calendar"
           onClick={() => setShowDatePicker(true)}
           type="button"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
             <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" />
           </svg>
