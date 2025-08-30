@@ -1,10 +1,10 @@
 "use client";
-import { useState } from 'react';
-import { useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function DateNavigator({ selectedDate, onChange }: { selectedDate: Date; onChange: (date: Date) => void }) {
-  // Helper to format date as YYYY-MM-DD for input[type=date]
-  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -14,11 +14,72 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
   tomorrow.setDate(today.getDate() + 1);
   const isTomorrow = selectedDate.toDateString() === tomorrow.toDateString();
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const dateInputRef = useRef<HTMLInputElement>(null);
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
+  // Generate calendar days
+  const getCalendarDays = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const days = [];
+    const currentDate = new Date(startDate);
+    
+    for (let i = 0; i < 42; i++) {
+      days.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  const calendarDays = getCalendarDays(currentMonth);
+
+  const handleDateSelect = (date: Date) => {
+    onChange(date);
+    setShowCalendar(false);
+  };
+
+  const isSelectedDate = (date: Date) => {
+    return date.toDateString() === selectedDate.toDateString();
+  };
+
+  const isTodayDate = (date: Date) => {
+    return date.toDateString() === today.toDateString();
+  };
+
+  const isCurrentMonth = (date: Date) => {
+    return date.getMonth() === currentMonth.getMonth();
+  };
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
 
   return (
-    <nav className="w-full py-0 px-0 flex items-center justify-between">
+    <nav className="w-full py-0 px-0 flex items-center justify-between relative">
       <div className="flex items-center w-full justify-between">
         <button
           className="p-1 rounded bg-transparent text-gray-600 dark:text-gray-300 focus:outline-none transition-colors hover:bg-transparent active:bg-transparent"
@@ -32,30 +93,6 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
         >
           {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : `${selectedDate.toLocaleDateString('en-GB', { weekday: 'short' })}, ${selectedDate.getDate().toString().padStart(2, '0')} ${selectedDate.toLocaleDateString('en-GB', { month: 'short' })}`}
         </span>
-        {showDatePicker && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setShowDatePicker(false)}>
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6" onClick={e => e.stopPropagation()}>
-              <input
-                ref={dateInputRef}
-                type="date"
-                className="p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
-                value={formatDate(selectedDate)}
-                onChange={e => {
-                  const d = new Date(e.target.value);
-                  if (!isNaN(d.getTime())) onChange(d);
-                  setShowDatePicker(false);
-                }}
-                autoFocus
-              />
-              <button
-                className="ml-4 px-3 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                onClick={() => setShowDatePicker(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
         <button
           className="p-1 rounded bg-transparent text-gray-600 dark:text-gray-300 focus:outline-none transition-colors hover:bg-transparent active:bg-transparent"
           onClick={() => onChange(new Date(selectedDate.getTime() + 86400000))}
@@ -72,17 +109,87 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
         >
           Today
         </button>
-        <button
-          className="p-1 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-0 hover:bg-transparent active:bg-transparent"
+        <div
+          className="p-1 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-0 hover:bg-transparent active:bg-transparent relative cursor-pointer"
           aria-label="Open calendar"
-          onClick={() => setShowDatePicker(true)}
-          type="button"
+          onClick={() => setShowCalendar(!showCalendar)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowCalendar(!showCalendar);
+            }
+          }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
             <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" />
           </svg>
-        </button>
+          
+          {/* Calendar Popup */}
+          {showCalendar && (
+            <div 
+              ref={calendarRef}
+              className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 min-w-[280px]"
+            >
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl">
+                <button
+                  onClick={goToPreviousMonth}
+                  className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </span>
+                <button
+                  onClick={goToNextMonth}
+                  className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Days of Week */}
+              <div className="grid grid-cols-7 gap-1 p-2">
+                {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(day => (
+                  <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-1">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 p-2">
+                {calendarDays.map((date, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleDateSelect(date)}
+                    className={`
+                      w-8 h-8 rounded-xl text-sm font-medium transition-colors
+                      ${isSelectedDate(date) 
+                        ? 'bg-indigo-600 text-white' 
+                        : isTodayDate(date)
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                        : isCurrentMonth(date)
+                        ? 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                        : 'text-gray-400 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }
+                    `}
+                  >
+                    {date.getDate()}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );

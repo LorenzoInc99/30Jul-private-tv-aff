@@ -4,8 +4,9 @@ import { SITE_TITLE } from '../lib/constants';
 import MatchScheduleWrapper from './MatchScheduleWrapper';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const today = new Date();
-  const dateString = today.toLocaleDateString('en-US', { 
+  // Use a date that has fixtures in the database (November 9, 2025)
+  const defaultDate = new Date('2025-11-09');
+  const dateString = defaultDate.toLocaleDateString('en-US', { 
     weekday: 'long', 
     year: 'numeric', 
     month: 'long', 
@@ -30,14 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+import NavigationWrapper from './components/NavigationWrapper';
+
 export default function HomePage() {
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
-      <div className="container mx-auto pt-2 pb-4 md:pt-2 md:pb-8 max-w-7xl flex-grow">
-        <Suspense fallback={<div>Loading date navigator...</div>}>
-          <MatchScheduleWrapper />
-        </Suspense>
-      </div>
-    </div>
-  );
+  return <NavigationWrapper />;
 }

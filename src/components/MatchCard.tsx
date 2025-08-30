@@ -5,7 +5,7 @@ import CountryFlag from './CountryFlag';
 import BroadcasterLogo from './BroadcasterLogo';
 import { slugify } from '../lib/utils';
 
-export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true }: {
+export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, isStarred = false, onStarToggle }: {
   match: any;
   timezone: string;
   isExpanded: boolean;
@@ -14,6 +14,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   hideCompetitionName?: boolean;
   showOdds?: boolean;
   showTv?: boolean;
+  isStarred?: boolean;
+  onStarToggle?: (matchId: string) => void;
 }) {
   function getTargetTimezone() {
     if (timezone === 'auto') {
@@ -22,7 +24,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     return timezone;
   }
   
-
+  const handleStarClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onStarToggle) {
+      onStarToggle(match.id);
+    }
+  };
 
   // Check if match is live - including both "Live" status and actual live match statuses
   const isLive = match.status === 'Live' || 
@@ -219,15 +226,23 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
 
           {/* Favorite Star */}
           <div className="flex-shrink-0 w-6 flex justify-center">
-            <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button 
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              onClick={handleStarClick}
+            >
+              <svg 
+                className={`w-4 h-4 ${isStarred ? 'text-yellow-500 fill-current' : 'text-gray-400'}`} 
+                fill={isStarred ? 'currentColor' : 'none'} 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442c.563.563 0 00.475-.345L11.48 3.5z" />
               </svg>
             </button>
           </div>
         </div>
         {/* Desktop: Row layout - Grid for alignment, absolute for flexibility */}
-        <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[3.5rem_11rem_1rem] items-center">
+        <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[3.5rem_11rem_200px_150px_1rem_auto] items-center gap-2">
           {/* Time */}
           <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
             <span>
@@ -284,7 +299,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-bold' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-extrabold' : 'font-normal') :
+                    (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-extrabold' : 'font-normal') :
                   'font-bold'
                 }`}
               >
@@ -292,8 +307,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </button>
             </div>
           </div>
-          {/* Odds - Always rendered, conditionally visible */}
-          <div className={`absolute right-65 top-1/2 transform -translate-y-1/2 flex flex-row items-center gap-1 ${!showOdds ? 'invisible' : ''}`}>
+          {/* Odds - Now in grid column */}
+          <div className={`flex flex-row items-center gap-1 justify-center ${!showOdds ? 'invisible' : ''}`}>
             {match.status !== 'Finished' && match.status !== 'Full Time' && match.status !== 'After Extra Time' && match.status !== 'After Penalties' ? (
               (() => {
                 const bestOdds = getBestOddsFromTransformed(match.Odds || []);
@@ -332,8 +347,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <div className="flex-1"></div>
             )}
           </div>
-          {/* TV Stream Logos - Always rendered, conditionally visible */}
-          <div className={`absolute right-25 top-1/2 transform -translate-y-1/2 flex flex-row-reverse items-center gap-1 justify-end overflow-hidden ${!showTv ? 'invisible' : ''}`}>
+          {/* TV Stream Logos - Now in grid column */}
+          <div className={`flex flex-row-reverse items-center gap-1 justify-end overflow-hidden ${!showTv ? 'invisible' : ''}`}>
             {(() => {
               const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
               const count = broadcasters.length;
@@ -375,8 +390,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             })()}
           </div>
           
-          {/* Score - Positioned absolutely next to star */}
-          <div className="absolute right-11 top-1/2 transform -translate-y-1/2 flex flex-col items-center justify-center font-semibold text-sm text-gray-800 dark:text-gray-200">
+          {/* Score - Now in grid column */}
+          <div className="flex flex-col items-center justify-center font-semibold text-sm text-gray-800 dark:text-gray-200">
             {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
                 <span className={`text-base ${
@@ -404,10 +419,18 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             )}
           </div>
           
-          {/* Favorite Star - Positioned absolutely at the right edge */}
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-            <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Favorite Star - Now in grid column */}
+          <div className="flex justify-center">
+            <button 
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              onClick={handleStarClick}
+            >
+              <svg 
+                className={`w-4 h-4 ${isStarred ? 'text-yellow-500 fill-current' : 'text-gray-400'}`} 
+                fill={isStarred ? 'currentColor' : 'none'} 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442c.563.563 0 00.475-.345L11.48 3.5z" />
               </svg>
             </button>

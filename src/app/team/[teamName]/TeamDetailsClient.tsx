@@ -1,5 +1,6 @@
 "use client";
 import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SITE_TITLE } from '../../../lib/constants';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -265,6 +266,32 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
 }) {
   const searchParams = useSearchParams();
   const timezone = searchParams.get('timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [starredMatches, setStarredMatches] = useState<string[]>([]);
+
+  // Load starred matches from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('starredMatches');
+    if (saved) {
+      try {
+        setStarredMatches(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error parsing starred matches:', error);
+        setStarredMatches([]);
+      }
+    }
+  }, []);
+
+  // Save starred matches to localStorage
+  const handleStarToggle = (matchId: string) => {
+    setStarredMatches((prev: string[]) => {
+      const newStarred = prev.includes(matchId) 
+        ? prev.filter((id: string) => id !== matchId)
+        : [...prev, matchId];
+      
+      localStorage.setItem('starredMatches', JSON.stringify(newStarred));
+      return newStarred;
+    });
+  };
 
   function getTargetTimezone() {
     if (timezone === 'auto') {
@@ -322,6 +349,10 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
                         window.open(matchUrl, '_blank');
                       }}
                       hideCompetitionName={false}
+                      showOdds={true}
+                      showTv={true}
+                      isStarred={starredMatches.includes(match.id)}
+                      onStarToggle={handleStarToggle}
                     />
                   );
                 })}

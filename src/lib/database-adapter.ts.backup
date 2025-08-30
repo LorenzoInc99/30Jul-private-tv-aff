@@ -2,32 +2,6 @@ import { supabaseBrowser, supabaseServer } from './supabase';
 import { getMatchStatus, transformTeamData, transformTvStationData, transformBookmakerData } from './database-config';
 import { ProviderFactory } from './providers/provider-factory';
 
-// Helper function to fetch countries from database
-async function getCountriesMap(supabase: any) {
-  const { data: countries, error } = await supabase
-    .from('countries')
-    .select('id, name, image_path')
-    .order('name', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching countries:', error);
-    // Fallback to empty map if database query fails
-    return new Map();
-  }
-
-  // Create countries map for efficient lookup
-  const countriesMap = new Map();
-  (countries || []).forEach((country: any) => {
-    countriesMap.set(country.id, {
-      id: country.id,
-      name: country.name,
-      image_path: country.image_path || null
-    });
-  });
-
-  return countriesMap;
-}
-
 // Type definitions for the new database schema
 export interface NewFixture {
   id: number;
@@ -97,9 +71,10 @@ export interface NewBookmaker {
 // Adapter functions to transform new schema to expected frontend format
 
 export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) {
-  // Use UTC time to match the database timestamps
-  const start = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
-  const end = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0));
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 1);
 
   // Fetch fixtures with all related data using separate queries to avoid JOIN issues
   const { data: fixtures, error } = await supabase
@@ -152,8 +127,29 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
     tvStationsByFixture.get(tvData.fixture_id).push(tvData.tvstation);
   }
 
-  // Fetch countries from database
-  const countriesMap = await getCountriesMap(supabase);
+  // Hardcoded country data from your database
+  const countriesMap = new Map([
+    [2, { id: 2, name: 'Poland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pl.png' }],
+    [11, { id: 11, name: 'Germany', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/de.png' }],
+    [17, { id: 17, name: 'France', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/fr.png' }],
+    [20, { id: 20, name: 'Portugal', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pt.png' }],
+    [32, { id: 32, name: 'Spain', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/es.png' }],
+    [38, { id: 38, name: 'Netherlands', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/nl.png' }],
+    [41, { id: 41, name: 'Europe', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/eu.png' }],
+    [47, { id: 47, name: 'Sweden', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/se.png' }],
+    [62, { id: 62, name: 'Switzerland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ch.png' }],
+    [86, { id: 86, name: 'Ukraine', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ua.png' }],
+    [143, { id: 143, name: 'Austria', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/at.png' }],
+    [227, { id: 227, name: 'Russia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ru.png' }],
+    [251, { id: 251, name: 'Italy', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/it.png' }],
+    [266, { id: 266, name: 'Croatia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/hr.png' }],
+    [320, { id: 320, name: 'Denmark', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/dk.png' }],
+    [404, { id: 404, name: 'Turkey', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/tr.png' }],
+    [462, { id: 462, name: 'England', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/en.png' }],
+    [556, { id: 556, name: 'Belgium', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/be.png' }],
+    [1161, { id: 1161, name: 'Scotland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/scotland.png' }],
+    [1578, { id: 1578, name: 'Norway', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/no.png' }]
+  ]);
 
   // Transform to expected frontend format
   return (fixtures || []).map((fixture: any) => {
@@ -177,7 +173,7 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
       Event_Broadcasters: fixtureTvStations.map((tvstation: any) => ({
         Broadcasters: transformTvStationData(tvstation)
       })),
-      Odds: transformOddsByBookmaker(fixture.odds || [])
+      Odds: transformOdds(fixture.odds || [])
     };
   });
 }
@@ -243,10 +239,6 @@ export async function getMatchById(matchId: string, supabase = supabaseServer())
 }
 
 export async function getAllCompetitions(supabase = supabaseServer()) {
-  // Fetch countries from database
-  const countriesMap = await getCountriesMap(supabase);
-
-  // Fetch leagues with fixture counts
   const { data: leagues, error } = await supabase
     .from('leagues')
     .select(`
@@ -259,6 +251,30 @@ export async function getAllCompetitions(supabase = supabaseServer()) {
     throw error;
   }
 
+  // Hardcoded country data from your database
+  const countriesMap = new Map([
+    [2, { id: 2, name: 'Poland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pl.png' }],
+    [11, { id: 11, name: 'Germany', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/de.png' }],
+    [17, { id: 17, name: 'France', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/fr.png' }],
+    [20, { id: 20, name: 'Portugal', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/pt.png' }],
+    [32, { id: 32, name: 'Spain', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/es.png' }],
+    [38, { id: 38, name: 'Netherlands', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/nl.png' }],
+    [41, { id: 41, name: 'Europe', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/eu.png' }],
+    [47, { id: 47, name: 'Sweden', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/se.png' }],
+    [62, { id: 62, name: 'Switzerland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ch.png' }],
+    [86, { id: 86, name: 'Ukraine', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ua.png' }],
+    [143, { id: 143, name: 'Austria', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/at.png' }],
+    [227, { id: 227, name: 'Russia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/ru.png' }],
+    [251, { id: 251, name: 'Italy', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/it.png' }],
+    [266, { id: 266, name: 'Croatia', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/hr.png' }],
+    [320, { id: 320, name: 'Denmark', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/dk.png' }],
+    [404, { id: 404, name: 'Turkey', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/tr.png' }],
+    [462, { id: 462, name: 'England', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/en.png' }],
+    [556, { id: 556, name: 'Belgium', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/be.png' }],
+    [1161, { id: 1161, name: 'Scotland', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/sc.png' }],
+    [1578, { id: 1578, name: 'Norway', image_path: 'https://cdn.sportmonks.com/images/countries/png/short/no.png' }]
+  ]);
+
   return (leagues || []).map((league: any) => ({
     id: league.id,
     name: league.name,
@@ -269,9 +285,6 @@ export async function getAllCompetitions(supabase = supabaseServer()) {
 }
 
 export async function getCompetitionDetails(competitionId: string, supabase = supabaseServer()) {
-  // Fetch countries from database
-  const countriesMap = await getCountriesMap(supabase);
-
   const { data: league, error } = await supabase
     .from('leagues')
     .select(`
@@ -302,8 +315,6 @@ export async function getCompetitionDetails(competitionId: string, supabase = su
   return {
     id: league.id,
     name: league.name,
-    country: countriesMap.get(league.country_id) || null,
-    league_logo: league.league_logo || null,
     Events: (league.fixtures || [])
       .map((fixture: any) => ({
         id: fixture.id,
@@ -317,7 +328,7 @@ export async function getCompetitionDetails(competitionId: string, supabase = su
         Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({
           Broadcasters: transformTvStationData(ftv.tvstation)
         })) || [],
-        Odds: transformOddsByBookmaker(fixture.odds || [])
+        Odds: transformOdds(fixture.odds || [])
       }))
       .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()) // Sort by date ascending (oldest first)
   };

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { SITE_TITLE } from '../../../lib/constants';
 import Head from 'next/head';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MatchCard from '@/components/MatchCard';
 import StandingsTable from '@/components/StandingsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,6 +55,32 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
   const searchParams = useSearchParams();
   const timezone = searchParams.get('timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
+  const [starredMatches, setStarredMatches] = useState<string[]>([]);
+
+  // Load starred matches from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('starredMatches');
+    if (saved) {
+      try {
+        setStarredMatches(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error parsing starred matches:', error);
+        setStarredMatches([]);
+      }
+    }
+  }, []);
+
+  // Save starred matches to localStorage
+  const handleStarToggle = (matchId: string) => {
+    setStarredMatches(prev => {
+      const newStarred = prev.includes(matchId) 
+        ? prev.filter(id => id !== matchId)
+        : [...prev, matchId];
+      
+      localStorage.setItem('starredMatches', JSON.stringify(newStarred));
+      return newStarred;
+    });
+  };
 
   // Helper to get the correct timezone string
   function getTargetTimezone() {
@@ -64,8 +90,22 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
     return timezone;
   }
 
-  // Add competition property to each match for consistent MatchCard rendering
-  const matchesWithCompetition = matches.map(m => ({ ...m, competition }));
+  // Transform matches to use the same data structure as the home page
+  const matchesWithCompetition = matches.map(m => {
+    // Ensure the match has the same structure as getMatchesForDate
+    return {
+      ...m,
+      competition,
+      // Ensure these fields exist and are properly structured
+      Event_Broadcasters: m.Event_Broadcasters || [],
+      Odds: m.Odds || [],
+      Competitions: {
+        id: competition.id,
+        name: competition.name,
+        country: competition.country
+      }
+    };
+  });
   
   // Separate matches into results (past/current) and fixtures (future)
   const today = new Date();
@@ -150,7 +190,7 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                 </div>
               ) : (
                 <div className="bg-gray-50 dark:bg-gray-900">
-                  <div className="w-full md:max-w-3xl mx-auto">
+                  <div className="w-full">
                     <Tabs defaultValue="fixtures" className="w-full">
                       <TabsList className="flex w-full border-b border-gray-200 dark:border-gray-700 mb-6 bg-transparent">
                         <TabsTrigger value="fixtures" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Fixtures</TabsTrigger>
@@ -190,6 +230,10 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                                         window.open(matchUrl, '_blank');
                                       }}
                                       hideCompetitionName={true}
+                                      showOdds={true}
+                                      showTv={true}
+                                      isStarred={starredMatches.includes(match.id)}
+                                      onStarToggle={handleStarToggle}
                                     />
                                   );
                                 })}
@@ -231,6 +275,10 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                                         window.open(matchUrl, '_blank');
                                       }}
                                       hideCompetitionName={true}
+                                      showOdds={true}
+                                      showTv={true}
+                                      isStarred={starredMatches.includes(match.id)}
+                                      onStarToggle={handleStarToggle}
                                     />
                                   );
                                 })}

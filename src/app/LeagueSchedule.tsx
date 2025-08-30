@@ -7,7 +7,21 @@ import CountryFlag from '../components/CountryFlag';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
 import { slugify } from '../lib/utils';
 
-export default function LeagueSchedule({ competitions, timezone = 'auto', showOdds = true, showTv = true }: { competitions: any[]; timezone?: string; showOdds?: boolean; showTv?: boolean }) {
+export default function LeagueSchedule({ 
+  competitions, 
+  timezone = 'auto', 
+  showOdds = true, 
+  showTv = true,
+  starredMatches = new Set<string>(),
+  onStarToggle
+}: { 
+  competitions: any[]; 
+  timezone?: string; 
+  showOdds?: boolean; 
+  showTv?: boolean;
+  starredMatches?: Set<string>;
+  onStarToggle?: (matchId: string) => void;
+}) {
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
@@ -57,12 +71,12 @@ export default function LeagueSchedule({ competitions, timezone = 'auto', showOd
   }
 
   return (
-    <div className="space-y-2 px-2 md:px-8">
+    <div className="space-y-1">
       {sorted.map(group => {
         const isPinned = mounted && isLeaguePinned(group.competition.id);
         const isOpen = expanded[group.competition.id];
         return (
-          <div key={group.competition.id} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-6 md:rounded-lg md:shadow">
+          <div key={group.competition.id} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 md:rounded-lg md:shadow">
             <div
               className="flex items-center justify-between cursor-pointer p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700"
               onClick={() => setExpanded(e => ({ ...e, [group.competition.id]: !e[group.competition.id] }))}
@@ -113,20 +127,24 @@ export default function LeagueSchedule({ competitions, timezone = 'auto', showOd
               </svg>
             </div>
             {isOpen && (
-              <div className={`collapse-transition expanded`} style={{ opacity: 1 }}>
+              <div className={`collapse-transition expanded divide-y divide-gray-100 dark:divide-gray-700`} style={{ opacity: 1 }}>
                 {group.matches.map((match: any, idx: number) => {
                   const homeSlug = slugify(match.home_team?.name || 'home');
                   const awaySlug = slugify(match.away_team?.name || 'away');
                   const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
                   const isExpanded = expandedMatch === match.id;
+                  const isStarred = starredMatches.has(match.id);
+                  
                   return (
-                    <div key={match.id} className="overflow-x-auto w-full mb-1 mt-1 last:mb-0">
+                    <div key={match.id} className="overflow-x-auto w-full py-1">
                       <MatchCard
                         match={match}
                         timezone={timezone}
                         isExpanded={isExpanded}
                         showOdds={showOdds}
                         showTv={showTv}
+                        isStarred={isStarred}
+                        onStarToggle={onStarToggle ? () => onStarToggle(match.id) : undefined}
                         onExpandToggle={e => {
                           e.stopPropagation();
                           setExpandedMatch(isExpanded ? null : match.id);

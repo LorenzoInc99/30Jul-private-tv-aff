@@ -8,7 +8,15 @@ function getInitialTimezone() {
   return localStorage.getItem('userTimezone') || 'auto';
 }
 
-export default function MatchScheduleWrapper() {
+export default function MatchScheduleWrapper({ 
+  activeTab = 'scores',
+  starredMatches = new Set<string>(),
+  onStarToggle
+}: { 
+  activeTab?: 'scores' | 'news' | 'favourites' | 'bet-calculator';
+  starredMatches?: Set<string>;
+  onStarToggle?: (matchId: string) => void;
+}) {
   const [timezone, setTimezone] = useState('auto');
   const [hydrated, setHydrated] = useState(false);
 
@@ -21,5 +29,13 @@ export default function MatchScheduleWrapper() {
     return <div className="min-h-screen bg-gray-50 dark:bg-gray-900" />;
   }
 
-  return <MatchSchedule timezone={timezone} setTimezone={setTimezone} />;
+  return (
+    <MatchSchedule 
+      timezone={timezone} 
+      setTimezone={setTimezone} 
+      activeTab={activeTab}
+      starredMatches={starredMatches}
+      onStarToggle={onStarToggle}
+    />
+  );
 } 

@@ -58,6 +58,7 @@ function MatchSkeleton() {
 export default function MatchPageClient({ match }: { match: any }) {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [showAllBroadcasters, setShowAllBroadcasters] = useState(false);
 
   const timezone = searchParams.get('timezone') || 'auto';
   
@@ -84,6 +85,19 @@ export default function MatchPageClient({ match }: { match: any }) {
   const awayTeamName = match.away_team?.name || 'Unknown Away Team';
   const hasOdds = match.Odds && match.Odds.length > 0;
   const hasBroadcasters = match.Event_Broadcasters && match.Event_Broadcasters.length > 0;
+
+  // Filter out broadcasters without names
+  const validBroadcasters = hasBroadcasters 
+    ? match.Event_Broadcasters
+        .map((eb: any) => eb.Broadcasters)
+        .filter((broadcaster: any) => broadcaster?.name)
+    : [];
+
+  const displayedBroadcasters = showAllBroadcasters 
+    ? validBroadcasters 
+    : validBroadcasters.slice(0, 10);
+
+  const remainingCount = validBroadcasters.length - 10;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -119,9 +133,13 @@ export default function MatchPageClient({ match }: { match: any }) {
                     </div>
                     {/* Team Name Row */}
                     <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
-                      <span className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg">
+                      <Link
+                        href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+                        className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg hover:text-blue-600 dark:hover:text-blue-400"
+                        aria-label={`Go to ${homeTeamName} team page`}
+                      >
                         {homeTeamName}
-                      </span>
+                      </Link>
                     </div>
                     {/* Form Row */}
                     <div className="flex items-center justify-center h-6">
@@ -175,9 +193,13 @@ export default function MatchPageClient({ match }: { match: any }) {
                     </div>
                     {/* Team Name Row */}
                     <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
-                      <span className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg">
+                      <Link
+                        href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+                        className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg hover:text-blue-600 dark:hover:text-blue-400"
+                        aria-label={`Go to ${awayTeamName} team page`}
+                      >
                         {awayTeamName}
-                      </span>
+                      </Link>
                     </div>
                     {/* Form Row */}
                     <div className="flex items-center justify-center h-6">
@@ -192,86 +214,120 @@ export default function MatchPageClient({ match }: { match: any }) {
 
               {/* Broadcasters */}
               <div className="text-center mb-6">
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">Broadcasters:</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
+                  Broadcasters ({validBroadcasters.length} total):
+                </p>
                 {hasBroadcasters ? (
-                  <>
-                    {/* Desktop Layout - Horizontal with logos */}
-                    <div className="hidden md:flex flex-wrap justify-center gap-4 mb-4">
-                      {match.Event_Broadcasters.map((eb: any, index: number) => {
-                        const broadcaster = eb.Broadcasters;
-                        if (!broadcaster?.name) return null;
-                        
-                        return (
-                          <BroadcasterLogo
-                            key={index}
-                            logoUrl={broadcaster.logo_url}
-                            broadcasterName={broadcaster.name}
-                            affiliateUrl={broadcaster.affiliate_url}
-                            size="md"
-                          />
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Mobile Layout - Bullet points with logos and names */}
-                    <div className="md:hidden">
-                      <ul className="list-none space-y-0 text-left max-w-sm mx-auto">
-                        {match.Event_Broadcasters.map((eb: any, index: number) => {
-                          const broadcaster = eb.Broadcasters;
-                          if (!broadcaster?.name) return null;
-                          
-                          return (
-                            <li key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                              <div className="flex-shrink-0">
-                                {broadcaster.affiliate_url ? (
-                                  <a
-                                    href={broadcaster.affiliate_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:scale-105 transition-transform duration-200"
-                                    aria-label={`Watch on ${broadcaster.name}`}
-                                  >
-                                    <BroadcasterLogo
-                                      logoUrl={broadcaster.logo_url}
-                                      broadcasterName={broadcaster.name}
-                                      size="sm"
-                                      className="!w-8 !h-8"
-                                      showLabel={false}
+                  <div className="max-w-md mx-auto">
+                    <div className="space-y-2">
+                      {displayedBroadcasters.map((broadcaster: any, index: number) => (
+                        <div key={index} className="relative">
+                          {broadcaster.affiliate_url ? (
+                            <a
+                              href={broadcaster.affiliate_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
+                              aria-label={`Visit ${broadcaster.name}`}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className="flex-shrink-0">
+                                  {broadcaster.logo_url ? (
+                                    <Image
+                                      src={broadcaster.logo_url}
+                                      alt={`${broadcaster.name} logo`}
+                                      width={32}
+                                      height={32}
+                                      className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
+                                      onError={(e) => {
+                                        // Fallback to letter if image fails to load
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const parent = target.parentElement;
+                                        if (parent) {
+                                          parent.innerHTML = `
+                                            <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                              ${broadcaster.name.charAt(0).toUpperCase()}
+                                            </div>
+                                          `;
+                                        }
+                                      }}
                                     />
-                                  </a>
-                                ) : (
-                                  <BroadcasterLogo
-                                    logoUrl={broadcaster.logo_url}
-                                    broadcasterName={broadcaster.name}
-                                    size="sm"
-                                    className="!w-8 !h-8"
-                                    showLabel={false}
-                                  />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  ) : (
+                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                      {broadcaster.name.charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
                                   {broadcaster.name}
                                 </span>
-                                {broadcaster.affiliate_url && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    Click to visit broadcaster
-                                  </div>
-                                )}
                               </div>
-                              {broadcaster.affiliate_url && (
+                              <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
+                              <div className="flex items-center space-x-3">
                                 <div className="flex-shrink-0">
-                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
+                                  {broadcaster.logo_url ? (
+                                    <Image
+                                      src={broadcaster.logo_url}
+                                      alt={`${broadcaster.name} logo`}
+                                      width={32}
+                                      height={32}
+                                      className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
+                                      onError={(e) => {
+                                        // Fallback to letter if image fails to load
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const parent = target.parentElement;
+                                        if (parent) {
+                                          parent.innerHTML = `
+                                            <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                              ${broadcaster.name.charAt(0).toUpperCase()}
+                                            </div>
+                                          `;
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                      {broadcaster.name.charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </li>
-                          );
-                        })}
-                      </ul>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {broadcaster.name}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </>
+                    
+                    {!showAllBroadcasters && remainingCount > 0 && (
+                      <button
+                        onClick={() => setShowAllBroadcasters(true)}
+                        className="mt-3 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium transition-colors duration-200"
+                      >
+                        Show {remainingCount} more broadcaster{remainingCount !== 1 ? 's' : ''}
+                      </button>
+                    )}
+                    
+                    {showAllBroadcasters && validBroadcasters.length > 10 && (
+                      <button
+                        onClick={() => setShowAllBroadcasters(false)}
+                        className="mt-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 text-sm font-medium transition-colors duration-200"
+                      >
+                        Show less
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">N/A</p>
                 )}

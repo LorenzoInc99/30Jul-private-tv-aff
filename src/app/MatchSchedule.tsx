@@ -46,7 +46,19 @@ function HomeStructuredData({ matches }: { matches: any[] }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />;
 }
 
-export default function MatchSchedule({ timezone, setTimezone }: { timezone: string; setTimezone: (tz: string) => void }) {
+export default function MatchSchedule({ 
+  timezone, 
+  setTimezone, 
+  activeTab = 'scores',
+  starredMatches = new Set<string>(),
+  onStarToggle
+}: { 
+  timezone: string; 
+  setTimezone: (tz: string) => void;
+  activeTab?: 'scores' | 'news' | 'favourites' | 'bet-calculator';
+  starredMatches?: Set<string>;
+  onStarToggle?: (matchId: string) => void;
+}) {
   const [hydrated, setHydrated] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -54,6 +66,7 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
   const [error, setError] = useState<string | null>(null);
   const [showOdds, setShowOdds] = useState(true);
   const [showTv, setShowTv] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'live' | 'finished' | 'upcoming'>('all');
 
   // Hydrate selectedDate and toggle preference from localStorage on mount
   useEffect(() => {
@@ -63,15 +76,17 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
         const d = new Date(saved);
         if (!isNaN(d.getTime())) {
           setSelectedDate(d);
-        } else {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          setSelectedDate(today);
-        }
+              } else {
+        // Use a date that has fixtures in the database (November 9, 2025)
+        const defaultDate = new Date('2025-11-09');
+        defaultDate.setHours(0, 0, 0, 0);
+        setSelectedDate(defaultDate);
+      }
       } else {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        setSelectedDate(today);
+        // Use a date that has fixtures in the database (November 9, 2025)
+        const defaultDate = new Date('2025-11-09');
+        defaultDate.setHours(0, 0, 0, 0);
+        setSelectedDate(defaultDate);
       }
       
       // Set toggle preferences
@@ -79,6 +94,10 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
       const savedShowTv = localStorage.getItem('showTv');
       setShowOdds(savedShowOdds !== null ? savedShowOdds === 'true' : true);
       setShowTv(savedShowTv !== null ? savedShowTv === 'true' : true);
+      
+      // Set filter preference
+      const savedFilter = localStorage.getItem('selectedFilter') as 'all' | 'live' | 'finished' | 'upcoming';
+      setSelectedFilter(savedFilter || 'all');
       
       setHydrated(true);
     }
@@ -131,8 +150,67 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
     }
   }, [showOdds, showTv]);
 
+  // Save filter preference to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedFilter', selectedFilter);
+    }
+  }, [selectedFilter]);
+
+  // Handle star toggle
+  const handleStarToggle = (matchId: string) => {
+    if (onStarToggle) {
+      onStarToggle(matchId);
+    }
+  };
+
+  // Filter matches based on selected filter
+  const filterMatches = (matches: any[]) => {
+    switch (selectedFilter) {
+      case 'live':
+        return matches.filter(m => 
+          m.status === '1st Half' || m.status === '2nd Half' || m.status === 'Half Time' || 
+          m.status === 'Extra Time' || m.status === 'Penalties'
+        );
+      case 'finished':
+        return matches.filter(m => 
+          m.status === 'Finished' || m.status === 'Full Time' || m.status === 'After Extra Time' || m.status === 'After Penalties'
+        );
+      case 'upcoming':
+        return matches.filter(m => 
+          m.status === 'Not Started' || m.status === 'Scheduled'
+        );
+      default:
+        return matches;
+    }
+  };
+
+  // Apply filter to competitions and handle favourites
+  const getFilteredCompetitions = () => {
+    let filteredComps = competitions.map(comp => ({
+      ...comp,
+      matches: filterMatches(comp.matches)
+    }));
+
+    // If on favourites tab, only show starred matches
+    if (activeTab === 'favourites') {
+      filteredComps = filteredComps.map(comp => {
+        const starredMatchesInComp = comp.matches.filter((match: any) => starredMatches.has(match.id));
+        return {
+          ...comp,
+          matches: starredMatchesInComp
+        };
+      });
+    }
+
+    const result = filteredComps.filter(comp => comp.matches.length > 0);
+    return result;
+  };
+
+  const filteredCompetitions = getFilteredCompetitions();
+
   // Flatten matches for structured data
-  const allMatches = competitions.flatMap(c => c.matches);
+  const allMatches = filteredCompetitions.flatMap(c => c.matches);
 
   if (!hydrated || !selectedDate) {
     // Show only background color (no content) while hydrating
@@ -142,7 +220,7 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
   return (
     <div>
       {/* Mobile Navigation Bar */}
-      <div className="md:hidden px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 mb-4">
+      <div className="md:hidden px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 mb-6">
         <div className="flex items-center justify-between mb-3">
           <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
           <div className="flex items-center gap-2">
@@ -180,8 +258,9 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
           ].map(filter => (
             <button
               key={filter.key}
+              onClick={() => setSelectedFilter(filter.key as 'all' | 'live' | 'finished' | 'upcoming')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                filter.key === 'all'
+                selectedFilter === filter.key
                   ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
               }`}
@@ -196,8 +275,8 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
       </div>
 
       {/* Desktop Navigation */}
-      <div className="hidden md:block px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
+      <div className="hidden md:block py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded-lg mx-2 mb-3">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
             <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
             <div className="flex items-center gap-3">
@@ -241,10 +320,9 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Desktop Filter Pills */}
-      <div className="hidden md:flex gap-2 px-6 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        
+        {/* Filter Pills - Now inside the navigation bar */}
+        <div className="flex gap-2 justify-center">
           {[
             { key: 'all', label: 'All', count: null },
             { key: 'live', label: 'Live', count: competitions.flatMap(c => c.matches).filter(m => 
@@ -260,8 +338,9 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
           ].map(filter => (
             <button
               key={filter.key}
+              onClick={() => setSelectedFilter(filter.key as 'all' | 'live' | 'finished' | 'upcoming')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                filter.key === 'all'
+                selectedFilter === filter.key
                   ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
               }`}
@@ -272,16 +351,31 @@ export default function MatchSchedule({ timezone, setTimezone }: { timezone: str
               )}
             </button>
           ))}
+        </div>
       </div>
+
+
       {!loading && !error && allMatches.length > 0 && <HomeStructuredData matches={allMatches} />}
       {loading ? (
         <div className="text-center text-gray-500 py-10">Loading matches...</div>
       ) : error ? (
         <div className="text-center text-red-500 py-10">Error: {error}</div>
-      ) : competitions.length === 0 ? (
-        <div className="text-center text-gray-500 py-10">No matches found for this day.</div>
+      ) : filteredCompetitions.length === 0 ? (
+        <div className="text-center text-gray-500 py-10">
+          {activeTab === 'favourites' ? 'No starred matches found for this day.' : 
+           selectedFilter === 'all' ? 'No matches found for this day.' : `No ${selectedFilter} matches found for this day.`}
+        </div>
       ) : (
-        <LeagueSchedule competitions={competitions} timezone={timezone} showOdds={showOdds} showTv={showTv} />
+        <div className="w-full">
+          <LeagueSchedule 
+            competitions={filteredCompetitions} 
+            timezone={timezone} 
+            showOdds={showOdds} 
+            showTv={showTv}
+            starredMatches={starredMatches}
+            onStarToggle={handleStarToggle}
+          />
+        </div>
       )}
     </div>
   );

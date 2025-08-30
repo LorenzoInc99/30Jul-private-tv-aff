@@ -12,6 +12,7 @@ import BannerAd from '../components/BannerAd';
 import ADVLeft from '../components/ADVLeft';
 import ADVTop from '../components/ADVTop';
 import ADVRight from '../components/ADVRight';
+import NavigationWrapper from './components/NavigationWrapper';
 
 export const metadata: Metadata = {
   title: {
@@ -143,8 +144,6 @@ export default async function RootLayout({
         <ADVLeft />
         {/* Right vertical banner ad (desktop only) */}
         <ADVRight />
-        {/* Top horizontal banner ad (desktop only) */}
-        <ADVTop />
         <div className="md:mx-auto md:max-w-[1100px] md:px-8 md:rounded-2xl overflow-hidden">
           {/* Static Header/Nav Bar */}
           <header className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
@@ -159,6 +158,8 @@ export default async function RootLayout({
               {/* Navigation removed as per new requirements */}
             </div>
           </header>
+          {/* Top horizontal banner ad (desktop only) */}
+          <ADVTop />
           {/* Main layout below header and banner */}
           <AdminWrapper 
             competitions={competitions || []}
@@ -238,7 +239,7 @@ export default async function RootLayout({
                       ].map((league) => (
                         <li key={league.id}>
                           <a 
-                            href={`/competition/${league.id}-${league.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`} 
+                            href={`/competition/${league.id}-${league.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
                             className="hover:underline text-sm"
                           >
                             {league.name}
@@ -248,9 +249,10 @@ export default async function RootLayout({
                     </ul>
                   </div>
                 </div>
-                
-                <div className="text-center mt-8 text-xs text-gray-500 dark:text-gray-400">
-                  © {new Date().getFullYear()} Live Football TV Guide. All rights reserved.
+                <div className="text-center mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    © 2024 Live Football TV Guide. All rights reserved.
+                  </p>
                 </div>
               </footer>
             }
