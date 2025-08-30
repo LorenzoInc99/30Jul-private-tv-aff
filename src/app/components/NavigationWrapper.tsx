@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import NavigationTabs from './NavigationTabs';
 import MatchScheduleWrapper from '../MatchScheduleWrapper';
-import BetCalculator from '../../components/BetCalculator';
+import BetCalculatorFull from '../../components/BetCalculatorFull';
 
 type TabType = 'scores' | 'news' | 'favourites' | 'bet-calculator';
 
@@ -91,11 +91,11 @@ export default function NavigationWrapper() {
         </div>
       )}
       
-      {/* Bet Calculator tab - separate content */}
+      {/* Bet Calculator tab - direct integration */}
       {activeTab === 'bet-calculator' && (
         <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
           <div className="w-full pt-2 pb-4 md:pt-2 md:pb-8 flex-grow">
-            <BetCalculator />
+            <BetCalculatorFull />
           </div>
         </div>
       )}
