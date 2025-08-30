@@ -4,12 +4,13 @@ import Image from 'next/image';
 interface TeamLogoProps {
   logoUrl?: string | null;
   teamName: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
 export default function TeamLogo({ logoUrl, teamName, size = 'sm', className = '' }: TeamLogoProps) {
   const sizeClasses = {
+    xs: 'w-3 h-3',
     sm: 'w-4 h-4',
     md: 'w-6 h-6',
     lg: 'w-8 h-8',
@@ -32,8 +33,8 @@ export default function TeamLogo({ logoUrl, teamName, size = 'sm', className = '
       <Image
         src={logoUrl}
         alt={`${teamName} logo`}
-        width={size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
-        height={size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
+        width={size === 'xs' ? 12 : size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
+        height={size === 'xs' ? 12 : size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
         className="object-contain"
         onError={(e) => {
           // Fallback to letter if image fails to load

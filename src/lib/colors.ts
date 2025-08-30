@@ -236,3 +236,4 @@ export const getOddsColor = (odds: number, bestOdds: number) => {
   if (percentage <= 120) return colors.odds.average;
   return colors.odds.poor;
 };
+
