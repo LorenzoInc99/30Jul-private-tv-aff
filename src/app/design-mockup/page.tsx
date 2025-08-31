@@ -212,10 +212,10 @@ function EnhancedMatchCard({ match, showOdds }: { match: any; showOdds: boolean 
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className={`text-sm font-medium truncate ${
-              isLive ? 'text-gray-900 dark:text-white' :
-              isFinished && match.home_score > match.away_score ? 'font-bold text-gray-900 dark:text-white' :
-              'text-gray-700 dark:text-gray-300'
+            <span className={`text-sm truncate ${
+              isLive ? 'text-gray-900 dark:text-white font-normal' :
+              isFinished && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' :
+              'font-light text-gray-500 dark:text-gray-400'
             }`}>
               {match.home_team.name}
             </span>
@@ -228,10 +228,10 @@ function EnhancedMatchCard({ match, showOdds }: { match: any; showOdds: boolean 
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className={`text-sm font-medium truncate ${
-              isLive ? 'text-gray-900 dark:text-white' :
-              isFinished && match.away_score > match.home_score ? 'font-bold text-gray-900 dark:text-white' :
-              'text-gray-700 dark:text-gray-300'
+            <span className={`text-sm truncate ${
+              isLive ? 'text-gray-900 dark:text-white font-normal' :
+              isFinished && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' :
+              'font-light text-gray-500 dark:text-gray-400'
             }`}>
               {match.away_team.name}
             </span>

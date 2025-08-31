@@ -135,7 +135,13 @@ export default function MatchPageClient({ match }: { match: any }) {
                     <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
                       <Link
                         href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
-                        className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg hover:text-blue-600 dark:hover:text-blue-400"
+                        className={`text-sm md:text-2xl text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
+                          match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
+                            (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
+                              'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
+                              'font-light text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400') :
+                          'font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
+                        }`}
                         aria-label={`Go to ${homeTeamName} team page`}
                       >
                         {homeTeamName}
@@ -195,7 +201,13 @@ export default function MatchPageClient({ match }: { match: any }) {
                     <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
                       <Link
                         href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
-                        className="font-bold text-sm md:text-2xl text-gray-900 dark:text-white text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg hover:text-blue-600 dark:hover:text-blue-400"
+                        className={`text-sm md:text-2xl text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
+                          match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
+                            (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
+                              'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
+                              'font-light text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400') :
+                          'font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
+                        }`}
                         aria-label={`Go to ${awayTeamName} team page`}
                       >
                         {awayTeamName}

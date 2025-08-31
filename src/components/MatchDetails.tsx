@@ -208,7 +208,13 @@ export default function MatchDetails({ match }: { match: any }) {
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                  className={`text-xs truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1 ${
+                    match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
+                      (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
+                        'font-black text-gray-900 dark:text-white hover:underline' : 
+                        'font-light text-gray-500 dark:text-gray-400 hover:underline') :
+                    'font-bold text-indigo-600 dark:text-indigo-400 hover:underline'
+                  }`}
                   style={{ cursor: 'pointer' }}
                 >
                   {match.home_team?.name}
@@ -254,7 +260,13 @@ export default function MatchDetails({ match }: { match: any }) {
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                  className={`text-xs truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1 ${
+                    match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
+                      (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
+                        'font-black text-gray-900 dark:text-white hover:underline' : 
+                        'font-light text-gray-500 dark:text-gray-400 hover:underline') :
+                    'font-bold text-indigo-600 dark:text-indigo-400 hover:underline'
+                  }`}
                   style={{ cursor: 'pointer' }}
                 >
                   {match.away_team?.name}
@@ -299,7 +311,13 @@ export default function MatchDetails({ match }: { match: any }) {
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
-                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                className={`text-base truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1 ${
+                  match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
+                    (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
+                      'font-black text-gray-900 dark:text-white hover:underline' : 
+                      'font-light text-gray-500 dark:text-gray-400 hover:underline') :
+                  'font-bold text-indigo-600 dark:text-indigo-400 hover:underline'
+                }`}
                 style={{ cursor: 'pointer' }}
               >
                 {match.home_team?.name}
@@ -345,7 +363,13 @@ export default function MatchDetails({ match }: { match: any }) {
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
-                className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:underline truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1"
+                className={`text-base truncate w-full text-center transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 hover:rounded px-2 py-1 ${
+                  match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
+                    (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
+                      'font-black text-gray-900 dark:text-white hover:underline' : 
+                      'font-light text-gray-500 dark:text-gray-400 hover:underline') :
+                  'font-bold text-indigo-600 dark:text-indigo-400 hover:underline'
+                }`}
                 style={{ cursor: 'pointer' }}
               >
                 {match.away_team?.name}

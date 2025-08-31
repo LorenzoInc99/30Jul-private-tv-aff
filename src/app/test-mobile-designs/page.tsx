@@ -348,13 +348,21 @@ function CardBasedDesign({ matches, showOdds, showChannels }: { matches: any[]; 
                   <div className="flex-1 min-w-0 flex items-center gap-2">
                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                       <img src={match.home_team.team_logo_url} alt="" className="w-6 h-6 object-contain" />
-                      <span className="text-sm font-medium truncate text-gray-900 dark:text-white">
+                      <span className={`text-sm truncate ${
+                        match.status === 'Finished' && match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
+                        'font-black text-gray-900 dark:text-white' : 
+                        'font-light text-gray-500 dark:text-gray-400'
+                      }`}>
                         {match.home_team.name}
                       </span>
                     </div>
                     <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">vs</span>
                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                      <span className="text-sm font-medium truncate text-gray-900 dark:text-white">
+                      <span className={`text-sm truncate ${
+                        match.status === 'Finished' && match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
+                        'font-black text-gray-900 dark:text-white' : 
+                        'font-light text-gray-500 dark:text-gray-400'
+                      }`}>
                         {match.away_team.name}
                       </span>
                       <img src={match.away_team.team_logo_url} alt="" className="w-6 h-6 object-contain" />

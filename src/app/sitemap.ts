@@ -5,36 +5,9 @@ import { slugify } from '../lib/utils';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   
-  // For now, let's use hardcoded popular leagues to ensure the sitemap works
-  // We can add database integration later once we debug the connection issues
-  const popularCompetitions = [
-    { id: 8, name: 'Premier League' },
-    { id: 564, name: 'La Liga' },
-    { id: 82, name: 'Bundesliga' },
-    { id: 384, name: 'Serie A' },
-    { id: 301, name: 'Ligue 1' },
-    { id: 732, name: 'Champions League' },
-    { id: 733, name: 'Europa League' },
-    { id: 848, name: 'Conference League' }
-  ];
-  
-  // Popular teams for fallback
-  const popularTeams = [
-    { id: 1, name: 'Manchester United' },
-    { id: 2, name: 'Real Madrid' },
-    { id: 3, name: 'Barcelona' },
-    { id: 4, name: 'Bayern Munich' },
-    { id: 5, name: 'Liverpool' },
-    { id: 6, name: 'Manchester City' },
-    { id: 7, name: 'Chelsea' },
-    { id: 8, name: 'Arsenal' },
-    { id: 9, name: 'Paris Saint-Germain' },
-    { id: 10, name: 'Juventus' }
-  ];
-  
   // Initialize with fallback data
-  let competitions: any[] = popularCompetitions;
-  let teams: any[] = popularTeams;
+  let competitions: any[] = [];
+  let teams: any[] = [];
   let matches: any[] = [];
   
   // Try to get database data, but don't fail if it doesn't work
@@ -114,6 +87,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/standings`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
@@ -173,7 +152,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Competition pages
+  // Competition pages - using the correct URL pattern
   const competitionPages = competitions.map((competition: any) => ({
     url: `${baseUrl}/competition/${competition.id}-${competition.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`,
     lastModified: new Date(),
@@ -181,7 +160,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Team pages
+  // Team pages - using the correct URL pattern
   const teamPages = teams.map((team: any) => ({
     url: `${baseUrl}/team/${slugify(team.name)}`,
     lastModified: new Date(),
@@ -189,9 +168,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Match pages
+  // Match pages - using the correct URL pattern (just the ID)
   const matchPages = matches.map((match: any) => ({
-    url: `${baseUrl}/match/${match.id}-${slugify(match.home_team?.name || 'home')}-vs-${slugify(match.away_team?.name || 'away')}`,
+    url: `${baseUrl}/match/${match.id}`,
     lastModified: new Date(),
     changeFrequency: 'hourly' as const,
     priority: 0.7,
@@ -208,6 +187,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   console.log('=== SITEMAP DEBUG ===');
   console.log('Base URL:', baseUrl);
   console.log('Static pages count:', staticPages.length);
+  console.log('Bet calculator pages count:', betCalculatorPages.length);
   console.log('Competition pages count:', competitionPages.length);
   console.log('Team pages count:', teamPages.length);
   console.log('Match pages count:', matchPages.length);

@@ -99,11 +99,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
               <button
                 onClick={(e) => handleTeamClick(e, match.home_team?.name)}
-                className={`text-sm font-medium truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
-                  isLive ? 'text-gray-900 dark:text-white' :
+                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                  isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300') :
-                  'text-gray-700 dark:text-gray-300'
+                    (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
+                  'font-normal text-gray-700 dark:text-gray-300'
                 }`}
               >
                 {match.home_team?.name}
@@ -119,11 +119,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
               <button
                 onClick={(e) => handleTeamClick(e, match.away_team?.name)}
-                className={`text-sm font-medium truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
-                  isLive ? 'text-gray-900 dark:text-white' :
+                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                  isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300') :
-                  'text-gray-700 dark:text-gray-300'
+                    (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
+                  'font-normal text-gray-700 dark:text-gray-300'
                 }`}
               >
                 {match.away_team?.name}
@@ -279,10 +279,10 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <button
                 onClick={(e) => handleTeamClick(e, match.home_team?.name)}
                 className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
-                  isLive ? 'text-gray-300 font-bold' : 
+                  isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-extrabold' : 'font-normal') :
-                  'font-bold'
+                    (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
+                  'font-normal text-gray-700 dark:text-gray-300'
                 }`}
               >
                 {match.home_team?.name}
@@ -297,10 +297,10 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <button
                 onClick={(e) => handleTeamClick(e, match.away_team?.name)}
                 className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
-                  isLive ? 'text-gray-300 font-bold' : 
+                  isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                    (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-extrabold' : 'font-normal') :
-                  'font-bold'
+                    (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
+                  'font-normal text-gray-700 dark:text-gray-300'
                 }`}
               >
                 {match.away_team?.name}
