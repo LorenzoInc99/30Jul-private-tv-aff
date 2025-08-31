@@ -139,6 +139,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // Bet Calculator pages
+  const betCalculatorPages = [
+    {
+      url: `${baseUrl}/bet-calculator`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/bet-calculator/single`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/bet-calculator/double`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/bet-calculator/treble`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/bet-calculator/accumulator`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+  ];
+
   // Competition pages
   const competitionPages = competitions.map((competition: any) => ({
     url: `${baseUrl}/competition/${competition.id}-${competition.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`,
@@ -165,6 +199,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const allPages = [
     ...staticPages,
+    ...betCalculatorPages,
     ...competitionPages,
     ...teamPages,
     ...matchPages,

@@ -13,6 +13,7 @@ import ADVLeft from '../components/ADVLeft';
 import ADVTop from '../components/ADVTop';
 import ADVRight from '../components/ADVRight';
 import NavigationWrapper from './components/NavigationWrapper';
+import HeaderLogo from './components/HeaderLogo';
 
 export const metadata: Metadata = {
   title: {
@@ -153,9 +154,7 @@ export default async function RootLayout({
           {/* Static Header/Nav Bar */}
           <header className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
             <div className="flex justify-between items-center w-full">
-              <a href="/" className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight no-underline hover:text-blue-600 dark:hover:text-blue-400">
-                Live Football TV Guide
-              </a>
+              <HeaderLogo />
               {/* Hamburger menu for mobile */}
               <div className="md:hidden">
                 <MobileCompetitionsMenu competitions={competitions || []} />
@@ -257,7 +256,7 @@ export default async function RootLayout({
                 </div>
                 <div className="text-center mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    © 2024 Live Football TV Guide. All rights reserved.
+                    © 2024 Live Football on TV. All rights reserved.
                   </p>
                 </div>
               </footer>

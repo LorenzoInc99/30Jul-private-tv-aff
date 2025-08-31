@@ -26,7 +26,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
 
   const [numberOfSelections, setNumberOfSelections] = useState<number>(defaultBetType === 'Double' ? 2 : defaultBetType === 'Treble' ? 3 : defaultBetType === 'Accumulator' ? 4 : 1);
 
-  const [stakeType, setStakeType] = useState<'Stake Per Bet' | 'Total Stake'>('Stake Per Bet');
+
   const [stake, setStake] = useState<number>(10);
   
   // Initialize selections based on defaultBetType
@@ -89,14 +89,14 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
     }
     setSelections(newSelections);
 
-    // Navigate to specific bet type page if not on main calculator page
+    // Navigate to specific bet type page
     const currentPath = window.location.pathname;
-    if (currentPath !== '/bet-calculator') {
       const betTypePath = newBetType.toLowerCase().replace(' ', '');
       const targetPath = `/bet-calculator/${betTypePath}`;
-      if (currentPath !== targetPath) {
+    
+    // Navigate if we're on main calculator page or if we're on a different sub-page
+    if (currentPath === '/bet-calculator' || (currentPath !== targetPath && currentPath.startsWith('/bet-calculator/'))) {
         window.location.href = targetPath;
-      }
     }
   };
 
@@ -110,7 +110,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
   // Calculate bet when any input changes
   useEffect(() => {
     calculateBet();
-  }, [selections, stake, betType, stakeType]);
+  }, [selections, stake, betType]);
 
   // Generate all possible combinations of selections
   const generateCombinations = (arr: BetSelection[], size: number): BetSelection[][] => {
@@ -136,22 +136,10 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
       return;
     }
 
-    let totalOutlay = 0;
-    let totalReturn = 0;
-    const numberOfBets = getNumberOfBets(betType);
-
     // Calculate based on bet type - all are simple accumulator calculations
     const calculatedOdds = selections.reduce((acc, selection) => acc * selection.odds, 1);
-      totalOutlay = stake;
-    totalReturn = stake * calculatedOdds;
-
-    // Handle stake per bet vs total stake
-    if (stakeType === 'Total Stake') {
-      const stakePerBet = stake / numberOfBets;
-      totalOutlay = stake;
-      totalReturn = totalReturn * (stakePerBet / stake);
-    }
-
+    const totalOutlay = stake;
+    const totalReturn = stake * calculatedOdds;
     const totalProfit = totalReturn - totalOutlay;
     const combinedOdds = totalReturn / totalOutlay;
 
@@ -222,7 +210,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                       onChange={(e) => updateBetType(e.target.value as BetType)}
                       className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="Single">✓ Single</option>
+                      <option value="Single">Single</option>
                       <option value="Double">Double</option>
                       <option value="Treble">Treble</option>
                       <option value="Accumulator">Accumulator</option>
@@ -319,11 +307,33 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                       <div>
                         <input
                           type="number"
-                          value={selection.odds}
-                          onChange={(e) => updateSelection(selection.id, 'odds', Number(e.target.value))}
-                          min="1.01"
+                          value={selection.odds === 0 ? '' : selection.odds}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '') {
+                              updateSelection(selection.id, 'odds', 0);
+                            } else {
+                              const numValue = parseFloat(value);
+                              if (!isNaN(numValue)) {
+                                updateSelection(selection.id, 'odds', numValue);
+                              }
+                            }
+                          }}
                           step="0.01"
-                          className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          min="0"
+                          onBlur={(e) => {
+                            // No automatic correction, just validation
+                            const value = parseFloat(e.target.value);
+                            if (value > 0 && value < 1.01) {
+                              // Keep the value but it will be highlighted in red
+                              updateSelection(selection.id, 'odds', value);
+                            }
+                          }}
+                          className={`w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            selection.odds > 0 && (selection.odds < 1.01 || selection.odds > 500)
+                              ? 'border-red-300 bg-red-50 text-red-900 focus:ring-red-500 focus:border-red-500' 
+                              : 'border-gray-300 bg-white text-gray-900'
+                          }`}
                           placeholder="0"
                         />
                       </div>
@@ -331,27 +341,19 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                   ))}
                 </div>
               </div>
+
+              {/* Warning for odds outside valid range */}
+              {selections.some(s => s.odds > 0 && (s.odds < 1.01 || s.odds > 500)) && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+                  ⚠️ Odds must be between 1.01 and 500 for valid betting calculations. Values outside this range are highlighted in red.
+                </div>
+              )}
             </div>
 
             {/* Right Column - Summary */}
             <div>
               <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700 min-w-[120px]">Stake Type:</label>
-                  <div className="relative flex-1">
-                    <select
-                      value={stakeType}
-                      onChange={(e) => setStakeType(e.target.value as 'Stake Per Bet' | 'Total Stake')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="Stake Per Bet">Stake Per Bet</option>
-                      <option value="Total Stake">Total Stake</option>
-                    </select>
-                  </div>
-                  <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">?</span>
-                  </div>
-                </div>
+
 
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700 min-w-[120px]">Stake:</label>
@@ -386,11 +388,6 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                     <div className="text-sm font-medium text-gray-700 mb-1">Total Outlay</div>
                     <div className="text-lg font-semibold text-gray-900">
                       £{calculation.totalOutlay.toFixed(2)}
-                      {stakeType === 'Stake Per Bet' && getNumberOfBets(betType) > 1 && (
-                        <span className="text-sm text-gray-600 ml-2">
-                          ({getNumberOfBets(betType)} bets of £{stake.toFixed(2)})
-                        </span>
-                      )}
                     </div>
                   </div>
 

@@ -99,4 +99,44 @@ export function generateLocalBusinessStructuredData() {
     openingHours: 'Mo-Su 00:00-23:59',
     priceRange: 'Free',
   };
+}
+
+export function generateBetCalculatorStructuredData(betType: string = 'General') {
+  const calculatorName = betType === 'General' 
+    ? 'Free Bet Calculator - Football Betting Calculator & Odds Calculator'
+    : `${betType} Bet Calculator`;
+
+  const calculatorDescription = betType === 'General'
+    ? 'Free football betting calculator. Calculate returns for singles, doubles, trebles, accumulators, and more. Get accurate odds calculations for all bet types.'
+    : `Free ${betType.toLowerCase()} bet calculator for football betting. Calculate returns for ${betType.toLowerCase()} bets instantly.`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: calculatorName,
+    description: calculatorDescription,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web Browser',
+    browserRequirements: 'Requires JavaScript. Requires HTML5.',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock'
+    },
+    featureList: [
+      'Free to use',
+      'No registration required',
+      'Instant calculations',
+      'Multiple bet types supported',
+      'Football betting focused',
+      'Mobile responsive'
+    ],
+    screenshot: 'https://your-domain.com/bet-calculator-screenshot.png', // Replace with actual screenshot URL
+    softwareVersion: '1.0',
+    author: {
+      '@type': 'Organization',
+      name: SITE_TITLE
+    }
+  };
 } 
