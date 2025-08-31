@@ -120,6 +120,11 @@ export default async function RootLayout({
         <meta name="msapplication-TileColor" content="#4F46E5" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="canonical" href="https://your-domain.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         {/* Open Graph and Twitter meta tags */}
         <meta property="og:title" content={SITE_TITLE} />
         <meta property="og:description" content="Find the complete live football TV schedule for today, including broadcasters, kick-off times, and real-time betting odds. Never miss a game!" />
@@ -221,6 +226,7 @@ export default async function RootLayout({
                     <h3 className="font-bold mb-3 text-gray-900 dark:text-white text-base">Navigation</h3>
                     <ul className="space-y-2 mb-4">
                       <li><a href="/" className="hover:underline text-sm">Home</a></li>
+                      <li><a href="/bet-calculator" className="hover:underline text-sm">Bet Calculator</a></li>
                       <li><a href="/sitemap.xml" className="hover:underline text-sm">Sitemap</a></li>
                       <li><a href="/about" className="hover:underline text-sm">About Us</a></li>
                       <li><a href="/contact" className="hover:underline text-sm">Contact</a></li>

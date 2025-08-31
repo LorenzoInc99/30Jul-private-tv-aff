@@ -16,25 +16,15 @@ export const metadata: Metadata = {
 export default function TrebleBetCalculatorPage() {
   return (
     <BetCalculatorLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-            <li><a href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
-            <li>/</li>
-            <li><a href="/bet-calculator" className="hover:text-blue-600 dark:hover:text-blue-400">Bet Calculator</a></li>
-            <li>/</li>
-            <li className="text-gray-900 dark:text-white font-medium">Treble Bet</li>
-          </ol>
-        </nav>
+      <div className="container mx-auto px-4 py-2">
 
         {/* SEO-optimized header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Treble Bet Calculator
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            Calculate your treble bet returns instantly. Combine three selections for higher potential returns.
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
+            A treble is a bet on three football matches combined into one. Just like a double, the odds are multiplied, but now all three results must be correct to win. The payout can be much bigger, but the risk is also higher since one wrong result means the whole bet loses.
           </p>
         </div>
 

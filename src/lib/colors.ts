@@ -237,3 +237,4 @@ export const getOddsColor = (odds: number, bestOdds: number) => {
   return colors.odds.poor;
 };
 
+

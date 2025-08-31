@@ -14,10 +14,22 @@ interface BetCalculatorLayoutProps {
 export default function BetCalculatorLayout({ children, defaultBetType }: BetCalculatorLayoutProps) {
   const [activeTab, setActiveTab] = useState<TabType>('bet-calculator');
   const [starredMatches, setStarredMatches] = useState<Set<string>>(new Set());
+  const [isClient, setIsClient] = useState(false);
 
-  // Load starred matches from localStorage on mount
+  // Set client flag on mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Load active tab and starred matches from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Load active tab
+      const savedTab = localStorage.getItem('activeTab') as TabType;
+      if (savedTab && ['scores', 'news', 'favourites', 'bet-calculator'].includes(savedTab)) {
+        setActiveTab(savedTab);
+      }
+      
       // Load starred matches
       const savedStarredMatches = localStorage.getItem('starredMatches');
       if (savedStarredMatches) {
@@ -30,6 +42,13 @@ export default function BetCalculatorLayout({ children, defaultBetType }: BetCal
       }
     }
   }, []);
+
+  // Save active tab to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('activeTab', activeTab);
+    }
+  }, [activeTab]);
 
   // Save starred matches to localStorage when they change
   useEffect(() => {
@@ -45,11 +64,11 @@ export default function BetCalculatorLayout({ children, defaultBetType }: BetCal
     if (tab === 'scores' || tab === 'favourites') {
       window.location.href = '/';
     } else if (tab === 'news') {
-      // For now, stay on current page but could navigate to news page
-      console.log('News tab clicked');
+      // For now, navigate to home page for news
+      window.location.href = '/';
     } else if (tab === 'bet-calculator') {
-      // Stay on current bet calculator page
-      // The URL will already be correct for the specific bet type
+      // Navigate to main bet calculator page
+      window.location.href = '/bet-calculator';
     }
   };
 
@@ -67,7 +86,7 @@ export default function BetCalculatorLayout({ children, defaultBetType }: BetCal
 
   return (
     <>
-      <NavigationTabs activeTab={activeTab} onTabChange={handleTabChange} />
+      {isClient && <NavigationTabs activeTab={activeTab} onTabChange={handleTabChange} />}
       
       {/* Bet Calculator tab - direct integration */}
       {activeTab === 'bet-calculator' && (

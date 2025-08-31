@@ -16,25 +16,15 @@ export const metadata: Metadata = {
 export default function SingleBetCalculatorPage() {
   return (
     <BetCalculatorLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-            <li><a href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
-            <li>/</li>
-            <li><a href="/bet-calculator" className="hover:text-blue-600 dark:hover:text-blue-400">Bet Calculator</a></li>
-            <li>/</li>
-            <li className="text-gray-900 dark:text-white font-medium">Single Bet</li>
-          </ol>
-        </nav>
+      <div className="container mx-auto px-4 py-2">
 
         {/* SEO-optimized header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Single Bet Calculator
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            Calculate your single bet returns instantly. Perfect for beginners and the most popular bet type in football betting.
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
+            A single bet is the simplest form of betting. You pick one football match and predict the outcome, such as which team will win. If your prediction is correct, you win. If not, you lose your stake. Singles are easy to understand and very popular with beginners.
           </p>
         </div>
 

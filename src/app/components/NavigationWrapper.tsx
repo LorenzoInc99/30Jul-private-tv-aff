@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import NavigationTabs from './NavigationTabs';
 import MatchScheduleWrapper from '../MatchScheduleWrapper';
-import BetCalculatorFull from '../../components/BetCalculatorFull';
 
 type TabType = 'scores' | 'news' | 'favourites' | 'bet-calculator';
 
@@ -49,6 +48,11 @@ export default function NavigationWrapper() {
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
+    
+    // Navigate to appropriate page when changing tabs
+    if (tab === 'bet-calculator') {
+      window.location.href = '/bet-calculator';
+    }
   };
 
   const handleStarToggle = (matchId: string) => {
@@ -91,14 +95,7 @@ export default function NavigationWrapper() {
         </div>
       )}
       
-      {/* Bet Calculator tab - direct integration */}
-      {activeTab === 'bet-calculator' && (
-        <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
-          <div className="w-full pt-2 pb-4 md:pt-2 md:pb-8 flex-grow">
-            <BetCalculatorFull />
-          </div>
-        </div>
-      )}
+
     </>
   );
 }

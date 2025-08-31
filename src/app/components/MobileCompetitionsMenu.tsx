@@ -105,7 +105,7 @@ export default function MobileCompetitionsMenu({ competitions }: { competitions:
 
             {/* Leagues Section */}
             <div>
-              <h2 className="font-bold text-sm mb-3 text-gray-900 dark:text-white flex items-center">
+              <h2 className="!text-[10px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
                 {hasPinnedLeagues && (
                   <svg className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />

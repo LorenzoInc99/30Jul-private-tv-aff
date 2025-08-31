@@ -18,6 +18,8 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     { id: 301, name: 'Ligue 1', league_logo: 'https://cdn.sportmonks.com/images/soccer/leagues/301.png' }
   ];
 
+
+
   // Load pinned leagues on mount and when competitions change
   useEffect(() => {
     setMounted(true);
@@ -103,6 +105,8 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
       </button>
     </li>
   );
+
+
 
   const renderPopularLeagueItem = (comp: any) => (
     <li key={comp.id} className="flex items-center justify-between group">
@@ -195,7 +199,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
 
         {/* Popular Leagues Section */}
         <div className="mb-6">
-          <h2 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center">
+          <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
             Popular Leagues
           </h2>
           <ul className="space-y-1">
@@ -206,7 +210,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
         {/* Pinned Leagues Section */}
         {hasPinnedLeagues && (
           <div className="mb-6">
-            <h2 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center">
+            <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
               Pinned Leagues
             </h2>
             <ul className="space-y-1">
@@ -218,7 +222,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
         {/* Pinned Leagues Section - show message when no pinned leagues */}
         {!hasPinnedLeagues && (
           <div>
-            <h2 className="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center">
+            <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
               Pinned Leagues
             </h2>
             <div className="text-gray-500 dark:text-gray-400 text-sm py-2">

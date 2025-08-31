@@ -60,6 +60,7 @@ export default function NavigationTabs({ activeTab, onTabChange }: NavigationTab
         >
           <span className="font-medium">Bet Calculator</span>
         </div>
+
       </div>
     </div>
   );

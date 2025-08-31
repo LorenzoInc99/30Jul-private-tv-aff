@@ -16,25 +16,15 @@ export const metadata: Metadata = {
 export default function DoubleBetCalculatorPage() {
   return (
     <BetCalculatorLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-            <li><a href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
-            <li>/</li>
-            <li><a href="/bet-calculator" className="hover:text-blue-600 dark:hover:text-blue-400">Bet Calculator</a></li>
-            <li>/</li>
-            <li className="text-gray-900 dark:text-white font-medium">Double Bet</li>
-          </ol>
-        </nav>
+      <div className="container mx-auto px-4 py-2">
 
         {/* SEO-optimized header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Double Bet Calculator
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            Calculate your double bet returns instantly. Combine two selections for higher potential returns.
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
+            A double is when you bet on two football matches at once, combining them into one bet. Both results must be correct for you to win. The odds are multiplied together, so the potential payout is higher than singles, but the risk is greater since both predictions must succeed.
           </p>
         </div>
 

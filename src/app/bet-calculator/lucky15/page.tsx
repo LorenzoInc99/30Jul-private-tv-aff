@@ -16,24 +16,14 @@ export const metadata: Metadata = {
 export default function Lucky15CalculatorPage() {
   return (
     <BetCalculatorLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-            <li><a href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
-            <li>/</li>
-            <li><a href="/bet-calculator" className="hover:text-blue-600 dark:hover:text-blue-400">Bet Calculator</a></li>
-            <li>/</li>
-            <li className="text-gray-900 dark:text-white font-medium">Lucky 15</li>
-          </ol>
-        </nav>
+      <div className="container mx-auto px-4 py-2">
 
         {/* SEO-optimized header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Lucky 15 Calculator
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
             Calculate your Lucky 15 bet returns instantly. 15 bets on 4 selections with great insurance - you can win even if only 1 selection wins.
           </p>
         </div>

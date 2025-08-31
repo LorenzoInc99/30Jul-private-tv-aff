@@ -16,25 +16,15 @@ export const metadata: Metadata = {
 export default function AccumulatorCalculatorPage() {
   return (
     <BetCalculatorLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-            <li><a href="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
-            <li>/</li>
-            <li><a href="/bet-calculator" className="hover:text-blue-600 dark:hover:text-blue-400">Bet Calculator</a></li>
-            <li>/</li>
-            <li className="text-gray-900 dark:text-white font-medium">Accumulator</li>
-          </ol>
-        </nav>
+      <div className="container mx-auto px-4 py-2">
 
         {/* SEO-optimized header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Accumulator Calculator
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            Calculate your accumulator bet returns instantly. Combine multiple selections for potentially massive returns.
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
+            An accumulator, often called an "acca," is a bet with four or more football matches linked together. All selections must win for the bet to pay out. Accas are popular because small stakes can return big winnings, but they are risky since just one wrong prediction makes the entire bet lose.
           </p>
         </div>
 

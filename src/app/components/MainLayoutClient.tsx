@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import SidebarCompetitions from "./SidebarCompetitions";
+import BetCalculatorSidebar from "./BetCalculatorSidebar";
 import React, { useEffect, useState } from "react";
 
 export default function MainLayoutClient({ competitions, children }: { competitions: any[]; children: React.ReactNode }) {
@@ -13,14 +14,21 @@ export default function MainLayoutClient({ competitions, children }: { competiti
 
   const hideSidebarRoutes = ["/about", "/contact", "/privacy-policy", "/terms-of-service"];
   const shouldShowSidebar = mounted && !hideSidebarRoutes.includes(pathname);
+  
+  // Check if we're on a bet calculator page
+  const isBetCalculatorPage = pathname.startsWith('/bet-calculator');
 
   return (
     <div className="w-full md:flex md:justify-center min-h-screen">
       <div className="flex w-full min-h-screen">
-        {/* Sidebar - hidden on mobile, visible on desktop */}
+                {/* Sidebar - hidden on mobile, visible on desktop */}
         {shouldShowSidebar && (
           <div className="hidden md:block">
-            <SidebarCompetitions competitions={competitions} />
+            {isBetCalculatorPage ? (
+              <BetCalculatorSidebar />
+            ) : (
+              <SidebarCompetitions competitions={competitions} />
+            )}
           </div>
         )}
         {/* Main content - full width on mobile, flex-1 on desktop */}
