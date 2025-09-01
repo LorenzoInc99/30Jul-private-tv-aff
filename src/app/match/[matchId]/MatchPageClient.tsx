@@ -69,6 +69,37 @@ export default function MatchPageClient({ match }: { match: any }) {
     return timezone;
   };
 
+  // Custom date formatter to avoid hydration mismatches
+  const formatDateConsistently = (dateString: string) => {
+    const date = new Date(dateString);
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const weekday = weekdays[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${weekday} ${day} ${month} ${year}`;
+  };
+
+  // Custom time formatter to avoid hydration mismatches
+  const formatTimeConsistently = (dateString: string) => {
+    const date = new Date(dateString);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  // Custom short date formatter (e.g., "Aug 1")
+  const formatShortDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    return `${month} ${day}`;
+  };
+
   const getMatchStatus = () => {
     if (match?.status === 'Live') return { text: 'LIVE', color: 'bg-red-500' };
     if (match?.status === 'Finished') return { text: 'FULL TIME', color: 'bg-gray-500' };
@@ -172,16 +203,10 @@ export default function MatchPageClient({ match }: { match: any }) {
                     ) : (
                       <div className="flex flex-col items-center justify-center">
                         <span className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
-                          {new Date(match.start_time).toLocaleTimeString('en-GB', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
+                          {formatTimeConsistently(match.start_time)}
                         </span>
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {new Date(match.start_time).toLocaleDateString('en-GB', {
-                            month: 'short',
-                            day: 'numeric'
-                          })}
+                          {formatShortDate(match.start_time)}
                         </span>
                       </div>
                     )}
@@ -378,8 +403,8 @@ export default function MatchPageClient({ match }: { match: any }) {
                   {homeTeamName} vs {awayTeamName} - {match.Competitions?.name || 'Match'}
                 </h3>
                 <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
-                  <p><strong>Date:</strong> {new Date(match.start_time).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                  <p><strong>Time:</strong> {new Date(match.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p><strong>Date:</strong> {formatDateConsistently(match.start_time)}</p>
+                  <p><strong>Time:</strong> {formatTimeConsistently(match.start_time)}</p>
                   <p><strong>Status:</strong> {match.status}</p>
                   {match.home_score !== null && match.away_score !== null && (
                     <p><strong>Score:</strong> {match.home_score} - {match.away_score}</p>

@@ -91,9 +91,25 @@ export default async function RootLayout({
   let error = null;
   
   try {
+    // Fetch competitions with their matches and team data
     const result = await supabase
       .from('leagues')
-      .select('*')
+      .select(`
+        *,
+        fixtures(
+          *,
+          home_team:teams_new!fixtures_home_team_id_fkey1(
+            id,
+            name,
+            team_logo_url
+          ),
+          away_team:teams_new!fixtures_away_team_id_fkey1(
+            id,
+            name,
+            team_logo_url
+          )
+        )
+      `)
       .order('name', { ascending: true });
     
     competitions = result.data || [];

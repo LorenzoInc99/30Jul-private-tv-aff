@@ -13,7 +13,7 @@ export default function MatchScheduleWrapper({
   starredMatches = new Set<string>(),
   onStarToggle
 }: { 
-  activeTab?: 'scores' | 'news' | 'favourites' | 'bet-calculator';
+  activeTab?: 'scores' | 'news' | 'bet-calculator';
   starredMatches?: Set<string>;
   onStarToggle?: (matchId: string) => void;
 }) {

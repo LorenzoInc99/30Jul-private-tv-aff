@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import NavigationTabs from './NavigationTabs';
 import MatchScheduleWrapper from '../MatchScheduleWrapper';
 
-type TabType = 'scores' | 'news' | 'favourites' | 'bet-calculator';
+type TabType = 'scores' | 'news' | 'bet-calculator';
 
 export default function NavigationWrapper() {
   const [activeTab, setActiveTab] = useState<TabType>('scores');
@@ -15,9 +15,10 @@ export default function NavigationWrapper() {
     if (typeof window !== 'undefined') {
       // Load active tab
       const savedTab = localStorage.getItem('activeTab') as TabType;
-      if (savedTab && ['scores', 'news', 'favourites', 'bet-calculator'].includes(savedTab)) {
+      if (savedTab && ['scores', 'news'].includes(savedTab)) {
         setActiveTab(savedTab);
       }
+      // Don't set bet-calculator as active tab since it should redirect
       
       // Load starred matches
       const savedStarredMatches = localStorage.getItem('starredMatches');
@@ -71,8 +72,8 @@ export default function NavigationWrapper() {
     <>
       <NavigationTabs activeTab={activeTab} onTabChange={handleTabChange} />
       
-      {/* Single MatchSchedule instance that handles both Scores and Favourites */}
-      {(activeTab === 'scores' || activeTab === 'favourites') && (
+      {/* Scores tab */}
+      {activeTab === 'scores' && (
         <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
           <div className="w-full pt-2 pb-4 md:pt-2 md:pb-8 flex-grow">
             <MatchScheduleWrapper 

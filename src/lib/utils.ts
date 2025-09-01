@@ -105,13 +105,13 @@ export function needsWhiteBackground(leagueId: number): boolean {
 }
 
 export function getLeagueLogoClassName(leagueId: number, baseClassName: string = ''): string {
-  const needsWhite = needsWhiteBackground(leagueId);
-  
-  if (needsWhite) {
-    return `${baseClassName} object-contain bg-white rounded-sm p-0.5 border border-gray-200 dark:border-gray-600 shadow-sm`.trim();
+  // Special case for Premier League (ID: 8) - needs white background due to purple logo
+  if (leagueId === 8) {
+    return `${baseClassName} object-contain bg-white rounded-sm p-1 border border-gray-200 dark:border-gray-600`.trim();
   }
   
-  return `${baseClassName} object-contain bg-gray-50 dark:bg-gray-800 rounded-sm p-0.5 border border-gray-200 dark:border-gray-600`.trim();
+  // All other leagues get clean styling without background
+  return `${baseClassName} object-contain`.trim();
 } 
 
 /**

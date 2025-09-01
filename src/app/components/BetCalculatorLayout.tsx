@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import NavigationTabs from './NavigationTabs';
 import BetCalculator from '../../components/BetCalculator';
 
-type TabType = 'scores' | 'news' | 'favourites' | 'bet-calculator';
+type TabType = 'scores' | 'news' | 'bet-calculator';
 
 interface BetCalculatorLayoutProps {
   children: React.ReactNode;
@@ -26,7 +26,7 @@ export default function BetCalculatorLayout({ children, defaultBetType }: BetCal
     if (typeof window !== 'undefined') {
       // Load active tab
       const savedTab = localStorage.getItem('activeTab') as TabType;
-      if (savedTab && ['scores', 'news', 'favourites', 'bet-calculator'].includes(savedTab)) {
+      if (savedTab && ['scores', 'news', 'bet-calculator'].includes(savedTab)) {
         setActiveTab(savedTab);
       }
       

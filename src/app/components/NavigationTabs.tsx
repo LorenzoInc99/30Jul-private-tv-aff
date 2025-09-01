@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type TabType = 'scores' | 'news' | 'favourites' | 'bet-calculator';
+type TabType = 'scores' | 'news' | 'bet-calculator';
 
 interface NavigationTabsProps {
   activeTab: TabType;
@@ -37,17 +37,7 @@ export default function NavigationTabs({ activeTab, onTabChange }: NavigationTab
           <span className="font-medium">News</span>
         </div>
         
-        {/* Favourites */}
-        <div 
-          className={`flex items-center px-3 py-2 cursor-pointer ${
-            activeTab === 'favourites' 
-              ? 'text-white border-b-2 border-indigo-500' 
-              : 'text-gray-300 hover:text-white'
-          }`}
-          onClick={() => onTabChange('favourites')}
-        >
-          <span className="font-medium">Favourites</span>
-        </div>
+
         
         {/* Bet Calculator */}
         <div 

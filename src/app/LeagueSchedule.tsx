@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MatchCard from '../components/MatchCard';
-import CountryFlag from '../components/CountryFlag';
+import LeagueLogo from '../components/LeagueLogo';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
 import { slugify } from '../lib/utils';
 
@@ -70,6 +70,14 @@ export default function LeagueSchedule({
     return timezone;
   }
 
+  // Debug: Log the competition data structure
+  console.log('LeagueSchedule competitions data:', sorted.map(g => ({
+    id: g.competition.id,
+    name: g.competition.name,
+    league_logo: g.competition.league_logo,
+    country: g.competition.country
+  })));
+
   return (
     <div className="space-y-1">
       {sorted.map(group => {
@@ -102,18 +110,29 @@ export default function LeagueSchedule({
                   />
                 </svg>
                 <div className="flex items-center gap-2">
-                  <CountryFlag 
-                    imagePath={group.competition.country?.image_path} 
-                    countryName={group.competition.country?.name || 'Unknown'} 
-                    size="md" 
-                  />
-                  <Link 
-                    href={`/competition/${group.competition.id}-${slugify(group.competition.name)}`}
-                    className="text-base font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {group.competition.name}
-                  </Link>
+                  {group.competition.league_logo && (
+                    <LeagueLogo 
+                      logoUrl={group.competition.league_logo} 
+                      leagueName={group.competition.name} 
+                      leagueId={group.competition.id}
+                      size="md" 
+                      className="flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex flex-col">
+                    <Link 
+                      href={`/competition/${group.competition.id}-${slugify(group.competition.name)}`}
+                      className="text-base font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {group.competition.name}
+                    </Link>
+                    {group.competition.country && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                        {group.competition.country.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <svg

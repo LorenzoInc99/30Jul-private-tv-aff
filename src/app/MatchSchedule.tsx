@@ -55,7 +55,7 @@ export default function MatchSchedule({
 }: { 
   timezone: string; 
   setTimezone: (tz: string) => void;
-  activeTab?: 'scores' | 'news' | 'favourites' | 'bet-calculator';
+  activeTab?: 'scores' | 'news' | 'bet-calculator';
   starredMatches?: Set<string>;
   onStarToggle?: (matchId: string) => void;
 }) {
@@ -185,23 +185,12 @@ export default function MatchSchedule({
     }
   };
 
-  // Apply filter to competitions and handle favourites
+  // Apply filter to competitions
   const getFilteredCompetitions = () => {
     let filteredComps = competitions.map(comp => ({
       ...comp,
       matches: filterMatches(comp.matches)
     }));
-
-    // If on favourites tab, only show starred matches
-    if (activeTab === 'favourites') {
-      filteredComps = filteredComps.map(comp => {
-        const starredMatchesInComp = comp.matches.filter((match: any) => starredMatches.has(match.id));
-        return {
-          ...comp,
-          matches: starredMatchesInComp
-        };
-      });
-    }
 
     const result = filteredComps.filter(comp => comp.matches.length > 0);
     return result;
@@ -362,8 +351,7 @@ export default function MatchSchedule({
         <div className="text-center text-red-500 py-10">Error: {error}</div>
       ) : filteredCompetitions.length === 0 ? (
         <div className="text-center text-gray-500 py-10">
-          {activeTab === 'favourites' ? 'No starred matches found for this day.' : 
-           selectedFilter === 'all' ? 'No matches found for this day.' : `No ${selectedFilter} matches found for this day.`}
+          {selectedFilter === 'all' ? 'No matches found for this day.' : `No ${selectedFilter} matches found for this day.`}
         </div>
       ) : (
         <div className="w-full">

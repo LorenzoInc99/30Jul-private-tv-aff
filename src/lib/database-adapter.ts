@@ -170,7 +170,8 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
       Competitions: {
         id: fixture.league.id,
         name: fixture.league.name,
-        country: country || null
+        country: country || null,
+        league_logo: fixture.league.league_logo || null
       },
       home_team: transformTeamData(fixture.home_team),
       away_team: transformTeamData(fixture.away_team),
@@ -228,11 +229,12 @@ export async function getMatchById(matchId: string, supabase = supabaseServer())
     status: getMatchStatus(fixture.state_id),
     home_team_id: fixture.home_team_id,
     away_team_id: fixture.away_team_id,
-    Competitions: {
-      id: fixture.league.id,
-      name: fixture.league.name,
-      country: country || null
-    },
+          Competitions: {
+        id: fixture.league.id,
+        name: fixture.league.name,
+        country: country || null,
+        league_logo: fixture.league.league_logo || null
+      },
     home_team: transformTeamData(fixture.home_team),
     away_team: transformTeamData(fixture.away_team),
     Event_Broadcasters: fixture.fixturetvstations?.map((ftv: any) => ({

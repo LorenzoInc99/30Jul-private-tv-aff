@@ -1,8 +1,8 @@
 import React from 'react';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
 import TeamLogo from './TeamLogo';
-import CountryFlag from './CountryFlag';
 import BroadcasterLogo from './BroadcasterLogo';
+import LeagueLogo from './LeagueLogo';
 import { slugify } from '../lib/utils';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, isStarred = false, onStarToggle }: {
@@ -22,6 +22,44 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
     return timezone;
+  }
+
+  // Format date for finished matches (e.g., "20-Jul")
+  function formatMatchDate(dateString: string): string {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    return `${day}-${month}`;
+  }
+
+  // Custom time formatter to avoid hydration mismatches
+  function formatTimeConsistently(dateString: string, targetTimezone: string): string {
+    const date = new Date(dateString);
+    
+    if (targetTimezone === 'auto') {
+      // Use local time for auto timezone
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    } else {
+      // For specific timezone, we need to handle timezone conversion
+      // This is a simplified approach - in production you might want to use a library like date-fns-tz
+      const utcHours = date.getUTCHours();
+      const utcMinutes = date.getUTCMinutes();
+      
+      // Simple offset calculation (this is a basic implementation)
+      let offsetHours = 0;
+      if (targetTimezone === 'Europe/London') offsetHours = 0; // GMT/BST
+      else if (targetTimezone === 'Europe/Paris') offsetHours = 1; // CET
+      else if (targetTimezone === 'America/New_York') offsetHours = -5; // EST
+      else if (targetTimezone === 'America/Los_Angeles') offsetHours = -8; // PST
+      
+      const adjustedHours = (utcHours + offsetHours + 24) % 24;
+      const hours = adjustedHours.toString().padStart(2, '0');
+      const minutes = utcMinutes.toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
   }
   
   const handleStarClick = (e: React.MouseEvent) => {
@@ -70,20 +108,16 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           isLive ? 'border-l-4 border-l-red-500' : ''
         }`}>
           {/* Time Column - Compact and close to border */}
-          <div className="flex-shrink-0 w-12 flex flex-col items-start">
-            <span className="text-sm font-bold text-gray-900 dark:text-white">
+          <div className="flex-shrink-0 w-14 flex flex-col items-start">
+            <span className="text-xs font-bold text-gray-900 dark:text-white">
               {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
-                ? 'FT'
-                : new Date(match.start_time).toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: getTargetTimezone(),
-                  })}
+                ? formatMatchDate(match.start_time)
+                : formatTimeConsistently(match.start_time, getTargetTimezone())}
             </span>
             <span className={`text-xs font-medium ${
               isLive ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
             }`}>
-              {isLive ? '-' : (match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? 'FT' : '-')}
+              {isLive ? '-' : '-'}
             </span>
           </div>
 
@@ -245,26 +279,24 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[3.5rem_11rem_200px_150px_1rem_auto] items-center gap-2">
           {/* Time */}
           <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
-            <span>
+            <span className="text-xs">
               {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
-                ? 'FT'
-                : new Date(match.start_time).toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: getTargetTimezone(),
-                  })}
+                ? formatMatchDate(match.start_time)
+                : formatTimeConsistently(match.start_time, getTargetTimezone())}
             </span>
           </div>
           {/* Teams with logos */}
           <div className="flex flex-col"> {/* Teams column, fixed width by grid */}
-            {/* Competition name with country flag */}
+            {/* Competition name with league logo */}
             {!hideCompetitionName && match.competition?.name && (
               <div className="flex items-center gap-2 mb-1">
-                {match.Competitions?.country && (
-                  <CountryFlag 
-                    imagePath={match.Competitions.country.image_path} 
-                    countryName={match.Competitions.country.name} 
+                {match.Competitions?.league_logo && (
+                  <LeagueLogo 
+                    logoUrl={match.Competitions.league_logo} 
+                    leagueName={match.competition.name} 
+                    leagueId={match.Competitions.id}
                     size="sm" 
+                    className="flex-shrink-0"
                   />
                 )}
                 <div className="text-base font-bold text-gray-900 dark:text-white">{match.competition.name}</div>
