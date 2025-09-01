@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../../lib/pinned-leagues';
 import LeagueLogo from '../../components/LeagueLogo';
 import TeamLogo from '../../components/TeamLogo';
+import { slugify } from '../../lib/utils';
 
 export default function SidebarCompetitions({ competitions }: { competitions: any[] }) {
   const [showAll, setShowAll] = useState(false);
@@ -236,7 +237,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
   const renderPopularTeamItem = (team: any) => (
     <li key={team.id} className="flex items-center justify-between group">
       <a
-        href={`/team/${team.id}-${team.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+        href={`/team/${slugify(team.name)}`}
         className="flex-1 text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:text-sm py-1 flex items-center"
       >
         <TeamLogo 
