@@ -3,39 +3,53 @@ import { supabaseServer } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { broadcasterIds } = await request.json();
-    console.log('POST request received with broadcasterIds:', broadcasterIds);
+    const { clicksToSend } = await request.json();
     
-    if (!broadcasterIds || !Array.isArray(broadcasterIds) || broadcasterIds.length === 0) {
+    // Validate input
+    if (!clicksToSend || !Array.isArray(clicksToSend) || clicksToSend.length === 0) {
       return NextResponse.json({
         success: false,
-        message: 'broadcasterIds array is required'
+        message: 'Invalid request data'
       }, { status: 400 });
+    }
+
+    // Validate each click data
+    for (const click of clicksToSend) {
+      if (!click.broadcasterId || !click.matchId || !click.count || 
+          typeof click.broadcasterId !== 'number' || 
+          typeof click.matchId !== 'number' || 
+          typeof click.count !== 'number' ||
+          click.broadcasterId <= 0 || 
+          click.matchId <= 0 || 
+          click.count <= 0) {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid click data'
+        }, { status: 400 });
+      }
     }
 
     const supabase = supabaseServer();
     if (!supabase) {
-      throw new Error('Failed to connect to Supabase');
+      throw new Error('Database connection failed');
     }
-    
-    // Debug: Check if we have the service role key
-    console.log('Service role key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-    console.log('Supabase URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-    // Process each broadcaster click
+    // Process each click
     const results = [];
-    for (const broadcasterId of broadcasterIds) {
+    for (const clickData of clicksToSend) {
+      const { broadcasterId, matchId, count } = clickData;
       try {
-        console.log(`Processing broadcaster ${broadcasterId}...`);
+        // Process broadcaster click
         
-        // Check if record exists
+        // Check if record exists (match-specific)
         const { data: existing, error: selectError } = await supabase
-          .from('broadcaster_clicks')
+          .from('match_broadcaster_clicks')
           .select('*')
+          .eq('match_id', matchId)
           .eq('broadcaster_id', broadcasterId)
           .single();
 
-        console.log(`Select result for ${broadcasterId}:`, { existing, selectError });
+        // Check for database errors
 
         if (selectError && selectError.code !== 'PGRST116') { // PGRST116 = no rows returned
           throw selectError;
@@ -43,51 +57,101 @@ export async function POST(request: NextRequest) {
 
         if (existing) {
           // Update existing record
-          console.log(`Updating existing record for ${broadcasterId}`);
           const { error: updateError } = await supabase
-            .from('broadcaster_clicks')
+            .from('match_broadcaster_clicks')
             .update({ 
-              click_count: existing.click_count + 1,
+              click_count: existing.click_count + count,
               last_updated: new Date().toISOString()
             })
+            .eq('match_id', matchId)
             .eq('broadcaster_id', broadcasterId);
 
           if (updateError) {
-            console.error(`Update error for ${broadcasterId}:`, updateError);
             throw updateError;
           }
-          results.push({ broadcasterId, action: 'updated', newCount: existing.click_count + 1 });
+          results.push({ broadcasterId, action: 'updated', newCount: existing.click_count + count });
         } else {
           // Insert new record
-          console.log(`Creating new record for ${broadcasterId}`);
           const { error: insertError } = await supabase
-            .from('broadcaster_clicks')
+            .from('match_broadcaster_clicks')
             .insert({
+              match_id: matchId,
               broadcaster_id: broadcasterId,
-              click_count: 1,
+              click_count: count,
               last_updated: new Date().toISOString()
             });
 
           if (insertError) {
-            console.error(`Insert error for ${broadcasterId}:`, insertError);
             throw insertError;
           }
-          results.push({ broadcasterId, action: 'created', newCount: 1 });
+          results.push({ broadcasterId, action: 'created', newCount: count });
+        }
+
+        // Also update the global broadcaster_clicks table
+        const { data: globalExisting, error: globalSelectError } = await supabase
+          .from('broadcaster_clicks')
+          .select('*')
+          .eq('broadcaster_id', broadcasterId)
+          .single();
+
+        if (globalSelectError && globalSelectError.code !== 'PGRST116') {
+          // Only log errors in development
+          if (process.env.NODE_ENV === 'development') {
+            console.error(`Global select error for ${broadcasterId}:`, globalSelectError);
+          }
+        } else if (globalExisting) {
+          // Update global count
+          const { error: globalUpdateError } = await supabase
+            .from('broadcaster_clicks')
+            .update({ 
+              click_count: globalExisting.click_count + count,
+              last_updated: new Date().toISOString()
+            })
+            .eq('broadcaster_id', broadcasterId);
+
+          if (globalUpdateError) {
+            // Only log errors in development
+            if (process.env.NODE_ENV === 'development') {
+              console.error(`Global update error for ${broadcasterId}:`, globalUpdateError);
+            }
+          }
+        } else {
+          // Insert new global record
+          const { error: globalInsertError } = await supabase
+            .from('broadcaster_clicks')
+            .insert({
+              broadcaster_id: broadcasterId,
+              click_count: count,
+              last_updated: new Date().toISOString()
+            });
+
+          if (globalInsertError) {
+            // Only log errors in development
+            if (process.env.NODE_ENV === 'development') {
+              console.error(`Global insert error for ${broadcasterId}:`, globalInsertError);
+            }
+          }
         }
       } catch (error) {
-        console.error(`Error processing broadcaster ${broadcasterId}:`, error);
+        // Only log errors in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Error processing broadcaster ${broadcasterId}:`, error);
+        }
         results.push({ broadcasterId, action: 'error', error: error.message });
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `Processed ${broadcasterIds.length} broadcaster clicks`,
+      message: `Processed ${clicksToSend.length} broadcaster clicks`,
       results
     });
 
   } catch (error) {
-    console.error('Broadcaster clicks tracking error:', error);
+    // Only log errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Broadcaster clicks tracking error:', error);
+    }
     return NextResponse.json({
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred'
@@ -97,23 +161,35 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const matchId = searchParams.get('matchId');
+    
     const supabase = supabaseServer();
     if (!supabase) {
       throw new Error('Failed to connect to Supabase');
     }
 
-    // Get click counts for all broadcasters
-    const { data: clickData, error } = await supabase
-      .from('broadcaster_clicks')
-      .select('broadcaster_id, click_count, last_updated')
+    // Get click counts for broadcasters (match-specific if matchId provided)
+    let query = supabase
+      .from('match_broadcaster_clicks')
+      .select('broadcaster_id, click_count, last_updated');
+    
+    if (matchId) {
+      query = query.eq('match_id', matchId);
+    }
+    
+    const { data: clickData, error } = await query
       .order('click_count', { ascending: false });
 
     if (error) {
-      console.error('Database error:', error);
+      // Only log errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Database error:', error);
+      }
       throw error;
     }
 
-    console.log('Fetched click data:', clickData);
+    // Return click data
 
     return NextResponse.json({
       success: true,
@@ -121,7 +197,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error fetching click counts:', error);
+    // Only log errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching click counts:', error);
+    }
     return NextResponse.json({
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',

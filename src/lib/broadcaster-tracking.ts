@@ -5,6 +5,7 @@ const BATCH_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 interface PendingClick {
   broadcasterId: number;
+  matchId: number;
   timestamp: number;
 }
 
@@ -14,12 +15,13 @@ export function getPendingClicks(): PendingClick[] {
   
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    console.log('Raw localStorage data:', stored);
     const parsed = stored ? JSON.parse(stored) : [];
-    console.log('Parsed pending clicks:', parsed);
-    return parsed;
+    return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
-    console.error('Error reading pending clicks:', error);
+    // Silently handle errors in production
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error reading pending clicks:', error);
+    }
     return [];
   }
 }
@@ -30,41 +32,41 @@ export function savePendingClicks(clicks: PendingClick[]): void {
   
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(clicks));
-    console.log('Successfully saved pending clicks to localStorage:', clicks);
   } catch (error) {
-    console.error('Error saving pending clicks:', error);
+    // Silently handle errors in production
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error saving pending clicks:', error);
+    }
   }
 }
 
 // Track a click for a broadcaster
-export function trackBroadcasterClick(broadcasterId: number): void {
-  console.log('trackBroadcasterClick called with ID:', broadcasterId);
+export function trackBroadcasterClick(broadcasterId: number, matchId: number): void {
+  // Validate inputs
+  if (!broadcasterId || !matchId || broadcasterId <= 0 || matchId <= 0) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Invalid broadcaster or match ID provided');
+    }
+    return;
+  }
   
   const pendingClicks = getPendingClicks();
-  console.log('Current pending clicks:', pendingClicks);
   
   // Add new click
   pendingClicks.push({
     broadcasterId,
+    matchId,
     timestamp: Date.now()
   });
-  
-  console.log('New pending clicks:', pendingClicks);
   
   // Save to localStorage
   savePendingClicks(pendingClicks);
   
-  // Verify the save worked
-  const verifyClicks = getPendingClicks();
-  console.log('Verification - clicks in localStorage after save:', verifyClicks);
-  
   // Check if we should send to server
   if (pendingClicks.length >= BATCH_SIZE) {
-    console.log('Reached batch size, sending clicks...');
     sendPendingClicks();
   } else {
-    // For testing: send immediately if localStorage is working
-    console.log('Sending single click immediately for testing...');
+    // Send immediately for better user experience
     sendPendingClicks();
   }
 }
@@ -76,13 +78,17 @@ export async function sendPendingClicks(): Promise<void> {
   if (pendingClicks.length === 0) return;
   
   try {
-    // Group clicks by broadcaster ID
-    const clickCounts: { [key: number]: number } = {};
+    // Group clicks by broadcaster ID and match ID
+    const clickData: { [key: string]: { broadcasterId: number, matchId: number, count: number } } = {};
     pendingClicks.forEach(click => {
-      clickCounts[click.broadcasterId] = (clickCounts[click.broadcasterId] || 0) + 1;
+      const key = `${click.matchId}-${click.broadcasterId}`;
+      if (!clickData[key]) {
+        clickData[key] = { broadcasterId: click.broadcasterId, matchId: click.matchId, count: 0 };
+      }
+      clickData[key].count++;
     });
     
-    const broadcasterIds = Object.keys(clickCounts).map(Number);
+    const clicksToSend = Object.values(clickData);
     
     // Send to API
     const response = await fetch('/api/broadcaster-clicks', {
@@ -90,18 +96,23 @@ export async function sendPendingClicks(): Promise<void> {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ broadcasterIds }),
+      body: JSON.stringify({ clicksToSend }),
     });
     
     if (response.ok) {
       // Clear pending clicks on success
       savePendingClicks([]);
-      console.log('Successfully sent broadcaster clicks to server');
     } else {
-      console.error('Failed to send broadcaster clicks:', response.statusText);
+      // Only log errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to send broadcaster clicks:', response.statusText);
+      }
     }
   } catch (error) {
-    console.error('Error sending broadcaster clicks:', error);
+    // Only log errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error sending broadcaster clicks:', error);
+    }
   }
 }
 

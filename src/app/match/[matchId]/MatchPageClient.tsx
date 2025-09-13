@@ -72,7 +72,7 @@ export default function MatchPageClient({ match }: { match: any }) {
     // Fetch current click counts
     const fetchClickCounts = async () => {
       try {
-        const response = await fetch('/api/broadcaster-clicks');
+        const response = await fetch(`/api/broadcaster-clicks?matchId=${match.id}`);
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.clickCounts) {
@@ -84,7 +84,10 @@ export default function MatchPageClient({ match }: { match: any }) {
           }
         }
       } catch (error) {
-        console.error('Error fetching click counts:', error);
+        // Only log errors in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching click counts:', error);
+        }
       }
     };
     
@@ -153,11 +156,23 @@ export default function MatchPageClient({ match }: { match: any }) {
         .filter((broadcaster: any) => broadcaster?.name)
     : [];
 
-  const displayedBroadcasters = showAllBroadcasters 
-    ? validBroadcasters 
-    : validBroadcasters.slice(0, 5);
+  // Sort broadcasters by click count (highest first)
+  const sortedBroadcasters = [...validBroadcasters].sort((a: any, b: any) => {
+    const aClicks = clickCounts[a.id] || 0;
+    const bClicks = clickCounts[b.id] || 0;
+    return bClicks - aClicks; // Descending order (highest first)
+  });
 
-  const remainingCount = validBroadcasters.length - 5;
+  // Find the broadcaster with the highest total clicks for the "Most Popular" badge
+  const mostPopularBroadcaster = sortedBroadcasters.length > 0 && (clickCounts[sortedBroadcasters[0].id] || 0) > 0 
+    ? sortedBroadcasters[0] 
+    : null;
+
+  const displayedBroadcasters = showAllBroadcasters 
+    ? sortedBroadcasters 
+    : sortedBroadcasters.slice(0, 5);
+
+  const remainingCount = sortedBroadcasters.length - 5;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -192,10 +207,10 @@ export default function MatchPageClient({ match }: { match: any }) {
                       />
                     </div>
                     {/* Team Name Row */}
-                    <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
+                    <div className="flex items-center justify-center h-8 md:h-10 px-1 md:px-2">
                       <Link
                         href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
-                        className={`text-sm md:text-2xl text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
+                        className={`text-lg font-bold text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
                           match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                             (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
                               'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
@@ -222,7 +237,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                       match.status === 'After Extra Time' || match.status === 'After Penalties' ||
                       (match.home_score !== null && match.away_score !== null)) ? (
                       <div className="flex flex-col items-center justify-center">
-                        <span className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
+                        <span className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
                           {match.home_score || 0} - {match.away_score || 0}
                         </span>
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -231,7 +246,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center">
-                        <span className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
+                        <span className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
                           {formatTimeConsistently(match.start_time)}
                         </span>
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -252,10 +267,10 @@ export default function MatchPageClient({ match }: { match: any }) {
                       />
                     </div>
                     {/* Team Name Row */}
-                    <div className="flex items-center justify-center h-12 md:h-16 mb-2 px-1 md:px-2">
+                    <div className="flex items-center justify-center h-8 md:h-10 px-1 md:px-2">
                       <Link
                         href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
-                        className={`text-sm md:text-2xl text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
+                        className={`text-lg font-bold text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
                           match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                             (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
                               'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
@@ -281,82 +296,120 @@ export default function MatchPageClient({ match }: { match: any }) {
               {/* Broadcasters */}
               <div className="mb-6">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 text-left">
-                  Broadcasters ({validBroadcasters.length})
+                  Broadcasters ({sortedBroadcasters.length})
                 </h3>
                 {hasBroadcasters ? (
-                  <div className="space-y-2">
-                    {displayedBroadcasters.map((broadcaster: any, index: number) => (
+                    <div className="space-y-2">
+                      {displayedBroadcasters.map((broadcaster: any, index: number) => (
                       <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer">
                         {/* Logo Column */}
                         <div className="flex-shrink-0 w-12">
-                          {broadcaster.logo_url ? (
-                            <Image
-                              src={broadcaster.logo_url}
-                              alt={`${broadcaster.name} logo`}
-                              width={32}
-                              height={32}
-                              className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
-                              onError={(e) => {
-                                // Fallback to letter if image fails to load
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const parent = target.parentElement;
-                                if (parent) {
-                                  parent.innerHTML = `
-                                    <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                      ${broadcaster.name.charAt(0).toUpperCase()}
+                                  {broadcaster.logo_url ? (
+                                    <Image
+                                      src={broadcaster.logo_url}
+                                      alt={`${broadcaster.name} logo`}
+                                      width={32}
+                                      height={32}
+                                      className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
+                                      onError={(e) => {
+                                        // Fallback to letter if image fails to load
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const parent = target.parentElement;
+                                        if (parent) {
+                                          parent.innerHTML = `
+                                            <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                              ${broadcaster.name.charAt(0).toUpperCase()}
+                                            </div>
+                                          `;
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                      {broadcaster.name.charAt(0).toUpperCase()}
                                     </div>
-                                  `;
-                                }
-                              }}
-                            />
-                          ) : (
-                            <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                              {broadcaster.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
+                                  )}
+                                </div>
                         
                         {/* Broadcaster Name Column */}
                         <div className="flex-1 px-3">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {broadcaster.name}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {broadcaster.name}
+                            </span>
+                            {/* Most Popular Badge */}
+                            {mostPopularBroadcaster && mostPopularBroadcaster.id === broadcaster.id && (
+                              <div className="relative group">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 cursor-help">
+                                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M5 16L3 8l5.5 5L12 4l3.5 9L21 8l-2 8H5zm2.7-2h8.6l.9-4.4L12 8.5 6.8 9.6L7.7 14z"/>
+                                  </svg>
+                                </span>
+                                
+                                {/* Hover Tooltip */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                  Most popular broadcaster
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         {/* Click Here Button Column */}
                         <div className="flex-shrink-0 flex items-center gap-2">
                           {/* Social Validation Badge - Always Visible */}
-                          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-md text-xs">
-                            <span>👁️</span>
+                          <div 
+                            className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-md text-xs cursor-help relative group"
+                            title={`${clickCounts[broadcaster.id] || 0} users already clicked here`}
+                          >
+                            <svg 
+                              width="12" 
+                              height="12" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                              className="text-gray-500 dark:text-gray-400"
+                            >
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                                </svg>
                             <span>{clickCounts[broadcaster.id] || 0}</span>
-                          </div>
+                            
+                            {/* Custom Tooltip */}
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                              {clickCounts[broadcaster.id] || 0} users already clicked here
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                            </div>
+                              </div>
                           
                           {broadcaster.affiliate_url ? (
                             <button
                               onClick={() => {
                                 // Debug: Log broadcaster info
-                                console.log('Broadcaster clicked:', broadcaster);
-                                console.log('Broadcaster ID:', broadcaster.id);
-                                console.log('Broadcaster name:', broadcaster.name);
+                                // Track click and open link
                                 
                                 // Track the click
-                                trackBroadcasterClick(broadcaster.id);
+                                trackBroadcasterClick(broadcaster.id, match.id);
                                 // Open the link
                                 window.open(broadcaster.affiliate_url, '_blank', 'noopener,noreferrer');
                               }}
-                              className="px-4 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
+                              className="w-24 px-4 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
                             >
                               Click here
                             </button>
                           ) : (
-                            <span className="px-4 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-600 rounded-lg">
+                            <span className="w-24 px-4 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-600 rounded-lg text-center inline-block">
                               No link
-                            </span>
+                                </span>
                           )}
                         </div>
-                      </div>
-                    ))}
+                        </div>
+                      ))}
                     
                     {!showAllBroadcasters && remainingCount > 0 && (
                       <button
@@ -367,7 +420,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                       </button>
                     )}
                     
-                    {showAllBroadcasters && validBroadcasters.length > 5 && (
+                    {showAllBroadcasters && sortedBroadcasters.length > 5 && (
                       <button
                         onClick={() => setShowAllBroadcasters(false)}
                         className="w-full mt-3 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
