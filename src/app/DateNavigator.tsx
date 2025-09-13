@@ -80,7 +80,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
         <div className="flex items-center rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
           {/* Previous Day Button */}
           <button
-            className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-0 focus:border-0 transition-all duration-200 hover:scale-105 active:scale-95 rounded-l-lg"
+            className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-0 focus:border-0 transition-all duration-200 hover:scale-105 active:scale-95 rounded-l-lg cursor-pointer"
             onClick={() => onChange(new Date(selectedDate.getTime() - 86400000))}
             aria-label="Previous day"
           >
@@ -93,7 +93,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
           <div className="flex items-center justify-center py-1 min-w-[70px] text-sm font-bold text-gray-900 dark:text-white relative">
             {/* Standalone Clickable Calendar Icon */}
             <button
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors focus:outline-none focus:ring-0 focus:border-0"
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
               onClick={() => setShowCalendar(!showCalendar)}
               aria-label="Open calendar"
             >
@@ -118,7 +118,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
                 <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl">
                   <button
                     onClick={goToPreviousMonth}
-                    className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-0 focus:border-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -129,7 +129,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
                   </span>
                   <button
                     onClick={goToNextMonth}
-                    className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-0 focus:border-0"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -153,7 +153,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
                       key={index}
                       onClick={() => handleDateSelect(date)}
                       className={`
-                        w-8 h-8 rounded-xl text-sm font-medium transition-colors
+                        w-8 h-8 rounded-xl text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-0 focus:border-0
                         ${isSelectedDate(date) 
                           ? 'bg-indigo-600 text-white' 
                           : isTodayDate(date)
@@ -174,7 +174,7 @@ export default function DateNavigator({ selectedDate, onChange }: { selectedDate
           
           {/* Next Day Button */}
           <button
-            className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-0 focus:border-0 transition-all duration-200 hover:scale-105 active:scale-95 rounded-r-lg"
+            className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-0 focus:border-0 transition-all duration-200 hover:scale-105 active:scale-95 rounded-r-lg cursor-pointer"
             onClick={() => onChange(new Date(selectedDate.getTime() + 86400000))}
             aria-label="Next day"
           >

@@ -288,7 +288,7 @@ export default function MatchSchedule({
                     setSelectedDate(todayDate);
                     localStorage.setItem('selectedDate', todayDate.toISOString());
                   }}
-                  className="px-4 py-1 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-0 focus:border-0"
+                  className="px-4 py-1 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
                 >
                   Today
                 </button>
@@ -317,7 +317,7 @@ export default function MatchSchedule({
                     <button
                       key={filter.key}
                       onClick={() => setSelectedFilter(filter.key as 'all' | 'live' | 'finished' | 'upcoming')}
-                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
                         selectedFilter === filter.key
                           ? 'text-white bg-indigo-600 shadow-lg transform scale-105'
                           : 'text-gray-600 dark:text-gray-400 hover:text-white hover:bg-gray-700 hover:scale-105'
@@ -341,7 +341,7 @@ export default function MatchSchedule({
                <span className="text-sm text-gray-600 dark:text-gray-400">Odds</span>
                <button
                  onClick={() => setShowOdds(!showOdds)}
-                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
+                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
                    showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                  }`}
                >
@@ -358,7 +358,7 @@ export default function MatchSchedule({
                <span className="text-sm text-gray-600 dark:text-gray-400">TV</span>
                <button
                  onClick={() => setShowTv(!showTv)}
-                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
+                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
                    showTv ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                  }`}
                >

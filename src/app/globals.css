@@ -119,8 +119,8 @@ p {
   background: #a3a3a3;
 }
 
-/* Focus styles */
-*:focus {
+/* Focus styles - exclude buttons which have their own focus styles */
+*:focus:not(button) {
   outline: 2px solid #0ea5e9;
   outline-offset: 2px;
 }

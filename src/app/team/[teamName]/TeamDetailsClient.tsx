@@ -288,6 +288,19 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
   nextMatch: any; 
   previousMatches: any[] 
 }) {
+  
+  // Get country from next match or previous matches
+  const getTeamCountry = () => {
+    if (nextMatch?.league?.country?.name) {
+      return nextMatch.league.country.name;
+    }
+    if (previousMatches.length > 0 && previousMatches[0]?.league?.country?.name) {
+      return previousMatches[0].league.country.name;
+    }
+    return null;
+  };
+  
+  const teamCountry = getTeamCountry();
   const searchParams = useSearchParams();
   const timezone = searchParams.get('timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [starredMatches, setStarredMatches] = useState<string[]>([]);
@@ -340,7 +353,33 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
       
       <div className="container mx-auto max-w-7xl px-1 md:px-2">
         <main className="bg-gray-50 dark:bg-gray-900 rounded-lg shadow-lg">
-
+          
+          {/* Team Header Section */}
+          <div className="p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <TeamLogo
+                logoUrl={team.team_logo_url}
+                teamName={team.name}
+                size="xl"
+                className="flex-shrink-0"
+              />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {team.name}
+                  </h1>
+                </div>
+                {teamCountry && (
+                  <p className="text-lg text-gray-600 dark:text-gray-400">
+                    {teamCountry}
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400">
+              Get the latest {team.name} fixtures and {team.name} matches schedule. Find where to watch {team.name} matches live on TV and discover where to watch {team.name} tonight. Get the best odds for {team.name} games from top bookmakers. Never miss a {team.name} fixture with our comprehensive match coverage.
+            </p>
+          </div>
 
           {/* Next Match Section */}
           <div className="mb-8">

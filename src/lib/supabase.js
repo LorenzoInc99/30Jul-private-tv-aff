@@ -9,6 +9,11 @@ export const supabaseBrowser = createClient(supabaseUrl, supabaseAnonKey);
 
 // Server-side Supabase client (use only on the server, e.g. in server components, API routes, or getServerSideProps)
 export const supabaseServer = () => {
+  // Debug environment variables
+  console.log('Supabase URL:', supabaseUrl ? 'EXISTS' : 'MISSING');
+  console.log('Service Role Key:', supabaseServiceKey ? 'EXISTS' : 'MISSING');
+  console.log('Service Role Key length:', supabaseServiceKey ? supabaseServiceKey.length : 0);
+  
   // Use service role key for admin operations that need write permissions
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {

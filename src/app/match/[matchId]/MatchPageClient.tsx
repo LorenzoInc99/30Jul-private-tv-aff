@@ -9,6 +9,7 @@ import BroadcasterLogo from '@/components/BroadcasterLogo';
 import BookmakerLogo from '@/components/BookmakerLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
 import OddsComparisonTable from '@/components/OddsComparisonTable';
+import { trackBroadcasterClick, formatClickCount, initializeClickTracking } from '@/lib/broadcaster-tracking';
 
 
 
@@ -59,8 +60,36 @@ export default function MatchPageClient({ match }: { match: any }) {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showAllBroadcasters, setShowAllBroadcasters] = useState(false);
+  const [clickCounts, setClickCounts] = useState<{ [key: number]: number }>({});
 
   const timezone = searchParams.get('timezone') || 'auto';
+
+  // Initialize click tracking and fetch click counts
+  useEffect(() => {
+    // Initialize the tracking system
+    initializeClickTracking();
+    
+    // Fetch current click counts
+    const fetchClickCounts = async () => {
+      try {
+        const response = await fetch('/api/broadcaster-clicks');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.clickCounts) {
+            const counts: { [key: number]: number } = {};
+            data.clickCounts.forEach((item: any) => {
+              counts[item.broadcaster_id] = item.click_count;
+            });
+            setClickCounts(counts);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching click counts:', error);
+      }
+    };
+    
+    fetchClickCounts();
+  }, []);
   
   const getTargetTimezone = () => {
     if (timezone === 'auto') {
@@ -126,9 +155,9 @@ export default function MatchPageClient({ match }: { match: any }) {
 
   const displayedBroadcasters = showAllBroadcasters 
     ? validBroadcasters 
-    : validBroadcasters.slice(0, 10);
+    : validBroadcasters.slice(0, 5);
 
-  const remainingCount = validBroadcasters.length - 10;
+  const remainingCount = validBroadcasters.length - 5;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -250,123 +279,105 @@ export default function MatchPageClient({ match }: { match: any }) {
               </div>
 
               {/* Broadcasters */}
-              <div className="text-center mb-6">
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
-                  Broadcasters ({validBroadcasters.length} total):
-                </p>
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 text-left">
+                  Broadcasters ({validBroadcasters.length})
+                </h3>
                 {hasBroadcasters ? (
-                  <div className="max-w-md mx-auto">
-                    <div className="space-y-2">
-                      {displayedBroadcasters.map((broadcaster: any, index: number) => (
-                        <div key={index} className="relative">
-                          {broadcaster.affiliate_url ? (
-                            <a
-                              href={broadcaster.affiliate_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
-                              aria-label={`Visit ${broadcaster.name}`}
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div className="flex-shrink-0">
-                                  {broadcaster.logo_url ? (
-                                    <Image
-                                      src={broadcaster.logo_url}
-                                      alt={`${broadcaster.name} logo`}
-                                      width={32}
-                                      height={32}
-                                      className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
-                                      onError={(e) => {
-                                        // Fallback to letter if image fails to load
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                        const parent = target.parentElement;
-                                        if (parent) {
-                                          parent.innerHTML = `
-                                            <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                              ${broadcaster.name.charAt(0).toUpperCase()}
-                                            </div>
-                                          `;
-                                        }
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                      {broadcaster.name.charAt(0).toUpperCase()}
+                  <div className="space-y-2">
+                    {displayedBroadcasters.map((broadcaster: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer">
+                        {/* Logo Column */}
+                        <div className="flex-shrink-0 w-12">
+                          {broadcaster.logo_url ? (
+                            <Image
+                              src={broadcaster.logo_url}
+                              alt={`${broadcaster.name} logo`}
+                              width={32}
+                              height={32}
+                              className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
+                              onError={(e) => {
+                                // Fallback to letter if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `
+                                    <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                                      ${broadcaster.name.charAt(0).toUpperCase()}
                                     </div>
-                                  )}
-                                </div>
-                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {broadcaster.name}
-                                </span>
-                              </div>
-                              <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                              </div>
-                            </a>
+                                  `;
+                                }
+                              }}
+                            />
                           ) : (
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
-                              <div className="flex items-center space-x-3">
-                                <div className="flex-shrink-0">
-                                  {broadcaster.logo_url ? (
-                                    <Image
-                                      src={broadcaster.logo_url}
-                                      alt={`${broadcaster.name} logo`}
-                                      width={32}
-                                      height={32}
-                                      className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
-                                      onError={(e) => {
-                                        // Fallback to letter if image fails to load
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                        const parent = target.parentElement;
-                                        if (parent) {
-                                          parent.innerHTML = `
-                                            <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                              ${broadcaster.name.charAt(0).toUpperCase()}
-                                            </div>
-                                          `;
-                                        }
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                      {broadcaster.name.charAt(0).toUpperCase()}
-                                    </div>
-                                  )}
-                                </div>
-                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {broadcaster.name}
-                                </span>
-                              </div>
+                            <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
+                              {broadcaster.name.charAt(0).toUpperCase()}
                             </div>
                           )}
                         </div>
-                      ))}
-                    </div>
+                        
+                        {/* Broadcaster Name Column */}
+                        <div className="flex-1 px-3">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {broadcaster.name}
+                          </span>
+                        </div>
+                        
+                        {/* Click Here Button Column */}
+                        <div className="flex-shrink-0 flex items-center gap-2">
+                          {/* Social Validation Badge - Always Visible */}
+                          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-md text-xs">
+                            <span>👁️</span>
+                            <span>{clickCounts[broadcaster.id] || 0}</span>
+                          </div>
+                          
+                          {broadcaster.affiliate_url ? (
+                            <button
+                              onClick={() => {
+                                // Debug: Log broadcaster info
+                                console.log('Broadcaster clicked:', broadcaster);
+                                console.log('Broadcaster ID:', broadcaster.id);
+                                console.log('Broadcaster name:', broadcaster.name);
+                                
+                                // Track the click
+                                trackBroadcasterClick(broadcaster.id);
+                                // Open the link
+                                window.open(broadcaster.affiliate_url, '_blank', 'noopener,noreferrer');
+                              }}
+                              className="px-4 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
+                            >
+                              Click here
+                            </button>
+                          ) : (
+                            <span className="px-4 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-600 rounded-lg">
+                              No link
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                     
                     {!showAllBroadcasters && remainingCount > 0 && (
                       <button
                         onClick={() => setShowAllBroadcasters(true)}
-                        className="mt-3 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium transition-colors duration-200"
+                        className="w-full mt-3 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
                       >
-                        Show {remainingCount} more broadcaster{remainingCount !== 1 ? 's' : ''}
+                        See more ({remainingCount} more)
                       </button>
                     )}
                     
-                    {showAllBroadcasters && validBroadcasters.length > 10 && (
+                    {showAllBroadcasters && validBroadcasters.length > 5 && (
                       <button
                         onClick={() => setShowAllBroadcasters(false)}
-                        className="mt-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 text-sm font-medium transition-colors duration-200"
+                        className="w-full mt-3 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
                       >
                         Show less
                       </button>
                     )}
                   </div>
                 ) : (
-                  <p className="font-semibold text-gray-800 dark:text-gray-200 text-lg">N/A</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No broadcasters available</p>
                 )}
               </div>
 

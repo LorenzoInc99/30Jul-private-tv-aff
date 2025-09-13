@@ -15,6 +15,7 @@ import ADVRight from '../components/ADVRight';
 import NavigationWrapper from './components/NavigationWrapper';
 import HeaderLogo from './components/HeaderLogo';
 import HeaderTimezoneSelector from '../components/HeaderTimezoneSelector';
+import { SidebarProvider } from '../contexts/SidebarContext';
 
 export const metadata: Metadata = {
   title: {
@@ -92,8 +93,8 @@ export default async function RootLayout({
   let error = null;
   
   try {
-    // Fetch competitions with their matches and team data
-    const result = await supabase
+    // First, let's try a simpler approach - fetch leagues and countries separately
+    const leaguesResult = await supabase
       .from('leagues')
       .select(`
         *,
@@ -113,8 +114,35 @@ export default async function RootLayout({
       `)
       .order('name', { ascending: true });
     
+    // Fetch countries separately
+    const countriesResult = await supabase
+      .from('countries')
+      .select('id, name')
+      .order('name', { ascending: true });
+    
+    // Create a map of country_id to country_name
+    const countriesMap = new Map();
+    if (countriesResult.data) {
+      countriesResult.data.forEach((country: any) => {
+        countriesMap.set(country.id, country.name);
+      });
+    }
+    
+    // Combine leagues with country names
+    const result = {
+      data: leaguesResult.data?.map((league: any) => ({
+        ...league,
+        country: {
+          id: league.country_id,
+          name: countriesMap.get(league.country_id) || 'Unknown'
+        }
+      })) || [],
+      error: leaguesResult.error
+    };
+    
     competitions = result.data || [];
     error = result.error;
+    
   } catch (err) {
     console.warn('Failed to fetch competitions:', err);
     error = err;
@@ -185,10 +213,11 @@ export default async function RootLayout({
           {/* Top horizontal banner ad (desktop only) */}
           <ADVTop />
           {/* Main layout below header and banner */}
-          <AdminWrapper 
-            competitions={competitions || []}
-            header={null}
-            footer={
+          <SidebarProvider>
+            <AdminWrapper 
+              competitions={competitions || []}
+              header={null}
+              footer={
               <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 mt-12 py-8 text-sm text-gray-700 dark:text-gray-300">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-2 md:px-4">
                   {/* Live Football Today - Rich Content Section */}
@@ -284,6 +313,7 @@ export default async function RootLayout({
           >
             {children}
           </AdminWrapper>
+          </SidebarProvider>
         </div>
       </body>
     </html>

@@ -133,6 +133,20 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
 
   const supabase = supabaseServer();
 
+  // Fetch countries separately to avoid join issues
+  const { data: countries } = await supabase
+    .from('countries')
+    .select('id, name')
+    .order('name', { ascending: true });
+  
+  // Create a map of country_id to country_name
+  const countriesMap = new Map();
+  if (countries) {
+    countries.forEach((country: any) => {
+      countriesMap.set(country.id, country.name);
+    });
+  }
+
   // Get next match for this team (scheduled, not finished)
   const { data: nextMatch } = await supabase
     .from('fixtures')
@@ -176,11 +190,31 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     .order('starting_at', { ascending: false })
     .limit(10);
 
+  // Add country information to matches
+  const addCountryToMatch = (match: any) => {
+    if (match?.league) {
+      return {
+        ...match,
+        league: {
+          ...match.league,
+          country: {
+            id: match.league.country_id,
+            name: countriesMap.get(match.league.country_id) || 'Unknown'
+          }
+        }
+      };
+    }
+    return match;
+  };
+
+  const nextMatchWithCountry = nextMatch ? addCountryToMatch(nextMatch) : null;
+  const previousMatchesWithCountry = previousMatches ? previousMatches.map(addCountryToMatch) : [];
+
   return (
     <TeamDetailsClient 
       team={team} 
-      nextMatch={nextMatch} 
-      previousMatches={previousMatches || []} 
+      nextMatch={nextMatchWithCountry} 
+      previousMatches={previousMatchesWithCountry} 
     />
   );
 } 

@@ -72,7 +72,7 @@ export default function OddsComparisonTable({ odds, homeTeamName, awayTeamName }
         <div className="flex space-x-1 px-4 py-2">
           <button
             onClick={() => setSelectedMarket('1X2')}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
               selectedMarket === '1X2'
                 ? 'bg-gray-700 dark:bg-gray-700 text-white'
                 : 'bg-gray-600 dark:bg-gray-800 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700'
@@ -82,7 +82,7 @@ export default function OddsComparisonTable({ odds, homeTeamName, awayTeamName }
           </button>
           <button
             onClick={() => setSelectedMarket('Over/Under')}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
               selectedMarket === 'Over/Under'
                 ? 'bg-gray-700 dark:bg-gray-700 text-white'
                 : 'bg-gray-600 dark:bg-gray-800 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700'
@@ -92,7 +92,7 @@ export default function OddsComparisonTable({ odds, homeTeamName, awayTeamName }
           </button>
           <button
             onClick={() => setSelectedMarket('Both Teams to Score')}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
               selectedMarket === 'Both Teams to Score'
                 ? 'bg-gray-700 dark:bg-gray-700 text-white'
                 : 'bg-gray-600 dark:bg-gray-800 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700'
@@ -101,7 +101,7 @@ export default function OddsComparisonTable({ odds, homeTeamName, awayTeamName }
             Both Teams to Score
           </button>
           <div className="ml-auto">
-            <button className="px-4 py-2 text-sm font-medium rounded-t-lg bg-gray-600 dark:bg-gray-800 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors">
+            <button className="px-4 py-2 text-sm font-medium rounded-t-lg bg-gray-600 dark:bg-gray-800 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer">
               More
             </button>
           </div>
@@ -111,16 +111,16 @@ export default function OddsComparisonTable({ odds, homeTeamName, awayTeamName }
       {/* Sub Navigation */}
       <div className="bg-gray-600 dark:bg-gray-800 border-b border-gray-500 dark:border-gray-700">
         <div className="flex space-x-1 px-4 py-2">
-          <button className="px-4 py-1 text-sm font-medium rounded bg-gray-700 dark:bg-gray-700 text-white">
+          <button className="px-4 py-1 text-sm font-medium rounded bg-gray-700 dark:bg-gray-700 text-white focus:outline-none focus:ring-0 focus:border-0 cursor-pointer">
             Full Time
           </button>
-          <button className="px-4 py-1 text-sm font-medium rounded bg-gray-500 dark:bg-gray-600 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors">
+          <button className="px-4 py-1 text-sm font-medium rounded bg-gray-500 dark:bg-gray-600 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer">
             1st Half
           </button>
-          <button className="px-4 py-1 text-sm font-medium rounded bg-gray-500 dark:bg-gray-600 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors">
+          <button className="px-4 py-1 text-sm font-medium rounded bg-gray-500 dark:bg-gray-600 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer">
             2nd Half
           </button>
-          <button className="px-4 py-1 text-sm font-medium rounded bg-yellow-500 text-gray-800 hover:bg-yellow-400 transition-colors">
+          <button className="px-4 py-1 text-sm font-medium rounded bg-yellow-500 text-gray-800 hover:bg-yellow-400 transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer">
             All Bonuses
           </button>
         </div>

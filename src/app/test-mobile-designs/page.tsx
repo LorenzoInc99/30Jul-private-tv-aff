@@ -54,7 +54,7 @@ function ToggleSwitch({ enabled, onToggle, label }: { enabled: boolean; onToggle
       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
       <button
         onClick={onToggle}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
           enabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
         }`}
         role="switch"

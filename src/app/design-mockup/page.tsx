@@ -356,7 +356,7 @@ export default function DesignMockupPage() {
               <span className="text-sm text-gray-600 dark:text-gray-400">Odds</span>
               <button
                 onClick={() => setShowOdds(!showOdds)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
                   showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >
@@ -381,7 +381,7 @@ export default function DesignMockupPage() {
               <button
                 key={filter.key}
                 onClick={() => setSelectedFilter(filter.key)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
                   selectedFilter === filter.key
                     ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
