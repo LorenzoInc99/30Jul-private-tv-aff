@@ -135,3 +135,41 @@ p {
 * {
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
+
+/* Smooth Transitions for Tab Switching */
+.tab-transition {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-content-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.tab-content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tab-content-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tab-content-exit-active {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* Enhanced Tab Navigation */
+.tab-nav-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-nav-item:hover {
+  transform: translateY(-1px);
+}
+
+.tab-nav-item:active {
+  transform: translateY(0);
+}

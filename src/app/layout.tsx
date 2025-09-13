@@ -14,6 +14,7 @@ import ADVTop from '../components/ADVTop';
 import ADVRight from '../components/ADVRight';
 import NavigationWrapper from './components/NavigationWrapper';
 import HeaderLogo from './components/HeaderLogo';
+import HeaderTimezoneSelector from '../components/HeaderTimezoneSelector';
 
 export const metadata: Metadata = {
   title: {
@@ -171,11 +172,14 @@ export default async function RootLayout({
           <header className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
             <div className="flex justify-between items-center w-full">
               <HeaderLogo />
-              {/* Hamburger menu for mobile */}
-              <div className="md:hidden">
-                <MobileCompetitionsMenu competitions={competitions || []} />
+              <div className="flex items-center gap-4">
+                {/* Timezone Selector */}
+                <HeaderTimezoneSelector />
+                {/* Hamburger menu for mobile */}
+                <div className="md:hidden">
+                  <MobileCompetitionsMenu competitions={competitions || []} />
+                </div>
               </div>
-              {/* Navigation removed as per new requirements */}
             </div>
           </header>
           {/* Top horizontal banner ad (desktop only) */}

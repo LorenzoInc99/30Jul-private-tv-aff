@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import NavigationTabs from './NavigationTabs';
 import BetCalculator from '../../components/BetCalculator';
 
 type TabType = 'scores' | 'news' | 'bet-calculator';
@@ -86,8 +85,6 @@ export default function BetCalculatorLayout({ children, defaultBetType }: BetCal
 
   return (
     <>
-      {isClient && <NavigationTabs activeTab={activeTab} onTabChange={handleTabChange} />}
-      
       {/* Bet Calculator tab - direct integration */}
       {activeTab === 'bet-calculator' && (
         <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">

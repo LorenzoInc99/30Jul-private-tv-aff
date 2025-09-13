@@ -100,7 +100,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
       >
         {/* Live Match Indicator */}
         {isLive && (
-          <div className="absolute left-0 top-1 bottom-1 w-2 bg-orange-500 rounded-r-xl"></div>
+          <div className="absolute left-0 top-1 bottom-1 w-2 bg-orange-500 rounded-r-xl animate-pulse"></div>
         )}
         
         {/* Mobile: Enhanced compact layout */}
@@ -115,7 +115,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 : formatTimeConsistently(match.start_time, getTargetTimezone())}
             </span>
             <span className={`text-xs font-medium ${
-              isLive ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
+              isLive ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'
             }`}>
               {isLive ? '-' : '-'}
             </span>
@@ -261,11 +261,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           {/* Favorite Star */}
           <div className="flex-shrink-0 w-6 flex justify-center">
             <button 
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-all duration-200 hover:scale-110 active:scale-95"
               onClick={handleStarClick}
             >
               <svg 
-                className={`w-4 h-4 ${isStarred ? 'text-yellow-500 fill-current' : 'text-gray-400'}`} 
+                className={`w-4 h-4 transition-all duration-200 ${isStarred ? 'text-yellow-500 fill-current scale-110' : 'text-gray-400 hover:text-yellow-400'}`} 
                 fill={isStarred ? 'currentColor' : 'none'} 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -454,11 +454,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           {/* Favorite Star - Now in grid column */}
           <div className="flex justify-center">
             <button 
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-all duration-200 hover:scale-110 active:scale-95"
               onClick={handleStarClick}
             >
               <svg 
-                className={`w-4 h-4 ${isStarred ? 'text-yellow-500 fill-current' : 'text-gray-400'}`} 
+                className={`w-4 h-4 transition-all duration-200 ${isStarred ? 'text-yellow-500 fill-current scale-110' : 'text-gray-400 hover:text-yellow-400'}`} 
                 fill={isStarred ? 'currentColor' : 'none'} 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"

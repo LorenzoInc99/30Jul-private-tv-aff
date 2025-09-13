@@ -5,7 +5,7 @@ import MatchSchedule from './MatchSchedule';
 
 function getInitialTimezone() {
   if (typeof window === 'undefined') return 'auto';
-  return localStorage.getItem('userTimezone') || 'auto';
+  return localStorage.getItem('timezone') || 'auto';
 }
 
 export default function MatchScheduleWrapper({ 
@@ -23,6 +23,17 @@ export default function MatchScheduleWrapper({
   useEffect(() => {
     setTimezone(getInitialTimezone());
     setHydrated(true);
+    
+    // Listen for timezone changes from header
+    const handleTimezoneChange = (event: CustomEvent) => {
+      setTimezone(event.detail);
+    };
+    
+    window.addEventListener('timezoneChanged', handleTimezoneChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('timezoneChanged', handleTimezoneChange as EventListener);
+    };
   }, []);
 
   if (!hydrated) {

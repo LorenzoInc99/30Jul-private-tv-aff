@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useBetCalculation } from './hooks/useBetCalculation';
 
 interface BetSelection {
   id: string;
@@ -40,7 +41,8 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
   };
   
   const [selections, setSelections] = useState<BetSelection[]>(getInitialSelections());
-  const [calculation, setCalculation] = useState<BetCalculation | null>(null);
+  // Use the custom hook for calculations
+  const calculation = useBetCalculation(selections, stake);
 
   // Get required selections for each bet type
   const getRequiredSelections = (type: BetType): number => {
@@ -109,7 +111,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
 
   // Calculate bet when any input changes
   useEffect(() => {
-    calculateBet();
+    // The calculation is now handled by the custom hook
   }, [selections, stake, betType]);
 
   // Generate all possible combinations of selections
@@ -128,27 +130,6 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
     }
     
     return combinations;
-  };
-
-  const calculateBet = () => {
-    if (selections.length === 0) {
-      setCalculation(null);
-      return;
-    }
-
-    // Calculate based on bet type - all are simple accumulator calculations
-    const calculatedOdds = selections.reduce((acc, selection) => acc * selection.odds, 1);
-    const totalOutlay = stake;
-    const totalReturn = stake * calculatedOdds;
-    const totalProfit = totalReturn - totalOutlay;
-    const combinedOdds = totalReturn / totalOutlay;
-
-    setCalculation({
-      totalOutlay,
-      totalReturn,
-      totalProfit,
-      combinedOdds
-    });
   };
 
   const updateSelection = (id: string, field: keyof BetSelection, value: string | number) => {

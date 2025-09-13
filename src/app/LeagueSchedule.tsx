@@ -6,6 +6,8 @@ import MatchCard from '../components/MatchCard';
 import LeagueLogo from '../components/LeagueLogo';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
 import { slugify } from '../lib/utils';
+import { LeagueScheduleSkeleton } from '../components/SkeletonLoader';
+import { NoMatchesEmptyState } from '../components/EmptyStates';
 
 export default function LeagueSchedule({ 
   competitions, 
@@ -78,6 +80,13 @@ export default function LeagueSchedule({
     country: g.competition.country
   })));
 
+
+  // Show empty state if no competitions with matches
+  const hasMatches = sorted.some(group => group.matches && group.matches.length > 0);
+  if (!hasMatches) {
+    return <NoMatchesEmptyState />;
+  }
+
   return (
     <div className="space-y-1">
       {sorted.map(group => {
@@ -126,6 +135,7 @@ export default function LeagueSchedule({
                       onClick={e => e.stopPropagation()}
                     >
                       {group.competition.name}
+                      <span className="text-sm font-normal ml-1">({group.matches.length})</span>
                     </Link>
                     {group.competition.country && (
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">

@@ -5,9 +5,9 @@ import LeagueLogo from '../../components/LeagueLogo';
 import TeamLogo from '../../components/TeamLogo';
 import { slugify } from '../../lib/utils';
 
+
 export default function SidebarCompetitions({ competitions }: { competitions: any[] }) {
   const [showAll, setShowAll] = useState(false);
-  const [search, setSearch] = useState('');
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
 
@@ -137,11 +137,13 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     ];
   }
 
+
   // Load pinned leagues on mount and when competitions change
   useEffect(() => {
     setMounted(true);
     updatePinnedLeagues();
   }, [competitions]);
+
 
   // Listen for pinned league changes from other components
   useEffect(() => {
@@ -168,10 +170,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     console.log('====================');
   };
 
-  const filtered = competitions.filter((comp: any) =>
-    comp.name.toLowerCase().includes(search.toLowerCase())
-  );
-  const displayed = showAll ? filtered : filtered.slice(0, 5);
+  const displayed = showAll ? competitions : competitions.slice(0, 5);
 
   const handlePinToggle = (league: any) => {
     togglePinnedLeague(league);
@@ -279,6 +278,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
     </li>
   );
 
+
   // Determine what to show based on pinned leagues
   const hasPinnedLeagues = mounted && pinnedLeagues.length > 0;
   
@@ -307,30 +307,8 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
   return (
     <aside className="block w-64 bg-white dark:bg-gray-900 h-full min-h-screen">
       <div className="p-4 h-full">
-        {/* Search bar */}
-        <div className="mb-4 w-full">
-          <div className="relative w-full">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search"
-              className="w-full pl-10 pr-3 py-2 rounded bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-              aria-label="Search competitions"
-            />
-          </div>
-        </div>
-
-
-
         {/* Popular Leagues Section */}
-        <div className="mb-6">
+        <div className="mb-6 pt-2">
           <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
             Popular Leagues
           </h2>
