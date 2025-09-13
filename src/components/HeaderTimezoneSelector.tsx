@@ -26,7 +26,7 @@ export default function HeaderTimezoneSelector() {
     <div className="hidden md:block">
       <select
         id="timezone-select"
-        className="bg-transparent border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-1.5"
+        className="bg-transparent border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg focus:outline-none focus:ring-0 focus:border-0 px-3 py-1.5"
         value={timezone}
         onChange={handleTimezoneChange}
       >

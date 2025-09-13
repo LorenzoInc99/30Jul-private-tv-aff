@@ -10,10 +10,10 @@ interface NavigationTabsProps {
 export default function NavigationTabs({ activeTab, onTabChange }: NavigationTabsProps) {
   return (
     <div className="w-full bg-gray-800 dark:bg-gray-900">
-      <div className="flex items-center justify-center px-4 py-3 space-x-8">
+      <div className="flex items-center justify-center px-4 pt-5 pb-1 space-x-8">
         {/* Scores */}
         <div 
-          className={`tab-nav-item flex items-center px-4 py-3 cursor-pointer rounded-lg transition-all duration-200 ${
+          className={`tab-nav-item flex items-center px-4 py-1 cursor-pointer rounded-lg transition-all duration-200 ${
             activeTab === 'scores' 
               ? 'text-white bg-indigo-600 shadow-lg transform scale-105' 
               : 'text-gray-300 hover:text-white hover:bg-gray-700 hover:scale-105'
@@ -28,7 +28,7 @@ export default function NavigationTabs({ activeTab, onTabChange }: NavigationTab
         
         {/* News */}
         <div 
-          className={`tab-nav-item flex items-center px-4 py-3 cursor-pointer rounded-lg transition-all duration-200 ${
+          className={`tab-nav-item flex items-center px-4 py-1 cursor-pointer rounded-lg transition-all duration-200 ${
             activeTab === 'news' 
               ? 'text-white bg-indigo-600 shadow-lg transform scale-105' 
               : 'text-gray-300 hover:text-white hover:bg-gray-700 hover:scale-105'
@@ -44,7 +44,7 @@ export default function NavigationTabs({ activeTab, onTabChange }: NavigationTab
         
         {/* Bet Calculator */}
         <div 
-          className={`tab-nav-item flex items-center px-4 py-3 cursor-pointer rounded-lg transition-all duration-200 ${
+          className={`tab-nav-item flex items-center px-4 py-1 cursor-pointer rounded-lg transition-all duration-200 ${
             activeTab === 'bet-calculator' 
               ? 'text-white bg-indigo-600 shadow-lg transform scale-105' 
               : 'text-gray-300 hover:text-white hover:bg-gray-700 hover:scale-105'

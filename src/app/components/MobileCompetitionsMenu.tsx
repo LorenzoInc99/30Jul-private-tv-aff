@@ -78,7 +78,7 @@ export default function MobileCompetitionsMenu({ competitions }: { competitions:
   return (
     <>
       <button
-        className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="p-2 rounded focus:outline-none focus:ring-0 focus:border-0"
         aria-label="Open competitions menu"
         onClick={() => setOpen(true)}
       >

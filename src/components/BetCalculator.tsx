@@ -189,7 +189,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                     <select
                       value={betType}
                       onChange={(e) => updateBetType(e.target.value as BetType)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:outline-none focus:ring-0 focus:border-0"
                     >
                       <option value="Single">Single</option>
                       <option value="Double">Double</option>
@@ -211,7 +211,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                       <select
                         value={numberOfSelections}
                         onChange={(e) => updateNumberOfSelections(Number(e.target.value))}
-                        className={`w-full px-3 py-2 border rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        className={`w-full px-3 py-2 border rounded bg-white text-gray-900 text-sm focus:outline-none focus:ring-0 focus:border-0 ${
                           isSelectionCountValid ? 'border-gray-300' : 'border-red-300 bg-red-50'
                         }`}
                       >
@@ -281,7 +281,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                           type="text"
                           value={selection.outcome}
                           onChange={(e) => updateSelection(selection.id, 'outcome', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:outline-none focus:ring-0 focus:border-0"
                           placeholder="Winner"
                         />
                       </div>
@@ -310,9 +310,9 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                               updateSelection(selection.id, 'odds', value);
                             }
                           }}
-                          className={`w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          className={`w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-0 focus:border-0 ${
                             selection.odds > 0 && (selection.odds < 1.01 || selection.odds > 500)
-                              ? 'border-red-300 bg-red-50 text-red-900 focus:ring-red-500 focus:border-red-500' 
+                              ? 'border-red-300 bg-red-50 text-red-900 focus:outline-none focus:ring-0 focus:border-0' 
                               : 'border-gray-300 bg-white text-gray-900'
                           }`}
                           placeholder="0"
@@ -345,7 +345,7 @@ export default function BetCalculator({ defaultBetType = 'Single' }: BetCalculat
                       onChange={(e) => setStake(Number(e.target.value))}
                       min="0.01"
                       step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded bg-white text-gray-900 text-sm focus:outline-none focus:ring-0 focus:border-0"
                     />
                   </div>
                   <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">

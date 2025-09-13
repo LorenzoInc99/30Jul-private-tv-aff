@@ -218,7 +218,7 @@ export default function MatchSchedule({
             <span className="text-sm text-gray-600 dark:text-gray-400">Odds</span>
             <button
               onClick={() => setShowOdds(!showOdds)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
                 showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
@@ -250,7 +250,7 @@ export default function MatchSchedule({
             <button
               key={filter.key}
               onClick={() => setSelectedFilter(filter.key as 'all' | 'live' | 'finished' | 'upcoming')}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:border-0 ${
+              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
                 selectedFilter === filter.key
                   ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
@@ -317,7 +317,7 @@ export default function MatchSchedule({
                     <button
                       key={filter.key}
                       onClick={() => setSelectedFilter(filter.key as 'all' | 'live' | 'finished' | 'upcoming')}
-                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-0 focus:border-0 ${
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
                         selectedFilter === filter.key
                           ? 'text-white bg-indigo-600 shadow-lg transform scale-105'
                           : 'text-gray-600 dark:text-gray-400 hover:text-white hover:bg-gray-700 hover:scale-105'
@@ -341,7 +341,7 @@ export default function MatchSchedule({
                <span className="text-sm text-gray-600 dark:text-gray-400">Odds</span>
                <button
                  onClick={() => setShowOdds(!showOdds)}
-                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 ${
+                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
                    showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                  }`}
                >
@@ -358,7 +358,7 @@ export default function MatchSchedule({
                <span className="text-sm text-gray-600 dark:text-gray-400">TV</span>
                <button
                  onClick={() => setShowTv(!showTv)}
-                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 ${
+                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
                    showTv ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                  }`}
                >
