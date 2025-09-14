@@ -176,9 +176,9 @@ export default function MatchPageClient({ match }: { match: any }) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto p-4 md:p-8 max-w-7xl">
+      <div className="w-full">
         {/* Main Content */}
-        <main className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <main className="bg-white dark:bg-gray-800 p-1 md:p-2 rounded-lg shadow-lg">
           {/* Match Header */}
           <div className="bg-white dark:bg-gray-800 rounded-none shadow-none overflow-hidden mb-2 w-full">
             <div className="px-6 py-3 bg-indigo-600 text-white text-sm font-semibold uppercase tracking-wide">

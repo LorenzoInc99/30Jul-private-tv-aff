@@ -89,7 +89,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   };
 
   return (
-    <div className="w-full md:w-full">
+    <div className="w-full md:w-full overflow-hidden">
       <div
         className={`group w-full transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer relative ${isLive ? 'border-l-0' : ''}`}
         tabIndex={0}
@@ -122,7 +122,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
 
           {/* Teams Column - Two rows, closer together */}
-          <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+          <div className="w-full min-w-0 flex flex-col gap-0.5 pl-4">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 flex-shrink-0">
                 <TeamLogo 
@@ -133,7 +133,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
               <button
                 onClick={(e) => handleTeamClick(e, match.home_team?.name)}
-                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -153,7 +153,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
               <button
                 onClick={(e) => handleTeamClick(e, match.away_team?.name)}
-                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -260,7 +260,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
 
         </div>
         {/* Desktop: Row layout - Grid for alignment, absolute for flexibility */}
-        <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[3.5rem_1fr_220px_160px_3rem] items-center gap-6">
+        <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[4rem_14rem_14rem_10rem_4rem] items-center gap-4">
           {/* Time */}
           <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
             <span className="text-xs">
@@ -294,7 +294,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               />
               <button
                 onClick={(e) => handleTeamClick(e, match.home_team?.name)}
-                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -312,7 +312,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               />
               <button
                 onClick={(e) => handleTeamClick(e, match.away_team?.name)}
-                className={`text-sm truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
