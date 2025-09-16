@@ -195,9 +195,9 @@ export default async function RootLayout({
         <ADVLeft />
         {/* Right vertical banner ad (desktop only) */}
         <ADVRight />
-        <div className="md:mx-auto md:max-w-[1100px] md:px-8 md:rounded-2xl overflow-hidden">
+        <div className="md:mx-auto md:max-w-[1000px] md:px-8 md:rounded-2xl overflow-hidden">
           {/* Static Header/Nav Bar */}
-          <header className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
+          <header className="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
             <div className="flex justify-between items-center w-full">
               <HeaderLogo />
               <div className="flex items-center gap-4">

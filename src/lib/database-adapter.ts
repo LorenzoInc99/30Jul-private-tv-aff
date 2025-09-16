@@ -455,13 +455,13 @@ export function getBestOddsFromTransformed(transformedOdds: any[]) {
   // With the new structure, each market object contains the best odds for one outcome
   for (const market of transformedOdds) {
     // Each market now contains only one outcome type with the best odds
-    if (market.home_win) {
+    if (market.home_win && (best.home.value === null || market.home_win > best.home.value)) {
       best.home = { value: market.home_win, operator: market.Operators };
     }
-    if (market.draw) {
+    if (market.draw && (best.draw.value === null || market.draw > best.draw.value)) {
       best.draw = { value: market.draw, operator: market.Operators };
     }
-    if (market.away_win) {
+    if (market.away_win && (best.away.value === null || market.away_win > best.away.value)) {
       best.away = { value: market.away_win, operator: market.Operators };
     }
   }

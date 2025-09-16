@@ -107,22 +107,24 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         <div className={`flex items-center p-2 gap-2 md:hidden w-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer relative ${
           isLive ? 'border-l-4 border-l-red-500' : ''
         }`}>
-          {/* Time Column - Compact and close to border */}
-          <div className="flex-shrink-0 w-14 flex flex-col items-start">
-            <span className="text-xs font-bold text-gray-900 dark:text-white">
-              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
-                ? formatMatchDate(match.start_time)
-                : formatTimeConsistently(match.start_time, getTargetTimezone())}
-            </span>
-            <span className={`text-xs font-medium ${
-              isLive ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'
-            }`}>
-              {isLive ? '-' : '-'}
-            </span>
-          </div>
+          {/* Left Content Group - Fixed width */}
+          <div className="flex items-center w-48">
+            {/* Time Column - Compact and close to border */}
+            <div className="flex-shrink-0 w-14 flex flex-col items-start">
+              <span className="text-xs font-bold text-gray-900 dark:text-white">
+                {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
+                  ? formatMatchDate(match.start_time)
+                  : formatTimeConsistently(match.start_time, getTargetTimezone())}
+              </span>
+              <span className={`text-xs font-medium ${
+                isLive ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'
+              }`}>
+                {isLive ? '-' : '-'}
+              </span>
+            </div>
 
-          {/* Teams Column - Two rows, closer together */}
-          <div className="w-full min-w-0 flex flex-col gap-0.5 pl-4">
+            {/* Teams Column - Two rows, closer together */}
+            <div className="flex-1 min-w-0 flex flex-col gap-0.5 pl-4">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 flex-shrink-0">
                 <TeamLogo 
@@ -164,9 +166,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </button>
             </div>
           </div>
+          </div>
 
-          {/* Dynamic Right Column - Odds or TV Channels */}
-          <div className="flex-shrink-0 w-20 mr-8">
+          {/* Middle Content Group - Centered Odds/TV */}
+          <div className="flex items-center justify-center gap-4 flex-1">
+            {/* Dynamic Right Column - Odds or TV Channels */}
+            <div className="flex-shrink-0 w-20">
             {showOdds ? (
               // Odds Mode
               <div className="flex gap-1">
@@ -238,9 +243,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
             )}
           </div>
+          </div>
 
-          {/* Score Column */}
-          <div className="flex-shrink-0 w-8 text-center flex flex-col gap-0.5">
+          {/* Right Content Group - Fixed width for Score */}
+          <div className="flex justify-end w-16">
+            {/* Score Column - Far right position */}
+            <div className="flex-shrink-0 w-10 text-center flex flex-col gap-0.5">
             {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
                 <span className="text-sm font-bold text-gray-900 dark:text-white">
@@ -257,20 +265,23 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </>
             )}
           </div>
+          </div>
 
         </div>
-        {/* Desktop: Row layout - Grid for alignment, absolute for flexibility */}
-        <div className="hidden md:grid w-full py-0 px-3 relative md:grid-cols-[4rem_14rem_14rem_10rem_4rem] items-center gap-4">
-          {/* Time */}
-          <div className="text-xs font-bold text-left"> {/* Time column, fixed width by grid */}
-            <span className="text-xs">
-              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
-                ? formatMatchDate(match.start_time)
-                : formatTimeConsistently(match.start_time, getTargetTimezone())}
-            </span>
-          </div>
-          {/* Teams with logos */}
-          <div className="flex flex-col"> {/* Teams column, fixed width by grid */}
+        {/* Desktop: Row layout - Three column layout */}
+        <div className="hidden md:flex w-full py-0 px-3 relative items-center">
+          {/* Left Content Group - Fixed width */}
+          <div className="flex items-center w-80">
+            {/* Time */}
+            <div className="text-xs font-bold text-left w-10 mr-5"> {/* Time column: 40px width, 16px margin */}
+              <span className="text-xs">
+                {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
+                  ? formatMatchDate(match.start_time)
+                  : formatTimeConsistently(match.start_time, getTargetTimezone())}
+              </span>
+            </div>
+            {/* Teams with logos */}
+            <div className="flex flex-col min-w-0 flex-1"> {/* Teams column: takes remaining space in left group */}
             {/* Competition name with league logo */}
             {!hideCompetitionName && match.competition?.name && (
               <div className="flex items-center gap-2 mb-1">
@@ -323,8 +334,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </button>
             </div>
           </div>
-          {/* Odds - Now in grid column */}
-          <div className={`flex flex-row items-center gap-1 justify-center ${!showOdds ? 'invisible' : ''}`}>
+          </div>
+          
+          {/* Middle Content Group - Centered Odds and TV */}
+          <div className="flex items-center justify-center gap-8 flex-1">
+            {/* Odds */}
+            <div className={`flex flex-row items-center gap-1 justify-center w-35 ${!showOdds ? 'invisible' : ''}`}> {/* Odds column: 144px width */}
             {match.status !== 'Finished' && match.status !== 'Full Time' && match.status !== 'After Extra Time' && match.status !== 'After Penalties' ? (
               (() => {
                 const bestOdds = getBestOddsFromTransformed(match.Odds || []);
@@ -363,8 +378,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <div className="flex-1"></div>
             )}
           </div>
-          {/* TV Stream Logos - Now in grid column */}
-          <div className={`flex flex-row-reverse items-center gap-1 justify-end overflow-hidden ${!showTv ? 'invisible' : ''}`}>
+          {/* TV Stream Logos */}
+          <div className={`flex flex-row-reverse items-center gap-1 justify-end min-w-0 w-35 mr-4 ${!showTv ? 'invisible' : ''}`}> {/* TV column: 128px width, 16px margin */}
             {(() => {
               const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
               const count = broadcasters.length;
@@ -405,9 +420,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               );
             })()}
           </div>
+          </div>
           
-          {/* Score - Now in grid column */}
-          <div className="flex flex-col items-center justify-center font-semibold text-sm text-gray-800 dark:text-gray-200">
+          {/* Right Content Group - Fixed width for Score */}
+          <div className="flex justify-end w-20">
+            {/* Score - Far right position */}
+            <div className="flex flex-col items-center justify-center font-semibold text-sm text-gray-800 dark:text-gray-200 min-w-0 w-12"> {/* Score column: 48px width, far right */}
             {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
                 <span className={`text-base ${
@@ -433,6 +451,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 <span>-</span>
               </>
             )}
+          </div>
           </div>
           
         </div>
