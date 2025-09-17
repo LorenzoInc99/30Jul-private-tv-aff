@@ -102,6 +102,12 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, league];
     });
+    // Remove from hidden leagues when adding
+    setHiddenLeagues(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(league.id);
+      return newSet;
+    });
   };
 
   const addCustomTeam = (team: any) => {
@@ -111,6 +117,12 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         return prev;
       }
       return [...prev, team];
+    });
+    // Remove from hidden teams when adding
+    setHiddenTeams(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(team.id);
+      return newSet;
     });
   };
 
@@ -131,11 +143,11 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   };
 
   const isLeagueInSidebar = (leagueId: number) => {
-    return customLeagues.some(l => l.id === leagueId);
+    return customLeagues.some(l => l.id === leagueId) && !hiddenLeagues.has(leagueId);
   };
 
   const isTeamInSidebar = (teamId: string) => {
-    return customTeams.some(t => t.id === teamId);
+    return customTeams.some(t => t.id === teamId) && !hiddenTeams.has(teamId);
   };
 
   const value: SidebarContextType = {

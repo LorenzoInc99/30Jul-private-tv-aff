@@ -97,7 +97,7 @@ export default function MatchSchedule({
       setShowOdds(savedShowOdds !== null ? savedShowOdds === 'true' : true);
       setShowTv(savedShowTv !== null ? savedShowTv === 'true' : true);
       
-      // Set filter preference
+      // Set filter preference - default to 'all' for today's date
       const savedFilter = localStorage.getItem('selectedFilter') as 'all' | 'live' | 'finished' | 'upcoming';
       setSelectedFilter(savedFilter || 'all');
       
@@ -295,7 +295,28 @@ export default function MatchSchedule({
               );
             }
 
-            // Show filter pills with same styling as navigation tabs
+            // When date is today, show Live button with glass background
+            if (isToday) {
+              const liveMatchesCount = competitions.flatMap(c => c.matches).filter(m => 
+                m.status === '1st Half' || m.status === '2nd Half' || m.status === 'Half Time' || 
+                m.status === 'Extra Time' || m.status === 'Penalties'
+              ).length;
+              
+              return (
+                <button
+                  onClick={() => setSelectedFilter(selectedFilter === 'live' ? 'all' : 'live')}
+                  className={`px-4 py-1 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
+                    selectedFilter === 'live'
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-white/20 backdrop-blur-sm border border-white/30 text-gray-700 dark:text-gray-300 hover:bg-white/30'
+                  }`}
+                >
+                  Live
+                </button>
+              );
+            }
+
+            // Show all filters when date is not today
             const filters = [
               { key: 'all', label: 'All', count: competitions.flatMap(c => c.matches).length },
               { key: 'live', label: 'Live', count: competitions.flatMap(c => c.matches).filter(m => 

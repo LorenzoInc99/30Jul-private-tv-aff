@@ -25,7 +25,7 @@ export default function LeagueSchedule({
   onStarToggle?: (matchId: string) => void;
 }) {
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
-  const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
+  // Removed expanded state - always show all matches
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -48,12 +48,7 @@ export default function LeagueSchedule({
     window.dispatchEvent(new CustomEvent('pinnedLeaguesChanged'));
   };
 
-  useEffect(() => {
-    // Expand all by default on mount
-    const all: { [id: number]: boolean } = {};
-    competitions.forEach(c => { all[c.competition.id] = true; });
-    setExpanded(all);
-  }, [competitions]);
+  // Removed useEffect for expanding leagues - always show all matches
 
   // Sort: pinned leagues first, then alphabetical
   const sorted = [...competitions].sort((a, b) => {
@@ -91,14 +86,9 @@ export default function LeagueSchedule({
     <div className="space-y-1">
       {sorted.map(group => {
         const isPinned = mounted && isLeaguePinned(group.competition.id);
-        const isOpen = expanded[group.competition.id];
         return (
           <div key={group.competition.id} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 md:rounded-lg md:shadow">
-            <div
-              className="flex items-center justify-between cursor-pointer p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700"
-              onClick={() => setExpanded(e => ({ ...e, [group.competition.id]: !e[group.competition.id] }))}
-              aria-expanded={isOpen}
-            >
+            <div className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-2">
                 <svg
                   className={`pin-star w-5 h-5 ${isPinned ? 'text-yellow-500 dark:text-yellow-400' : 'text-gray-400 dark:text-gray-500'}`}
@@ -145,18 +135,8 @@ export default function LeagueSchedule({
                   </div>
                 </div>
               </div>
-              <svg
-                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 transform ${isOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
-            {isOpen && (
-              <div className={`collapse-transition expanded divide-y divide-gray-100 dark:divide-gray-700`} style={{ opacity: 1 }}>
+            <div className={`collapse-transition expanded divide-y divide-gray-100 dark:divide-gray-700`} style={{ opacity: 1 }}>
                 {group.matches.map((match: any, idx: number) => {
                   const homeSlug = slugify(match.home_team?.name || 'home');
                   const awaySlug = slugify(match.away_team?.name || 'away');
@@ -186,8 +166,7 @@ export default function LeagueSchedule({
                     </div>
                   );
                 })}
-              </div>
-            )}
+            </div>
           </div>
         );
       })}

@@ -693,7 +693,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
         {/* Custom Leagues Section */}
         <div className="mb-6 pt-2">
           <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
-            My Leagues
+            Popular Leagues
           </h2>
           <ul className="space-y-1">
             {customLeagues.filter((comp: any) => !hiddenLeagues.has(comp.id)).map((comp: any) => renderPopularLeagueItem(comp))}
@@ -703,7 +703,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
         {/* Custom Teams Section */}
         <div className="mb-6">
           <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
-            My Teams
+            Popular Teams
           </h2>
           <ul className="space-y-1">
             {customTeams.filter((team: any) => !hiddenTeams.has(team.id)).map((team: any) => renderPopularTeamItem(team))}

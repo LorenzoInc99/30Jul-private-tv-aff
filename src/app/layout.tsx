@@ -13,8 +13,7 @@ import ADVLeft from '../components/ADVLeft';
 import ADVTop from '../components/ADVTop';
 import ADVRight from '../components/ADVRight';
 import NavigationWrapper from './components/NavigationWrapper';
-import HeaderLogo from './components/HeaderLogo';
-import HeaderTimezoneSelector from '../components/HeaderTimezoneSelector';
+import HeaderClient from './components/HeaderClient';
 import { SidebarProvider } from '../contexts/SidebarContext';
 
 export const metadata: Metadata = {
@@ -197,19 +196,7 @@ export default async function RootLayout({
         <ADVRight />
         <div className="md:mx-auto md:max-w-[1000px] md:px-8 md:rounded-2xl overflow-hidden">
           {/* Static Header/Nav Bar */}
-          <header className="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
-            <div className="flex justify-between items-center w-full">
-              <HeaderLogo />
-              <div className="flex items-center gap-4">
-                {/* Timezone Selector */}
-                <HeaderTimezoneSelector />
-                {/* Hamburger menu for mobile */}
-                <div className="md:hidden">
-                  <MobileCompetitionsMenu competitions={competitions || []} />
-                </div>
-              </div>
-            </div>
-          </header>
+          <HeaderClient competitions={competitions || []} />
           {/* Top horizontal banner ad (desktop only) */}
           <ADVTop />
           {/* Main layout below header and banner */}

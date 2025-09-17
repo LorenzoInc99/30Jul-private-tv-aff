@@ -89,9 +89,9 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   };
 
   return (
-    <div className="w-full md:w-full overflow-hidden">
+    <div className="w-full md:w-full h-full overflow-hidden hover:bg-gray-50 dark:hover:bg-gray-900 transition-all duration-200">
       <div
-        className={`group w-full transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer relative ${isLive ? 'border-l-0' : ''}`}
+        className={`group w-full h-full cursor-pointer relative ${isLive ? 'border-l-0' : ''}`}
         tabIndex={0}
         aria-label={`View details for ${match.home_team?.name} vs ${match.away_team?.name}`}
         role="button"
@@ -104,7 +104,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         )}
         
         {/* Mobile: Enhanced compact layout */}
-        <div className={`flex items-center p-2 gap-2 md:hidden w-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer relative ${
+        <div className={`flex items-center p-2 gap-2 md:hidden w-full h-full transition-all duration-200 cursor-pointer relative ${
           isLive ? 'border-l-4 border-l-red-500' : ''
         }`}>
           {/* Left Content Group - Fixed width */}
@@ -269,7 +269,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
 
         </div>
         {/* Desktop: Row layout - Three column layout */}
-        <div className="hidden md:flex w-full py-0 px-3 relative items-center">
+        <div className="hidden md:flex w-full h-full py-0 px-3 relative items-center">
           {/* Left Content Group - Fixed width */}
           <div className="flex items-center w-80">
             {/* Time */}
