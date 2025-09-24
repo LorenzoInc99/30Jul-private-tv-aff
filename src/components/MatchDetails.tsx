@@ -185,7 +185,7 @@ export default function MatchDetails({ match }: { match: any }) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Home team logo clicked:', match.home_team?.name);
-                    const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                    const teamUrl = `/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`;
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
@@ -204,7 +204,7 @@ export default function MatchDetails({ match }: { match: any }) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Home team clicked:', match.home_team?.name);
-                    const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                    const teamUrl = `/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`;
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
@@ -237,7 +237,7 @@ export default function MatchDetails({ match }: { match: any }) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Away team logo clicked:', match.away_team?.name);
-                    const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                    const teamUrl = `/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`;
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
@@ -256,7 +256,7 @@ export default function MatchDetails({ match }: { match: any }) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Away team clicked:', match.away_team?.name);
-                    const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                    const teamUrl = `/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`;
                     console.log('Navigating to:', teamUrl);
                     window.open(teamUrl, '_blank');
                   }}
@@ -288,7 +288,7 @@ export default function MatchDetails({ match }: { match: any }) {
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Home team logo clicked:', match.home_team?.name);
-                  const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                  const teamUrl = `/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`;
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
@@ -307,7 +307,7 @@ export default function MatchDetails({ match }: { match: any }) {
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Home team clicked:', match.home_team?.name);
-                  const teamUrl = `/team/${slugify(match.home_team?.name || '')}`;
+                  const teamUrl = `/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`;
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
@@ -340,7 +340,7 @@ export default function MatchDetails({ match }: { match: any }) {
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Away team logo clicked:', match.away_team?.name);
-                  const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                  const teamUrl = `/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`;
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}
@@ -359,7 +359,7 @@ export default function MatchDetails({ match }: { match: any }) {
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Away team clicked:', match.away_team?.name);
-                  const teamUrl = `/team/${slugify(match.away_team?.name || '')}`;
+                  const teamUrl = `/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`;
                   console.log('Navigating to:', teamUrl);
                   window.open(teamUrl, '_blank');
                 }}

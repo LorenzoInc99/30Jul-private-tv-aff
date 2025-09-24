@@ -136,7 +136,7 @@ function NextMatchDetails({ match }: { match: any }) {
                   className="w-10 h-10 object-contain mb-1" 
                 />
                 <Link
-                  href={`/team/${slugify(match.home_team?.name || '')}`}
+                  href={`/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`}
                   className={`text-xs truncate w-full text-center hover:underline ${
                     match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                       (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
@@ -166,7 +166,7 @@ function NextMatchDetails({ match }: { match: any }) {
                   className="w-10 h-10 object-contain mb-1" 
                 />
                 <Link
-                  href={`/team/${slugify(match.away_team?.name || '')}`}
+                  href={`/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`}
                   className={`text-xs truncate w-full text-center hover:underline ${
                     match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                       (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
@@ -195,7 +195,7 @@ function NextMatchDetails({ match }: { match: any }) {
                 className="w-14 h-14 object-contain mb-1"
               />
               <Link
-                href={`/team/${slugify(match.home_team?.name || '')}`}
+                href={`/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`}
                 className={`text-base truncate w-full text-center hover:underline ${
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
@@ -225,7 +225,7 @@ function NextMatchDetails({ match }: { match: any }) {
                 className="w-14 h-14 object-contain mb-1"
               />
               <Link
-                href={`/team/${slugify(match.away_team?.name || '')}`}
+                href={`/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`}
                 className={`text-base truncate w-full text-center hover:underline ${
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 

@@ -209,7 +209,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     {/* Team Name Row */}
                     <div className="flex items-center justify-center h-8 md:h-10 px-1 md:px-2">
                       <Link
-                        href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+                        href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/${match.home_team_id}`}
                         className={`text-lg font-bold text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
                           match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                             (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
@@ -269,7 +269,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     {/* Team Name Row */}
                     <div className="flex items-center justify-center h-8 md:h-10 px-1 md:px-2">
                       <Link
-                        href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+                        href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/${match.away_team_id}`}
                         className={`text-lg font-bold text-center break-words leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg ${
                           match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                             (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 

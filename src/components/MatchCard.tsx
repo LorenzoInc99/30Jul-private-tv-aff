@@ -78,12 +78,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                  match.status === 'Extra Time' ||
                  match.status === 'Penalties';
 
-  const handleTeamClick = (e: React.MouseEvent, teamName: string) => {
+  const handleTeamClick = (e: React.MouseEvent, teamName: string, teamId: number) => {
     e.stopPropagation();
-    console.log('Team clicked:', teamName);
+    console.log('Team clicked:', teamName, 'ID:', teamId);
     const teamSlug = slugify(teamName);
     console.log('Generated slug:', teamSlug);
-    const teamUrl = `/team/${teamSlug}`;
+    const teamUrl = `/team/${teamSlug}/${teamId}`;
     console.log('Opening URL:', teamUrl);
     window.open(teamUrl, '_blank');
   };
@@ -134,7 +134,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 />
               </div>
               <button
-                onClick={(e) => handleTeamClick(e, match.home_team?.name)}
+                onClick={(e) => handleTeamClick(e, match.home_team?.name, match.home_team?.id)}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -154,7 +154,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 />
               </div>
               <button
-                onClick={(e) => handleTeamClick(e, match.away_team?.name)}
+                onClick={(e) => handleTeamClick(e, match.away_team?.name, match.away_team?.id)}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -302,7 +302,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 size="sm" 
               />
               <button
-                onClick={(e) => handleTeamClick(e, match.home_team?.name)}
+                onClick={(e) => handleTeamClick(e, match.home_team?.name, match.home_team?.id)}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -320,7 +320,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 size="sm" 
               />
               <button
-                onClick={(e) => handleTeamClick(e, match.away_team?.name)}
+                onClick={(e) => handleTeamClick(e, match.away_team?.name, match.away_team?.id)}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
