@@ -115,8 +115,8 @@ export function getLeagueLogoClassName(leagueId: number, baseClassName: string =
 } 
 
 /**
- * Creates a clean URL slug without hyphens
- * Example: "FC København" -> "fckobenhavn"
+ * Creates a clean URL slug with hyphens
+ * Example: "FC København" -> "fc-kobenhavn"
  */
 export function slugify(str: string): string {
   return str
@@ -130,7 +130,8 @@ export function slugify(str: string): string {
     .replace(/ß/g, 'ss') // Replace ß with ss
     .replace(/æ/g, 'ae') // Replace æ with ae
     .replace(/å/g, 'aa') // Replace å with aa
-    .replace(/[^a-z0-9]/g, '') // Remove all non-alphanumeric characters (no hyphens)
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
     .trim();
 }
 

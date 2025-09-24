@@ -172,18 +172,72 @@ export async function POST(request: NextRequest) {
     console.log('🏟️ Step 7: Fetching latest fixtures...');
     
     try {
-      const fixturesData = await fetchAllPages('https://api.sportmonks.com/v3/football/fixtures/latest');
+      // Get fixtures for a 90-day window covering the season start (July-September 2025)
+      const seasonStart = new Date('2025-07-01'); // July 1, 2025 (covers early starters)
+      const seasonEnd = new Date('2025-09-30');   // September 30, 2025 (90 days)
       
-      // Process fixtures with simplified data structure
+      const startDate = seasonStart.toISOString().split('T')[0];
+      const endDate = seasonEnd.toISOString().split('T')[0];
+      
+      console.log(`📅 Fetching fixtures for season start: ${startDate} to ${endDate}`);
+      
+      const fixturesData = await fetchAllPages(`https://api.sportmonks.com/v3/football/fixtures/between/${startDate}/${endDate}`, { include: 'participants' });
+      
+      // First, collect all teams from participants and sync them
+      const allTeams = new Map();
+      fixturesData.forEach((fixture: any) => {
+        if (fixture.participants && Array.isArray(fixture.participants)) {
+          fixture.participants.forEach((participant: any) => {
+            allTeams.set(participant.id, {
+              id: participant.id,
+              name: participant.name,
+              short_code: participant.short_code,
+              country_id: participant.country_id,
+              venue_id: participant.venue_id,
+              team_logo_url: participant.image_path
+            });
+          });
+        }
+      });
+
+      // Sync all teams first
+      if (allTeams.size > 0) {
+        console.log(`📊 Syncing ${allTeams.size} teams from fixtures...`);
+        const { error: teamsError } = await supabase
+          .from('teams_new')
+          .upsert(Array.from(allTeams.values()), { onConflict: 'id' });
+        
+        if (teamsError) {
+          console.error('❌ Error syncing teams:', teamsError);
+        } else {
+          console.log(`✅ Synced ${allTeams.size} teams`);
+        }
+      }
+
+      // Process fixtures with team information from participants
       const allFixtures = fixturesData.map((fixture: any) => {
+        let homeTeamId = null;
+        let awayTeamId = null;
+        
+        // Extract team IDs from participants
+        if (fixture.participants && Array.isArray(fixture.participants)) {
+          fixture.participants.forEach((participant: any) => {
+            if (participant.meta?.location === 'home') {
+              homeTeamId = participant.id;
+            } else if (participant.meta?.location === 'away') {
+              awayTeamId = participant.id;
+            }
+          });
+        }
+        
         return {
           id: fixture.id,
           league_id: fixture.league_id,
           season_id: fixture.season_id,
           round_id: fixture.round_id,
           venue_id: fixture.venue_id,
-          home_team_id: fixture.home_team_id || null,
-          away_team_id: fixture.away_team_id || null,
+          home_team_id: homeTeamId,
+          away_team_id: awayTeamId,
           name: fixture.name,
           starting_at: fixture.starting_at,
           starting_at_timestamp: fixture.starting_at_timestamp,

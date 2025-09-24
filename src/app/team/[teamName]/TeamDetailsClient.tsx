@@ -11,6 +11,7 @@ import TeamFormRectangles from '@/components/TeamFormRectangles';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
 import { getMatchStatus } from '@/lib/database-config';
 import { slugify } from '../../../lib/utils';
+import { useTeam } from '../../../contexts/TeamContext';
 
 function transformMatchForCard(match: any) {
   if (!match) return null;
@@ -25,7 +26,9 @@ function transformMatchForCard(match: any) {
     Competitions: {
       id: match.league?.id,
       name: match.league?.name,
-      country: null
+      country: null,
+      logo_url: match.league?.league_logo,
+      league_logo_url: match.league?.league_logo
     },
     home_team: {
       id: match.home_team?.id,
@@ -283,11 +286,62 @@ function NextMatchDetails({ match }: { match: any }) {
   );
 }
 
-export default function TeamDetailsClient({ team, nextMatch, previousMatches }: { 
+export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, previousMatches, teamForm }: { 
   team: any; 
   nextMatch: any; 
-  previousMatches: any[] 
+  upcomingMatches: any[];
+  previousMatches: any[]; 
+  teamForm: any;
 }) {
+  const [currentPage, setCurrentPage] = useState(0);
+  const matchesPerPage = 3;
+  
+  // Use team context
+  const { setTeamData, setTeamMatches, setCurrentPage: setContextCurrentPage } = useTeam();
+
+  // Transform matches for display
+  const transformedPreviousMatches = previousMatches.map(transformMatchForCard).filter(Boolean);
+  const transformedUpcomingMatches = (upcomingMatches || []).map(transformMatchForCard).filter(Boolean);
+
+  // Combine all matches in chronological order (previous + upcoming)
+  const allMatches = [
+    ...transformedPreviousMatches,
+    ...transformedUpcomingMatches
+  ].sort((a, b) => {
+    if (!a || !b) return 0;
+    return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
+  });
+
+  // Set team data in context when component mounts
+  useEffect(() => {
+    console.log('Team matches:', allMatches.length, 'matches');
+    if (allMatches[0]) {
+      console.log('First match Competitions:', allMatches[0].Competitions);
+    }
+    
+    setTeamData(team);
+    setTeamMatches(allMatches);
+    setContextCurrentPage(currentPage);
+  }, [team, allMatches, currentPage]);
+
+  // Navigation functions
+  const handlePrevious = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    const maxPage = Math.max(
+      Math.ceil((transformedPreviousMatches.length - 1) / matchesPerPage),
+      Math.ceil((upcomingMatches?.length || 0) / matchesPerPage)
+    );
+    setCurrentPage(prev => Math.min(maxPage, prev + 1));
+  };
+
+  // Get current page matches
+  const getCurrentPageMatches = (matches: any[]) => {
+    const startIndex = currentPage * matchesPerPage;
+    return matches.slice(startIndex, startIndex + matchesPerPage);
+  };
   
   // Get country from next match or previous matches
   const getTeamCountry = () => {
@@ -338,7 +392,6 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
   }
 
   const transformedNextMatch = transformMatchForCard(nextMatch);
-  const transformedPreviousMatches = previousMatches.map(transformMatchForCard).filter(Boolean);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
@@ -392,40 +445,154 @@ export default function TeamDetailsClient({ team, nextMatch, previousMatches }: 
             )}
           </div>
 
-          {/* Previous Matches Section */}
+          {/* Team Form Section */}
           <div className="mb-8">
-            {transformedPreviousMatches.length > 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Team Form</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{teamForm.wins}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Wins</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">{teamForm.draws}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Draws</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">{teamForm.losses}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Losses</div>
+                </div>
+              </div>
+              <div className="mt-4 text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Last 5 matches</div>
+                <div className="flex justify-center space-x-2">
+                  {teamForm.formResults.map((result: string, index: number) => (
+                    <span
+                      key={index}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        result === 'W' ? 'bg-green-100 text-green-800' :
+                        result === 'D' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {result}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                Goals: {teamForm.goalsFor} for, {teamForm.goalsAgainst} against
+              </div>
+            </div>
+          </div>
+
+          {/* Matches Section - Simple List */}
+          <div className="mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent & Upcoming Matches</h2>
+              
+              {/* Simple Navigation */}
+              <div className="flex justify-between items-center mb-4">
+                <button 
+                  onClick={handlePrevious}
+                  disabled={currentPage === 0}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    currentPage === 0 
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Page {currentPage + 1}
+                </span>
+                <button 
+                  onClick={handleNext}
+                  disabled={currentPage >= Math.ceil((allMatches.length - 1) / matchesPerPage)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    currentPage >= Math.ceil((allMatches.length - 1) / matchesPerPage)
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  Next
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* All Matches in Chronological Order */}
               <div className="space-y-2">
-                {transformedPreviousMatches.map((match) => {
+                {getCurrentPageMatches(allMatches).map((match) => {
                   if (!match) return null;
                   return (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      timezone={timezone}
-                      isExpanded={false}
-                      onExpandToggle={() => {}}
-                      onClick={() => {
-                        const homeSlug = slugify(match.home_team?.name || 'home');
-                        const awaySlug = slugify(match.away_team?.name || 'away');
-                        const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
-                        window.open(matchUrl, '_blank');
-                      }}
-                      hideCompetitionName={false}
-                      showOdds={true}
-                      showTv={true}
-                      isStarred={starredMatches.includes(match.id)}
-                      onStarToggle={handleStarToggle}
-                    />
+                    <div key={match.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                      <MatchCard
+                        match={match}
+                        timezone={timezone}
+                        isExpanded={false}
+                        onExpandToggle={() => {}}
+                        onClick={() => {
+                          const homeSlug = slugify(match.home_team?.name || 'home');
+                          const awaySlug = slugify(match.away_team?.name || 'away');
+                          const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                          window.open(matchUrl, '_blank');
+                        }}
+                        hideCompetitionName={false}
+                        showOdds={true}
+                        showTv={true}
+                        isStarred={starredMatches.includes(match.id)}
+                        onStarToggle={handleStarToggle}
+                      />
+                    </div>
                   );
                 })}
+                {getCurrentPageMatches(allMatches).length === 0 && (
+                  <div className="text-center text-gray-500 py-8">
+                    No matches found
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                No previous matches found for {team.name}.
-              </div>
-            )}
+            </div>
           </div>
+
+          {/* League Standing Placeholder */}
+          <div className="mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">League Standing</h2>
+              <div className="text-center py-8">
+                <div className="text-gray-500 dark:text-gray-400 mb-2">
+                  <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400">League standings coming soon</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">We're working on adding detailed league tables</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stadium Info Placeholder */}
+          <div className="mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Stadium Information</h2>
+              <div className="text-center py-8">
+                <div className="text-gray-500 dark:text-gray-400 mb-2">
+                  <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400">Stadium information coming soon</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">We're working on adding stadium details and capacity information</p>
+              </div>
+            </div>
+          </div>
+
         </main>
       </div>
     </div>

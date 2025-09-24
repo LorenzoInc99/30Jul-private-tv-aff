@@ -2,11 +2,13 @@
 import { usePathname } from "next/navigation";
 import SidebarCompetitions from "./SidebarCompetitions";
 import BetCalculatorSidebar from "./BetCalculatorSidebar";
+import { useTeam } from "../../contexts/TeamContext";
 import React, { useEffect, useState } from "react";
 
 export default function MainLayoutClient({ competitions, children }: { competitions: any[]; children: React.ReactNode }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const { teamData, teamMatches, currentPage, matchesPerPage, handlePrevious, handleNext, handleMatchClick } = useTeam();
 
   useEffect(() => {
     setMounted(true);
@@ -27,7 +29,16 @@ export default function MainLayoutClient({ competitions, children }: { competiti
             {isBetCalculatorPage ? (
               <BetCalculatorSidebar />
             ) : (
-              <SidebarCompetitions competitions={competitions} />
+              <SidebarCompetitions 
+                competitions={competitions}
+                teamData={teamData}
+                teamMatches={teamMatches || []}
+                currentPage={currentPage}
+                matchesPerPage={matchesPerPage}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                onMatchClick={handleMatchClick}
+              />
             )}
           </div>
         )}

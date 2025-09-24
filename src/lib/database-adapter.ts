@@ -159,6 +159,12 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
 
   // Transform to expected frontend format
   return (fixtures || []).map((fixture: any) => {
+    // Skip fixtures with missing essential data
+    if (!fixture || !fixture.league) {
+      console.warn('Skipping fixture with missing data:', fixture);
+      return null;
+    }
+    
     const country = countriesMap.get(fixture.league.country_id);
     const fixtureTvStations = tvStationsByFixture.get(fixture.id) || [];
     
@@ -182,7 +188,7 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
       })),
       Odds: transformOddsByBookmaker(fixture.odds || [])
     };
-  });
+  }).filter(Boolean); // Remove any null entries
 }
 
 export async function getMatchById(matchId: string, supabase = supabaseServer()) {

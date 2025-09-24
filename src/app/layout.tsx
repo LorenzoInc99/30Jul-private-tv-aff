@@ -15,6 +15,7 @@ import ADVRight from '../components/ADVRight';
 import NavigationWrapper from './components/NavigationWrapper';
 import HeaderClient from './components/HeaderClient';
 import { SidebarProvider } from '../contexts/SidebarContext';
+import { TeamProvider } from '../contexts/TeamContext';
 
 export const metadata: Metadata = {
   title: {
@@ -201,11 +202,12 @@ export default async function RootLayout({
           <ADVTop />
           {/* Main layout below header and banner */}
           <SidebarProvider>
-            <AdminWrapper 
+            <TeamProvider>
+              <AdminWrapper 
               competitions={competitions || []}
               header={null}
               footer={
-              <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 mt-12 py-8 text-sm text-gray-700 dark:text-gray-300">
+              <footer className="bg-gray-50 dark:bg-gray-900 mt-12 py-8 text-sm text-gray-700 dark:text-gray-300">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-2 md:px-4">
                   {/* Live Football Today - Rich Content Section */}
                   <div>
@@ -299,7 +301,8 @@ export default async function RootLayout({
             }
           >
             {children}
-          </AdminWrapper>
+              </AdminWrapper>
+            </TeamProvider>
           </SidebarProvider>
         </div>
       </body>

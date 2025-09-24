@@ -242,20 +242,6 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                   Get the latest {competition.name} fixtures and {competition.name} matches schedule. Find where to watch {competition.name} matches live on TV and discover where to watch {competition.name} tonight. Get the best odds for {competition.name} games from top bookmakers. Never miss a {competition.name} fixture with our comprehensive match coverage.
                 </p>
                 
-                {/* Accumulator Builder Button */}
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={() => setShowAccumulatorBuilder(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                  >
-                    <span className="text-xl">🎯</span>
-                    <span>Build Multi-Match Accumulator</span>
-                    <span className="text-sm opacity-90">Compare Total Odds Across Operators</span>
-                  </button>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Select multiple matches and see which operator offers the best total odds
-                  </p>
-                </div>
               </div>
               
               {matches.length === 0 ? (

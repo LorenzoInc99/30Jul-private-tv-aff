@@ -195,3 +195,5 @@ function extractScores(fixtureData: any) {
 
   return { homeScore, awayScore };
 }
+
+

@@ -7,7 +7,25 @@ import { slugify } from '../../lib/utils';
 import { useSidebar } from '../../contexts/SidebarContext';
 
 
-export default function SidebarCompetitions({ competitions }: { competitions: any[] }) {
+export default function SidebarCompetitions({ 
+  competitions, 
+  teamData, 
+  teamMatches, 
+  currentPage, 
+  matchesPerPage, 
+  onPrevious, 
+  onNext, 
+  onMatchClick 
+}: { 
+  competitions: any[]; 
+  teamData?: any; 
+  teamMatches?: any[]; 
+  currentPage?: number; 
+  matchesPerPage?: number; 
+  onPrevious?: () => void; 
+  onNext?: () => void; 
+  onMatchClick?: (match: any) => void; 
+}) {
   const [pinnedLeagues, setPinnedLeagues] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -690,7 +708,245 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
           )}
         </div>
 
-        {/* Custom Leagues Section */}
+        {/* Team Matches Section - Show when on team page */}
+        {teamData && teamMatches ? (
+          <>
+            <div className="mb-6 pt-2">
+              <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
+                {teamData.name} Matches
+              </h2>
+              
+              {/* Navigation Buttons */}
+              <div className="flex justify-between items-center mb-4">
+                <button 
+                  onClick={onPrevious}
+                  disabled={currentPage === 0}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === 0 
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  PREV
+                </button>
+                <button 
+                  onClick={onNext}
+                  disabled={(currentPage || 0) >= Math.ceil((teamMatches.length - 1) / (matchesPerPage || 3))}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    (currentPage || 0) >= Math.ceil((teamMatches.length - 1) / (matchesPerPage || 3))
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  NEXT
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Matches List - Grouped by Competition */}
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {(() => {
+                  // Group matches by competition
+                  const groupedMatches = teamMatches.slice((currentPage || 0) * (matchesPerPage || 3), ((currentPage || 0) + 1) * (matchesPerPage || 3))
+                    .reduce((groups: any, match) => {
+                      if (!match) return groups;
+                      const competition = match.Competitions?.name || 'Unknown Competition';
+                      if (!groups[competition]) {
+                        groups[competition] = [];
+                      }
+                      groups[competition].push(match);
+                      return groups;
+                    }, {});
+
+                  return Object.entries(groupedMatches).map(([competition, matches]) => (
+                    <div key={competition} className="space-y-2">
+                      {/* Competition Header */}
+                      <div className="flex items-center gap-1 py-1">
+                        <div className="w-3 h-3 flex-shrink-0">
+                          {(() => {
+                            const firstMatch = (matches as any[])[0];
+                            const logoUrl = firstMatch?.Competitions?.logo_url || 
+                                          firstMatch?.Competitions?.league_logo_url || 
+                                          firstMatch?.league?.league_logo_url || 
+                                          '/default-league.png';
+                            
+                            // Debug logging
+                            console.log('League logo for', competition, ':', logoUrl);
+                            
+                            return (
+                              <img 
+                                src={logoUrl} 
+                                alt={competition}
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  console.log('Logo failed to load:', logoUrl);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                onLoad={() => {
+                                  console.log('Logo loaded successfully:', logoUrl);
+                                }}
+                              />
+                            );
+                          })()}
+                        </div>
+                        <span className="text-xs font-semibold text-gray-900 dark:text-white">
+                          {competition}
+                        </span>
+                      </div>
+
+                      {/* Matches for this competition */}
+                      <div className="space-y-2">
+                        {(matches as any[]).map((match) => {
+                          const isUpcoming = new Date(match.start_time) > new Date();
+                          const isFinished = match.status === 'FT' || match.status === 'AET' || match.status === 'PEN';
+                          
+                          return (
+                            <div key={match.id} 
+                                 className="flex items-center py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                                 onClick={() => onMatchClick?.(match)}>
+                              
+                              {/* Left side - Date/Time */}
+                              <div className="flex-shrink-0 w-10">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                                  {isUpcoming 
+                                    ? (
+                                      <>
+                                        <div>{new Date(match.start_time).toLocaleDateString('en-GB', { 
+                                          day: '2-digit', 
+                                          month: '2-digit'
+                                        })}</div>
+                                        <div>{new Date(match.start_time).getFullYear()}</div>
+                                      </>
+                                    )
+                                    : isFinished 
+                                      ? (
+                                        <>
+                                          <div>{new Date(match.start_time).toLocaleDateString('en-GB', { 
+                                            day: '2-digit', 
+                                            month: '2-digit'
+                                          })}</div>
+                                          <div className="text-xs font-medium">FT</div>
+                                        </>
+                                      )
+                                      : (
+                                        <>
+                                          <div>{new Date(match.start_time).toLocaleDateString('en-GB', { 
+                                            day: '2-digit', 
+                                            month: '2-digit'
+                                          })}</div>
+                                          <div>{new Date(match.start_time).getFullYear()}</div>
+                                        </>
+                                      )
+                                  }
+                                </div>
+                              </div>
+
+                              {/* Center - Teams */}
+                              <div className="flex-1 min-w-0">
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-3 h-3 flex-shrink-0">
+                                      <img 
+                                        src={match.home_team?.team_logo_url} 
+                                        alt={match.home_team?.name}
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                      {match.home_team?.name}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-3 h-3 flex-shrink-0">
+                                      <img 
+                                        src={match.away_team?.team_logo_url} 
+                                        alt={match.away_team?.name}
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                      {match.away_team?.name}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Scores - always show, with "-" if no score */}
+                              <div className="flex-shrink-0 w-6 text-center">
+                                <div className="text-xs font-bold text-gray-900 dark:text-white">
+                                  {isFinished ? (match.home_score ?? '-') : '-'}
+                                </div>
+                                <div className="text-xs font-bold text-gray-900 dark:text-white">
+                                  {isFinished ? (match.away_score ?? '-') : '-'}
+                                </div>
+                              </div>
+
+                              {/* Separator line */}
+                              <div className="w-px h-8 bg-gray-300 dark:bg-gray-600 mx-2"></div>
+
+                              {/* W/D/L Column - always visible */}
+                              <div className="flex-shrink-0 w-8 text-center">
+                                {isFinished ? (
+                                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold mx-auto ${
+                                    match.home_team_id === teamData.id 
+                                      ? (match.home_score > match.away_score ? 'bg-green-100 text-green-800' :
+                                         match.home_score === match.away_score ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')
+                                      : (match.away_score > match.home_score ? 'bg-green-100 text-green-800' :
+                                         match.away_score === match.home_score ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')
+                                  }`}>
+                                    {match.home_team_id === teamData.id 
+                                      ? (match.home_score > match.away_score ? 'W' :
+                                         match.home_score === match.away_score ? 'D' : 'L')
+                                      : (match.away_score > match.home_score ? 'W' :
+                                         match.away_score === match.home_score ? 'D' : 'L')
+                                  }
+                                  </span>
+                                ) : (
+                                  <div className="w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 mx-auto"></div>
+                                )}
+                              </div>
+
+                              {/* Star Icon - only for upcoming matches */}
+                              {isUpcoming && (
+                                <div className="flex-shrink-0 ml-1">
+                                  <svg className="w-3 h-3 text-gray-400 hover:text-yellow-500 cursor-pointer" 
+                                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ));
+                })()}
+                
+                {teamMatches.length === 0 && (
+                  <div className="text-center text-gray-500 py-4 text-sm">
+                    No matches found
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Custom Leagues Section - Show when not on team page */}
         <div className="mb-6 pt-2">
           <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
             Popular Leagues
@@ -700,7 +956,7 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
           </ul>
         </div>
 
-        {/* Custom Teams Section */}
+            {/* Custom Teams Section - Show when not on team page */}
         <div className="mb-6">
           <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
             Popular Teams
@@ -709,6 +965,8 @@ export default function SidebarCompetitions({ competitions }: { competitions: an
             {customTeams.filter((team: any) => !hiddenTeams.has(team.id)).map((team: any) => renderPopularTeamItem(team))}
           </ul>
         </div>
+          </>
+        )}
       </div>
     </aside>
   );

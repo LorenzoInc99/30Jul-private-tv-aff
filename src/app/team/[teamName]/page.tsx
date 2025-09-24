@@ -9,17 +9,42 @@ import { slugify } from '../../../lib/utils';
 async function findTeamByName(teamNameSlug: string) {
   const supabase = supabaseServer();
   
-  // Strategy 1: Get all teams and find the one that slugifies to our target
-  const { data: allTeams } = await supabase
-    .from('teams_new')
-    .select('*')
-    .limit(1000); // Get a reasonable number of teams
+  // Strategy 1: Get all teams using pagination to bypass Supabase limits
+  let allTeams: any[] = [];
+  let from = 0;
+  const batchSize = 1000;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data: batch, error } = await supabase
+      .from('teams_new')
+      .select('*')
+      .range(from, from + batchSize - 1);
+    
+    if (error) {
+      console.error('Error fetching teams batch:', error);
+      break;
+    }
+    
+    if (batch && batch.length > 0) {
+      allTeams = allTeams.concat(batch);
+      from += batchSize;
+      hasMore = batch.length === batchSize;
+    } else {
+      hasMore = false;
+    }
+  }
   
   if (allTeams) {
     // Find the team whose slugified name matches our target
     const matchingTeam = allTeams.find((team: any) => {
       const teamSlug = slugify(team.name);
-      return teamSlug === teamNameSlug;
+      // Handle both formats: with hyphens (tottenham-hotspur) and without (tottenhamhotspur)
+      const teamSlugNoHyphens = teamSlug.replace(/-/g, '');
+      const targetSlugNoHyphens = teamNameSlug.replace(/-/g, '');
+      
+      return teamSlug === teamNameSlug || 
+             teamSlugNoHyphens === targetSlugNoHyphens;
     });
     
     if (matchingTeam) {
@@ -210,11 +235,41 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
   const nextMatchWithCountry = nextMatch ? addCountryToMatch(nextMatch) : null;
   const previousMatchesWithCountry = previousMatches ? previousMatches.map(addCountryToMatch) : [];
 
+  // Calculate team form from previous matches
+  const teamForm = {
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goalsFor: 0,
+    goalsAgainst: 0
+  };
+
+  if (previousMatchesWithCountry) {
+    previousMatchesWithCountry.forEach((match: any) => {
+      const isHome = match.home_team_id === team.id;
+      const teamScore = isHome ? match.home_score : match.away_score;
+      const opponentScore = isHome ? match.away_score : match.home_score;
+      
+      teamForm.goalsFor += teamScore || 0;
+      teamForm.goalsAgainst += opponentScore || 0;
+      
+      if (teamScore > opponentScore) {
+        teamForm.wins++;
+      } else if (teamScore === opponentScore) {
+        teamForm.draws++;
+      } else {
+        teamForm.losses++;
+      }
+    });
+  }
+
   return (
     <TeamDetailsClient 
       team={team} 
       nextMatch={nextMatchWithCountry} 
+      upcomingMatches={[]} 
       previousMatches={previousMatchesWithCountry} 
+      teamForm={teamForm}
     />
   );
 } 

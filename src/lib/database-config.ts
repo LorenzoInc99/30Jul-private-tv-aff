@@ -111,18 +111,37 @@ export function getStateId(status: string): number {
 
 // Data transformation helpers
 export function transformTeamData(team: any) {
+  if (!team) {
+    return {
+      id: null,
+      name: 'Unknown Team',
+      short_code: DEFAULTS.TEAM_SHORT_CODE,
+      team_logo_url: null
+    };
+  }
+  
   return {
     id: team.id,
-    name: team.name,
+    name: team.name || 'Unknown Team',
     short_code: team.short_code || DEFAULTS.TEAM_SHORT_CODE,
     team_logo_url: team.team_logo_url || null
   };
 }
 
 export function transformTvStationData(tvStation: any) {
+  if (!tvStation) {
+    return {
+      id: null,
+      name: 'Unknown Broadcaster',
+      url: DEFAULTS.TV_STATION_URL,
+      logo_url: null,
+      affiliate_url: DEFAULTS.TV_STATION_URL
+    };
+  }
+  
   return {
     id: tvStation.id,
-    name: tvStation.name,
+    name: tvStation.name || 'Unknown Broadcaster',
     url: tvStation.url || DEFAULTS.TV_STATION_URL,
     logo_url: tvStation.image_path,
     affiliate_url: tvStation.url || DEFAULTS.TV_STATION_URL
@@ -130,9 +149,18 @@ export function transformTvStationData(tvStation: any) {
 }
 
 export function transformBookmakerData(bookmaker: any) {
+  if (!bookmaker) {
+    return {
+      id: null,
+      name: 'Unknown Bookmaker',
+      url: DEFAULTS.BOOKMAKER_URL,
+      affiliate_url: DEFAULTS.BOOKMAKER_URL
+    };
+  }
+  
   return {
     id: bookmaker.id,
-    name: bookmaker.name,
+    name: bookmaker.name || 'Unknown Bookmaker',
     url: bookmaker.url || DEFAULTS.BOOKMAKER_URL,
     affiliate_url: bookmaker.url || DEFAULTS.BOOKMAKER_URL
   };
