@@ -9,11 +9,13 @@ async function calculateTeamStats(teamId: number, seasonId: number) {
       away_team_id,
       home_score,
       away_score,
-      state_id
+      state_id,
+      starting_at
     FROM fixtures 
     WHERE season_id = $1 
     AND (home_team_id = $2 OR away_team_id = $2)
     AND state_id IN (1, 2, 3, 4, 5) -- Completed match states
+    ORDER BY starting_at DESC
   `, [seasonId, teamId]);
 
   if (!fixturesResult.success || !fixturesResult.data) {
@@ -24,7 +26,8 @@ async function calculateTeamStats(teamId: number, seasonId: number) {
       lost: 0,
       goals_for: 0,
       goals_against: 0,
-      goal_difference: 0
+      goal_difference: 0,
+      last_5_form: []
     };
   }
 
@@ -34,8 +37,9 @@ async function calculateTeamStats(teamId: number, seasonId: number) {
   let lost = 0;
   let goalsFor = 0;
   let goalsAgainst = 0;
+  const last5Form: string[] = [];
 
-  fixturesResult.data.forEach((fixture: any) => {
+  fixturesResult.data.forEach((fixture: any, index: number) => {
     if (fixture.home_score !== null && fixture.away_score !== null) {
       played++;
       
@@ -46,12 +50,21 @@ async function calculateTeamStats(teamId: number, seasonId: number) {
       goalsFor += teamScore;
       goalsAgainst += opponentScore;
       
+      let result: string;
       if (teamScore > opponentScore) {
         won++;
+        result = 'W';
       } else if (teamScore === opponentScore) {
         drawn++;
+        result = 'D';
       } else {
         lost++;
+        result = 'L';
+      }
+
+      // Store last 5 results (most recent first)
+      if (index < 5) {
+        last5Form.push(result);
       }
     }
   });
@@ -63,7 +76,8 @@ async function calculateTeamStats(teamId: number, seasonId: number) {
     lost,
     goals_for: goalsFor,
     goals_against: goalsAgainst,
-    goal_difference: goalsFor - goalsAgainst
+    goal_difference: goalsFor - goalsAgainst,
+    last_5_form: last5Form
   };
 }
 
@@ -129,6 +143,7 @@ export async function GET(
           goals_for: stats.goals_for,
           goals_against: stats.goals_against,
           goal_difference: stats.goal_difference,
+          last_5_form: stats.last_5_form,
           team: {
             id: row.team_id,
             name: row.team_name,

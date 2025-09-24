@@ -171,4 +171,252 @@ export function slugifyWithHyphens(str: string): string {
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents, umlauts, etc.)
     .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
     .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
+/**
+ * League qualification rules for different competitions
+ * Defines Champions League, Europa League, Conference League, and Relegation spots
+ */
+interface LeagueQualificationRules {
+  championsLeague: number[]; // Positions that qualify for Champions League
+  europaLeague: number[];    // Positions that qualify for Europa League
+  conferenceLeague: number[]; // Positions that qualify for Conference League
+  relegation: number[];      // Positions that get relegated
+  totalTeams: number;        // Total number of teams in the league
+}
+
+const LEAGUE_QUALIFICATION_RULES: Record<number, LeagueQualificationRules> = {
+  // Premier League (England) - 20 teams
+  8: {
+    championsLeague: [1, 2, 3, 4], // Top 4
+    europaLeague: [5], // 5th place
+    conferenceLeague: [6], // 6th place (or FA Cup winner)
+    relegation: [18, 19, 20], // Bottom 3
+    totalTeams: 20
+  },
+  
+  
+  // La Liga (Spain) - 20 teams
+  564: {
+    championsLeague: [1, 2, 3, 4], // Top 4
+    europaLeague: [5], // 5th place
+    conferenceLeague: [6], // 6th place (or Copa del Rey winner)
+    relegation: [18, 19, 20], // Bottom 3
+    totalTeams: 20
+  },
+  
+  // Bundesliga (Germany) - 18 teams
+  82: {
+    championsLeague: [1, 2, 3, 4], // Top 4
+    europaLeague: [5], // 5th place
+    conferenceLeague: [6], // 6th place (or DFB-Pokal winner)
+    relegation: [17, 18], // Bottom 2 (16th goes to playoff)
+    totalTeams: 18
+  },
+  
+  // Serie A (Italy) - 20 teams
+  384: {
+    championsLeague: [1, 2, 3, 4], // Top 4
+    europaLeague: [5], // 5th place
+    conferenceLeague: [6], // 6th place (or Coppa Italia winner)
+    relegation: [18, 19, 20], // Bottom 3
+    totalTeams: 20
+  },
+  
+  // Ligue 1 (France) - 20 teams
+  301: {
+    championsLeague: [1, 2, 3], // Top 3
+    europaLeague: [4], // 4th place
+    conferenceLeague: [5], // 5th place (or Coupe de France winner)
+    relegation: [18, 19, 20], // Bottom 3
+    totalTeams: 20
+  },
+  
+  // Eredivisie (Netherlands) - 18 teams
+  72: {
+    championsLeague: [1, 2], // Top 2
+    europaLeague: [3], // 3rd place
+    conferenceLeague: [4], // 4th place (or KNVB Cup winner)
+    relegation: [17, 18], // Bottom 2
+    totalTeams: 18
+  },
+  
+  // Pro League (Belgium) - 18 teams
+  208: {
+    championsLeague: [1], // 1st place
+    europaLeague: [2], // 2nd place
+    conferenceLeague: [3, 4], // 3rd and 4th place
+    relegation: [17, 18], // Bottom 2
+    totalTeams: 18
+  },
+  
+  // Superliga (Denmark) - 12 teams
+  271: {
+    championsLeague: [1], // 1st place
+    europaLeague: [2], // 2nd place
+    conferenceLeague: [3], // 3rd place
+    relegation: [11, 12], // Bottom 2
+    totalTeams: 12
+  },
+  
+  // Liga Portugal (Portugal) - 18 teams
+  462: {
+    championsLeague: [1, 2], // Top 2
+    europaLeague: [3], // 3rd place
+    conferenceLeague: [4], // 4th place (or Taça de Portugal winner)
+    relegation: [17, 18], // Bottom 2
+    totalTeams: 18
+  },
+  
+  // Scotland Premiership - 12 teams
+  501: {
+    championsLeague: [1], // 1st place
+    europaLeague: [2], // 2nd place
+    conferenceLeague: [3], // 3rd place (or Scottish Cup winner)
+    relegation: [12], // Bottom 1 (11th goes to playoff)
+    totalTeams: 12
+  },
+  
+  // Super Lig (Turkey) - 20 teams
+  600: {
+    championsLeague: [1, 2], // Top 2
+    europaLeague: [3], // 3rd place
+    conferenceLeague: [4], // 4th place (or Turkish Cup winner)
+    relegation: [18, 19, 20], // Bottom 3
+    totalTeams: 20
+  },
+  
+  // Norway Eliteserien - 16 teams
+  444: {
+    championsLeague: [1], // 1st place
+    europaLeague: [2], // 2nd place
+    conferenceLeague: [3], // 3rd place (or Norwegian Cup winner)
+    relegation: [15, 16], // Bottom 2
+    totalTeams: 16
+  },
+  
+  // SECOND-TIER LEAGUES
+  
+  // Serie B (Italy) - 20 teams
+  387: {
+    championsLeague: [1, 2], // Automatic promotion to Serie A
+    europaLeague: [3, 4, 5, 6, 7, 8], // Playoff spots for promotion
+    conferenceLeague: [], // No Conference League qualification
+    relegation: [18, 19, 20], // Automatic relegation to Serie C
+    totalTeams: 20
+  },
+  
+  // Championship (England) - 24 teams
+  9: {
+    championsLeague: [1, 2], // Automatic promotion to Premier League
+    europaLeague: [3, 4, 5, 6], // Playoff spots for promotion
+    conferenceLeague: [], // No Conference League qualification
+    relegation: [22, 23, 24], // Automatic relegation to League One
+    totalTeams: 24
+  },
+  
+  // League One (England) - 24 teams
+  24: {
+    championsLeague: [1, 2], // Automatic promotion to Championship
+    europaLeague: [3, 4, 5, 6], // Playoff spots for promotion
+    conferenceLeague: [], // No Conference League qualification
+    relegation: [21, 22, 23, 24], // Automatic relegation to League Two
+    totalTeams: 24
+  },
+  
+  // League Two (England) - 24 teams
+  27: {
+    championsLeague: [1, 2, 3], // Automatic promotion to League One
+    europaLeague: [4, 5, 6, 7], // Playoff spots for promotion
+    conferenceLeague: [], // No Conference League qualification
+    relegation: [23, 24], // Automatic relegation to National League
+    totalTeams: 24
+  }
+};
+
+/**
+ * Check if a league is a second-tier league (promotion/relegation instead of European qualification)
+ */
+function isSecondTierLeague(leagueId: number): boolean {
+  const secondTierLeagues = [387, 9, 24, 27]; // Serie B, Championship, League One, League Two
+  return secondTierLeagues.includes(leagueId);
+}
+
+/**
+ * Get the qualification color for a position in a specific league
+ */
+export function getPositionQualificationColor(leagueId: number, position: number): string {
+  const rules = LEAGUE_QUALIFICATION_RULES[leagueId];
+  
+  if (!rules) {
+    // Default fallback for unknown leagues
+    return position <= 6 ? 'bg-green-500' : 'bg-gray-800';
+  }
+  
+  const isSecondTier = isSecondTierLeague(leagueId);
+  
+  if (rules.championsLeague.includes(position)) {
+    if (isSecondTier) {
+      return 'bg-green-500'; // Automatic promotion - Green
+    } else {
+      return 'bg-blue-500'; // Champions League - Blue
+    }
+  }
+  
+  if (rules.europaLeague.includes(position)) {
+    if (isSecondTier) {
+      return 'bg-blue-500'; // Playoff spots - Blue
+    } else {
+      return 'bg-orange-500'; // Europa League - Orange
+    }
+  }
+  
+  if (rules.conferenceLeague.includes(position)) {
+    return 'bg-purple-500'; // Conference League - Purple
+  }
+  
+  if (rules.relegation.includes(position)) {
+    return 'bg-red-500'; // Relegation - Red
+  }
+  
+  return 'bg-gray-800'; // Default - Black
+}
+
+/**
+ * Get qualification description for a position in a specific league
+ */
+export function getPositionQualificationDescription(leagueId: number, position: number): string {
+  const rules = LEAGUE_QUALIFICATION_RULES[leagueId];
+  
+  if (!rules) {
+    return 'Mid-table';
+  }
+  
+  const isSecondTier = isSecondTierLeague(leagueId);
+  
+  if (rules.championsLeague.includes(position)) {
+    if (isSecondTier) {
+      return 'Automatic Promotion';
+    } else {
+      return 'Champions League';
+    }
+  }
+  
+  if (rules.europaLeague.includes(position)) {
+    if (isSecondTier) {
+      return 'Promotion Playoffs';
+    } else {
+      return 'Europa League';
+    }
+  }
+  
+  if (rules.conferenceLeague.includes(position)) {
+    return 'Conference League';
+  }
+  
+  if (rules.relegation.includes(position)) {
+    return 'Relegation';
+  }
+  
+  return 'Mid-table';
 } 

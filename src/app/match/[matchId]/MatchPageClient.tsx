@@ -299,9 +299,9 @@ export default function MatchPageClient({ match }: { match: any }) {
                   Broadcasters ({sortedBroadcasters.length})
                 </h3>
                 {hasBroadcasters ? (
-                    <div className="space-y-2">
+                    <div className="space-y-0">
                       {displayedBroadcasters.map((broadcaster: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer">
+                      <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer">
                         {/* Logo Column */}
                         <div className="flex-shrink-0 w-12">
                                   {broadcaster.logo_url ? (

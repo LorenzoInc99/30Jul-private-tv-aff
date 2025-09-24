@@ -231,11 +231,9 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                         );
                       })}
                       {hasMore && (
-                        <div className="w-5 h-5 flex-shrink-0 bg-indigo-100 dark:bg-indigo-900 rounded flex items-center justify-center">
-                          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                            +{broadcasters.length - 3}
-                          </span>
-                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          +{broadcasters.length - 3}
+                        </span>
                       )}
                     </>
                   );
@@ -391,9 +389,9 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 <>
                   {/* "See more" indicator */}
                   {hasMore && (
-                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded bg-indigo-100 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       +{count - maxToShow}
-                    </div>
+                    </span>
                   )}
                   
                   {/* Visible channels */}

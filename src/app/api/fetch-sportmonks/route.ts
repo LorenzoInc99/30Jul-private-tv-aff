@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase';
 
 const SPORTMONKS_API_TOKEN = process.env.SPORTMONKS_API_TOKEN;
-const EUROPEAN_LEAGUE_IDS = [
-  8, 9, 24, 27, 72, 82, 181, 208, 1371, 244, 271, 301, 384, 387, 390, 
-  444, 453, 462, 486, 501, 564, 567, 570, 573, 591, 600, 609
-];
+// Use the actual available leagues from the free plan
+const AVAILABLE_LEAGUE_IDS = [271, 501, 513, 1659];
 
 interface SportMonksResponse {
   data: any[];
@@ -169,133 +167,65 @@ export async function POST(request: NextRequest) {
     const teamsData = await fetchAllPages('https://api.sportmonks.com/v3/football/teams');
     await populateTable(supabase, 'teams_new', teamsData, ['id', 'name', 'short_code', 'country_id', 'venue_id']);
     
-    // 7. Fetch fixtures with TV stations and odds for your selected leagues
-    currentStep = 'Fetching Fixtures with TV and Odds';
-    console.log('🏟️ Step 7: Fetching fixtures with TV stations and odds...');
-    const allFixtures: any[] = [];
-    const allTvData: any[] = [];
-    const allOddsData: any[] = [];
+    // 7. Fetch latest fixtures (this works with free plan)
+    currentStep = 'Fetching Latest Fixtures';
+    console.log('🏟️ Step 7: Fetching latest fixtures...');
     
-    for (const leagueId of EUROPEAN_LEAGUE_IDS) {
-      try {
-        console.log(`Fetching fixtures for league ${leagueId}...`);
-        const fixturesData = await fetchAllPages(
-          `https://api.sportmonks.com/v3/football/fixtures/leagues/${leagueId}`,
-          { include: 'participants;league;venue;state;tvstations;odds' }
-        );
-        
-        // Process fixtures to extract home/away team IDs, TV stations, and odds
-        const processedFixtures = fixturesData.map((fixture: any) => {
-          let homeTeamId = null;
-          let awayTeamId = null;
-          
-          if (fixture.participants) {
-            fixture.participants.forEach((participant: any) => {
-              if (participant.meta?.location === 'home') {
-                homeTeamId = participant.id;
-              } else if (participant.meta?.location === 'away') {
-                awayTeamId = participant.id;
-              }
-            });
-          }
-          
-          // Extract TV station data
-          if (fixture.tvstations && Array.isArray(fixture.tvstations)) {
-            fixture.tvstations.forEach((tv: any) => {
-              allTvData.push({
-                fixture_id: fixture.id,
-                tvstation_id: tv.tvstation_id,
-                country_id: tv.country_id || 1
-              });
-            });
-          }
-          
-          // Extract odds data
-          if (fixture.odds && Array.isArray(fixture.odds)) {
-            fixture.odds.forEach((odd: any) => {
-              allOddsData.push({
-                fixture_id: fixture.id,
-                bookmaker_id: odd.bookmaker_id,
-                market_id: odd.market_id,
-                label: odd.label,
-                value: odd.value,
-                probability: odd.probability,
-                latest_bookmaker_update: odd.latest_bookmaker_update
-              });
-            });
-          }
-          
-          return {
-            id: fixture.id,
-            league_id: fixture.league_id,
-            season_id: fixture.season_id,
-            round_id: fixture.round_id,
-            venue_id: fixture.venue_id,
-            home_team_id: homeTeamId,
-            away_team_id: awayTeamId,
-            name: fixture.name,
-            starting_at: fixture.starting_at,
-            starting_at_timestamp: fixture.starting_at_timestamp,
-            has_odds: fixture.has_odds,
-            has_premium_odds: fixture.has_premium_odds,
-            state_id: fixture.state_id,
-            home_score: fixture.scores?.find((s: any) => s.description === 'CURRENT')?.score?.home || null,
-            away_score: fixture.scores?.find((s: any) => s.description === 'CURRENT')?.score?.away || null
-          };
-        });
-        
-        allFixtures.push(...processedFixtures);
-        console.log(`✅ Fetched ${processedFixtures.length} fixtures for league ${leagueId}`);
-        
-      } catch (error) {
-        console.error(`❌ Error fetching fixtures for league ${leagueId}:`, error);
-      }
-    }
-    
-    // 8. Populate fixtures
-    currentStep = 'Populating Fixtures';
-    console.log(`📊 Total fixtures to insert: ${allFixtures.length}`);
-    await populateTable(supabase, 'fixtures', allFixtures, [
-      'id', 'league_id', 'season_id', 'round_id', 'venue_id', 'home_team_id', 'away_team_id',
-      'name', 'starting_at', 'starting_at_timestamp', 'has_odds', 'has_premium_odds',
-      'state_id', 'home_score', 'away_score'
-    ]);
-    
-    // 9. Populate TV stations data
-    if (allTvData.length > 0) {
-      currentStep = 'Populating TV Stations Data';
-      console.log(`📺 Total TV station links to insert: ${allTvData.length}`);
-      await populateTable(supabase, 'fixturetvstations', allTvData, [
-        'fixture_id', 'tvstation_id', 'country_id'
+    try {
+      const fixturesData = await fetchAllPages('https://api.sportmonks.com/v3/football/fixtures/latest');
+      
+      // Process fixtures with simplified data structure
+      const allFixtures = fixturesData.map((fixture: any) => {
+        return {
+          id: fixture.id,
+          league_id: fixture.league_id,
+          season_id: fixture.season_id,
+          round_id: fixture.round_id,
+          venue_id: fixture.venue_id,
+          home_team_id: fixture.home_team_id || null,
+          away_team_id: fixture.away_team_id || null,
+          name: fixture.name,
+          starting_at: fixture.starting_at,
+          starting_at_timestamp: fixture.starting_at_timestamp,
+          has_odds: fixture.has_odds || false,
+          has_premium_odds: fixture.has_premium_odds || false,
+          state_id: fixture.state_id || 1,
+          home_score: fixture.home_score || null,
+          away_score: fixture.away_score || null
+        };
+      });
+      
+      console.log(`✅ Fetched ${allFixtures.length} latest fixtures`);
+      
+      // 8. Populate fixtures
+      currentStep = 'Populating Fixtures';
+      console.log(`📊 Total fixtures to insert: ${allFixtures.length}`);
+      await populateTable(supabase, 'fixtures', allFixtures, [
+        'id', 'league_id', 'season_id', 'round_id', 'venue_id', 'home_team_id', 'away_team_id',
+        'name', 'starting_at', 'starting_at_timestamp', 'has_odds', 'has_premium_odds',
+        'state_id', 'home_score', 'away_score'
       ]);
+      
+      const endTime = Date.now();
+      const duration = (endTime - startTime) / 1000;
+      
+      console.log(`🎉 Comprehensive data fetch completed successfully in ${duration} seconds!`);
+      console.log(`📊 Summary:`);
+      console.log(`   - Fixtures: ${allFixtures.length}`);
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Comprehensive data fetched and stored successfully',
+        fixturesCount: allFixtures.length,
+        tvLinksCount: 0,
+        oddsCount: 0,
+        duration: `${duration}s`
+      });
+      
+    } catch (error) {
+      console.error(`❌ Error fetching latest fixtures:`, error);
+      throw error;
     }
-    
-    // 10. Populate odds data
-    if (allOddsData.length > 0) {
-      currentStep = 'Populating Odds Data';
-      console.log(`🎲 Total odds to insert: ${allOddsData.length}`);
-      await populateTable(supabase, 'odds', allOddsData, [
-        'fixture_id', 'bookmaker_id', 'market_id', 'label', 'value', 'probability', 'latest_bookmaker_update'
-      ]);
-    }
-    
-    const endTime = Date.now();
-    const duration = (endTime - startTime) / 1000;
-    
-    console.log(`🎉 Comprehensive data fetch completed successfully in ${duration} seconds!`);
-    console.log(`📊 Summary:`);
-    console.log(`   - Fixtures: ${allFixtures.length}`);
-    console.log(`   - TV station links: ${allTvData.length}`);
-    console.log(`   - Odds: ${allOddsData.length}`);
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Comprehensive data fetched and stored successfully',
-      fixturesCount: allFixtures.length,
-      tvLinksCount: allTvData.length,
-      oddsCount: allOddsData.length,
-      duration: `${duration}s`
-    });
     
   } catch (error) {
     const endTime = Date.now();

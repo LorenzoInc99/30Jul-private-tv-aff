@@ -122,6 +122,8 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
     .order('starting_at', { ascending: true });
 
   if (error) {
+    // Only throw error for actual database issues, not for empty results
+    console.error('Database error in getMatchesForDate:', error);
     throw error;
   }
 

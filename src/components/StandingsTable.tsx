@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getPositionQualificationColor } from '@/lib/utils';
 
 interface Standing {
   id: number;
@@ -15,6 +16,7 @@ interface Standing {
   goals_for: number | null;
   goals_against: number | null;
   goal_difference: number | null;
+  last_5_form: string[];
   team?: {
     id: number;
     name: string;
@@ -69,12 +71,7 @@ export default function StandingsTable({ leagueId, className = "" }: StandingsTa
   }, [leagueId]);
 
   const getPositionColor = (position: number) => {
-    if (position === 1) return 'bg-blue-500'; // Champions League
-    if (position === 2) return 'bg-green-500'; // Champions League
-    if (position >= 3 && position <= 4) return 'bg-blue-500'; // Champions League
-    if (position === 5) return 'bg-orange-500'; // Europa League
-    if (position >= 18 && position <= 20) return 'bg-red-500'; // Relegation
-    return 'bg-gray-400'; // Default
+    return getPositionQualificationColor(leagueId, position);
   };
 
   if (loading) {
@@ -121,72 +118,66 @@ export default function StandingsTable({ leagueId, className = "" }: StandingsTa
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
-      {/* Header */}
-      <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">League Table</h3>
-      </div>
-
+    <div className={`bg-gray-800 rounded-lg overflow-hidden ${className}`}>
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           {/* Table Header */}
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              <th className="px-4 py-3 text-left">#</th>
-              <th className="px-4 py-3 text-left">Team</th>
-              <th className="px-4 py-3 text-center">P</th>
-              <th className="px-4 py-3 text-center">W</th>
-              <th className="px-4 py-3 text-center">D</th>
-              <th className="px-4 py-3 text-center">L</th>
-              <th className="px-4 py-3 text-center">F</th>
-              <th className="px-4 py-3 text-center">A</th>
-              <th className="px-4 py-3 text-center">GD</th>
-              <th className="px-4 py-3 text-center font-semibold">PTS</th>
+          <thead>
+            <tr className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left">#</th>
+              <th className="px-3 py-2 text-left">Team</th>
+              <th className="px-3 py-2 text-center">P</th>
+              <th className="px-3 py-2 text-center">W</th>
+              <th className="px-3 py-2 text-center">D</th>
+              <th className="px-3 py-2 text-center">L</th>
+              <th className="px-3 py-2 text-center">DIFF</th>
+              <th className="px-3 py-2 text-center">Goals</th>
+              <th className="px-3 py-2 text-center">Last 5</th>
+              <th className="px-3 py-2 text-center font-semibold">PTS</th>
             </tr>
           </thead>
 
           {/* Table Body */}
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+          <tbody>
             {standings.map((standing) => (
               <tr 
                 key={standing.id} 
-                className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                className="hover:bg-gray-750 transition-colors duration-150"
               >
-                {/* Position with colored indicator */}
-                <td className="px-4 py-3">
-                  <div className="flex items-center">
-                    <div className={`w-1 h-8 rounded-full mr-3 ${getPositionColor(standing.position)}`}></div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {/* Position with circular badge */}
+                <td className="px-3 py-2">
+                  <div className="flex items-center justify-center">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium ${getPositionColor(standing.position)}`}>
                       {standing.position}
-                    </span>
+                    </div>
                   </div>
                 </td>
 
                 {/* Team */}
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 w-8 h-8 mr-3">
+                    <div className="flex-shrink-0 w-6 h-6 mr-2">
                       {standing.team?.team_logo_url ? (
                         <img 
                           src={standing.team.team_logo_url} 
                           alt={standing.team.name}
-                          className="w-8 h-8 rounded-full object-cover"
+                          className="w-6 h-6 rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
                           }}
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
+                          <span className="text-xs font-medium text-gray-300">
                             {standing.team?.short_code || standing.team?.name?.charAt(0) || '?'}
                           </span>
                         </div>
                       )}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      <div className="text-sm font-medium text-white">
                         {standing.team?.name || 'Unknown Team'}
                       </div>
                     </div>
@@ -194,52 +185,61 @@ export default function StandingsTable({ leagueId, className = "" }: StandingsTa
                 </td>
 
                 {/* Statistics */}
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
+                <td className="px-3 py-2 text-center text-sm text-white">
                   {standing.played || 0}
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
+                <td className="px-3 py-2 text-center text-sm text-white">
                   {standing.won || 0}
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
+                <td className="px-3 py-2 text-center text-sm text-white">
                   {standing.drawn || 0}
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
-                  {standing.lost || 0}
+                <td className="px-3 py-2 text-center text-sm text-white">
+                  <span className={standing.lost && standing.lost > 0 ? 'text-red-400' : 'text-white'}>
+                    {standing.lost || 0}
+                  </span>
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
-                  {standing.goals_for || 0}
+                <td className="px-3 py-2 text-center text-sm text-white">
+                  <span className={standing.goal_difference && standing.goal_difference < 0 ? 'text-red-400' : 'text-white'}>
+                    {standing.goal_difference || 0}
+                  </span>
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
-                  {standing.goals_against || 0}
+                <td className="px-3 py-2 text-center text-sm text-white">
+                  {standing.goals_for || 0}:{standing.goals_against || 0}
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
-                  {standing.goal_difference || 0}
+                
+                {/* Last 5 Form */}
+                <td className="px-3 py-2 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    {standing.last_5_form?.slice(0, 5).map((result, index) => (
+                      <div
+                        key={index}
+                        className={`w-3 h-3 rounded-sm ${
+                          result === 'W' ? 'bg-green-500' :
+                          result === 'D' ? 'bg-yellow-500' :
+                          result === 'L' ? 'bg-red-500' :
+                          'bg-gray-600'
+                        }`}
+                        title={result}
+                      />
+                    ))}
+                    {/* Fill remaining slots if less than 5 matches */}
+                    {Array.from({ length: Math.max(0, 5 - (standing.last_5_form?.length || 0)) }).map((_, index) => (
+                      <div
+                        key={`empty-${index}`}
+                        className="w-3 h-3 rounded-sm bg-gray-600"
+                      />
+                    ))}
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:text-white">
+                
+                <td className="px-3 py-2 text-center text-sm font-semibold text-white">
                   {standing.points || 0}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Legend */}
-      <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
-        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-            <span>Champions League</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-            <span>Europa League</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-            <span>Relegation</span>
-          </div>
-        </div>
       </div>
     </div>
   );

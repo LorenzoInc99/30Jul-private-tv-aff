@@ -5,7 +5,7 @@ import LeagueSchedule from './LeagueSchedule';
 import TimezoneSelector from './TimezoneSelector';
 import { getMatchesForDate } from '@/lib/database-adapter';
 import { DateNavigatorSkeleton } from '../components/SkeletonLoader';
-import { LoadingEmptyState, ErrorEmptyState } from '../components/EmptyStates';
+import { LoadingEmptyState } from '../components/EmptyStates';
 
 // Toggle preference management - removed unused functions
 
@@ -125,8 +125,11 @@ export default function MatchSchedule({
         const sorted = Object.values(matchesByCompetition).sort((a, b) => a.competition.name.localeCompare(b.competition.name));
         
         setCompetitions(sorted);
+        // Clear any previous errors if we successfully got data (even if empty)
+        setError(null);
       } catch (error: any) {
-        setError(error.message);
+        console.error('Error fetching matches:', error);
+        setError(error.message || 'Failed to load matches');
         setCompetitions([]);
       }
       setLoading(false);
@@ -215,20 +218,20 @@ export default function MatchSchedule({
         <div className="flex items-center justify-between mb-3">
           <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Odds</span>
+            <span className={`text-sm transition-colors duration-500 ${showOdds ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>Odds</span>
             <button
               onClick={() => setShowOdds(!showOdds)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-500 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
                 showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-500 ${
                   showOdds ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
-            <span className="text-sm text-gray-600 dark:text-gray-400">TV</span>
+            <span className={`text-sm transition-colors duration-500 ${showTv ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>TV</span>
           </div>
         </div>
 
@@ -359,15 +362,15 @@ export default function MatchSchedule({
            <div className="flex items-center gap-4">
              {/* Odds Toggle */}
              <div className="flex items-center gap-2 py-1">
-               <span className="text-sm text-gray-600 dark:text-gray-400">Odds</span>
+               <span className={`text-sm transition-colors duration-500 ${showOdds ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>Odds</span>
                <button
                  onClick={() => setShowOdds(!showOdds)}
-                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
+                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-500 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
                    showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                  }`}
                >
                  <span
-                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-500 ${
                      showOdds ? 'translate-x-6' : 'translate-x-1'
                    }`}
                  />
@@ -376,15 +379,15 @@ export default function MatchSchedule({
              
              {/* TV Toggle */}
              <div className="flex items-center gap-2 py-1">
-               <span className="text-sm text-gray-600 dark:text-gray-400">TV</span>
+               <span className={`text-sm transition-colors duration-500 ${showTv ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>TV</span>
                <button
                  onClick={() => setShowTv(!showTv)}
-                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
+                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-500 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none cursor-pointer ${
                    showTv ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                  }`}
                >
                  <span
-                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-500 ${
                      showTv ? 'translate-x-6' : 'translate-x-1'
                    }`}
                  />
@@ -399,9 +402,19 @@ export default function MatchSchedule({
       {loading ? (
         <LoadingEmptyState message="Loading matches for the selected date..." />
       ) : error ? (
-        <div className="space-y-6">
-          <DateNavigator selectedDate={selectedDate!} onChange={setSelectedDate} />
-          <ErrorEmptyState onRefresh={() => window.location.reload()} />
+        <div className="text-center text-gray-500 py-10">
+          <div className="max-w-md mx-auto">
+            <h3 className="text-xl font-semibold mb-4">Connection issues</h3>
+            <p className="text-gray-400 mb-6">We're having trouble loading the matches. Please check your connection and try again.</p>
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
         </div>
       ) : filteredCompetitions.length === 0 ? (
         <div className="text-center text-gray-500 py-10">
