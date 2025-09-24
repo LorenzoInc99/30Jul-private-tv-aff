@@ -20,7 +20,7 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   const [teamData, setTeamData] = useState<any | null>(null);
   const [teamMatches, setTeamMatches] = useState<any[] | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const matchesPerPage = 3;
+  const matchesPerPage = 5; // Show 5 matches per page
 
   const handlePrevious = () => {
     if (currentPage > 0) {

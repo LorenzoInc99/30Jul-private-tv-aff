@@ -294,7 +294,7 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   teamForm: any;
 }) {
   const [currentPage, setCurrentPage] = useState(0);
-  const matchesPerPage = 3;
+  const matchesPerPage = 5; // Show 5 matches per page (2 upcoming + 3 previous, then 5 previous)
   
   // Use team context
   const { setTeamData, setTeamMatches, setCurrentPage: setContextCurrentPage } = useTeam();
@@ -303,22 +303,15 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   const transformedPreviousMatches = previousMatches.map(transformMatchForCard).filter(Boolean);
   const transformedUpcomingMatches = (upcomingMatches || []).map(transformMatchForCard).filter(Boolean);
 
-  // Combine all matches in chronological order (previous + upcoming)
+  // Combine all matches in chronological order (2 upcoming + 8 previous)
+  // Upcoming matches first (ascending), then previous matches (descending)
   const allMatches = [
-    ...transformedPreviousMatches,
-    ...transformedUpcomingMatches
-  ].sort((a, b) => {
-    if (!a || !b) return 0;
-    return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
-  });
+    ...transformedUpcomingMatches,
+    ...transformedPreviousMatches
+  ];
 
   // Set team data in context when component mounts
   useEffect(() => {
-    console.log('Team matches:', allMatches.length, 'matches');
-    if (allMatches[0]) {
-      console.log('First match Competitions:', allMatches[0].Competitions);
-    }
-    
     setTeamData(team);
     setTeamMatches(allMatches);
     setContextCurrentPage(currentPage);

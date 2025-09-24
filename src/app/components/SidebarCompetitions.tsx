@@ -716,6 +716,21 @@ export default function SidebarCompetitions({
                 {teamData.name} Matches
               </h2>
               
+              {/* Debug: Show league logo data once */}
+              {teamMatches.length > 0 && (
+                <div style={{display: 'none'}}>
+                  {(() => {
+                    const firstMatch = teamMatches[0];
+                    console.log('🔍 LEAGUE LOGO DEBUG:');
+                    console.log('First match:', firstMatch);
+                    console.log('Competitions data:', firstMatch?.Competitions);
+                    console.log('Logo URL:', firstMatch?.Competitions?.logo_url);
+                    console.log('League logo URL:', firstMatch?.Competitions?.league_logo_url);
+                    return null;
+                  })()}
+                </div>
+              )}
+              
               {/* Navigation Buttons */}
               <div className="flex justify-between items-center mb-4">
                 <button 
@@ -775,20 +790,13 @@ export default function SidebarCompetitions({
                                           firstMatch?.league?.league_logo_url || 
                                           '/default-league.png';
                             
-                            // Debug logging
-                            console.log('League logo for', competition, ':', logoUrl);
-                            
                             return (
                               <img 
                                 src={logoUrl} 
                                 alt={competition}
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
-                                  console.log('Logo failed to load:', logoUrl);
                                   e.currentTarget.style.display = 'none';
-                                }}
-                                onLoad={() => {
-                                  console.log('Logo loaded successfully:', logoUrl);
                                 }}
                               />
                             );
@@ -896,7 +904,7 @@ export default function SidebarCompetitions({
                               {/* Separator line */}
                               <div className="w-px h-8 bg-gray-300 dark:bg-gray-600 mx-2"></div>
 
-                              {/* W/D/L Column - always visible */}
+                              {/* W/D/L Column or Star - conditional display */}
                               <div className="flex-shrink-0 w-8 text-center">
                                 {isFinished ? (
                                   <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold mx-auto ${
@@ -913,21 +921,16 @@ export default function SidebarCompetitions({
                                          match.away_score === match.home_score ? 'D' : 'L')
                                   }
                                   </span>
-                                ) : (
-                                  <div className="w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 mx-auto"></div>
-                                )}
-                              </div>
-
-                              {/* Star Icon - only for upcoming matches */}
-                              {isUpcoming && (
-                                <div className="flex-shrink-0 ml-1">
-                                  <svg className="w-3 h-3 text-gray-400 hover:text-yellow-500 cursor-pointer" 
+                                ) : isUpcoming ? (
+                                  <svg className="w-4 h-4 text-gray-400 hover:text-yellow-500 cursor-pointer mx-auto" 
                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                                           d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                                   </svg>
-                                </div>
-                              )}
+                                ) : (
+                                  <div className="w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 mx-auto"></div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}

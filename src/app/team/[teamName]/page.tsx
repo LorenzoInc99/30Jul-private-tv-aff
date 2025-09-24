@@ -194,7 +194,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     .limit(1)
     .single();
 
-  // Get previous matches for this team (finished matches)
+  // Get previous matches for this team (finished matches) - 8 matches
   const { data: previousMatches } = await supabase
     .from('fixtures')
     .select(`
@@ -213,7 +213,28 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     .or(`home_team_id.eq.${team.id},away_team_id.eq.${team.id}`)
     .in('state_id', [5, 7, 8]) // Finished matches: Full Time, After Extra Time, After Penalties
     .order('starting_at', { ascending: false })
-    .limit(10);
+    .limit(8);
+
+  // Get upcoming matches for this team (scheduled matches) - 2 matches
+  const { data: upcomingMatches } = await supabase
+    .from('fixtures')
+    .select(`
+      *,
+      league:leagues(*),
+      home_team:teams_new!fixtures_home_team_id_fkey1(*),
+      away_team:teams_new!fixtures_away_team_id_fkey1(*),
+      odds(
+        id,
+        label,
+        value,
+        market_id,
+        bookmaker:bookmakers(*)
+      )
+    `)
+    .or(`home_team_id.eq.${team.id},away_team_id.eq.${team.id}`)
+    .gte('starting_at', new Date().toISOString())
+    .order('starting_at', { ascending: true })
+    .limit(2);
 
   // Add country information to matches
   const addCountryToMatch = (match: any) => {
@@ -263,11 +284,13 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     });
   }
 
+  const upcomingMatchesWithCountry = upcomingMatches ? upcomingMatches.map(addCountryToMatch) : [];
+
   return (
     <TeamDetailsClient 
       team={team} 
       nextMatch={nextMatchWithCountry} 
-      upcomingMatches={[]} 
+      upcomingMatches={upcomingMatchesWithCountry} 
       previousMatches={previousMatchesWithCountry} 
       teamForm={teamForm}
     />
