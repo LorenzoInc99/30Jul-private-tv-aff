@@ -8,7 +8,10 @@ import TeamLogo from '@/components/TeamLogo';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
 import BookmakerLogo from '@/components/BookmakerLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
-import OddsComparisonTable from '@/components/OddsComparisonTable';
+import BroadcasterRow from '@/components/BroadcasterRow';
+import BroadcasterFilters from '@/components/BroadcasterFilters';
+import MatchOddsDisplay from '@/components/MatchOddsDisplay';
+import BackToTopButton from '@/components/BackToTopButton';
 import { trackBroadcasterClick, formatClickCount, initializeClickTracking } from '@/lib/broadcaster-tracking';
 
 
@@ -61,6 +64,7 @@ export default function MatchPageClient({ match }: { match: any }) {
   const [loading, setLoading] = useState(false);
   const [showAllBroadcasters, setShowAllBroadcasters] = useState(false);
   const [clickCounts, setClickCounts] = useState<{ [key: number]: number }>({});
+  const [filters, setFilters] = useState({ geoLocation: 'all', subscriptionType: [] as string[] });
 
   const timezone = searchParams.get('timezone') || 'auto';
 
@@ -92,6 +96,23 @@ export default function MatchPageClient({ match }: { match: any }) {
     };
     
     fetchClickCounts();
+    
+    // Add skeleton click counts for testing
+    const skeletonClickCounts: { [key: number]: number } = {
+      1: 2340, // ESPN+ - most popular
+      2: 1890, // Sky Sports
+      3: 1560, // DAZN
+      4: 1230, // Viaplay
+      5: 980,  // beIN Sports
+      6: 2100, // YouTube (Free) - second most popular
+      7: 750,  // BT Sport
+      8: 890   // Amazon Prime Video
+    };
+    
+    // Use skeleton data if no real data available
+    setTimeout(() => {
+      setClickCounts(prev => Object.keys(prev).length > 0 ? prev : skeletonClickCounts);
+    }, 1000);
   }, []);
   
   const getTargetTimezone = () => {
@@ -156,8 +177,97 @@ export default function MatchPageClient({ match }: { match: any }) {
         .filter((broadcaster: any) => broadcaster?.name)
     : [];
 
+  // Skeleton data for testing when no real broadcasters are available
+  const skeletonBroadcasters = [
+    {
+      id: 1,
+      name: "ESPN+",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/1/1.png",
+      affiliate_url: "https://www.plus.espn.com",
+    },
+    {
+      id: 2,
+      name: "Sky Sports",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/2/2.png",
+      affiliate_url: "https://www.skysports.com",
+    },
+    {
+      id: 3,
+      name: "DAZN",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/3/3.png",
+      affiliate_url: "https://www.dazn.com",
+    },
+    {
+      id: 4,
+      name: "Viaplay",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/4/4.png",
+      affiliate_url: "https://www.viaplay.com",
+    },
+    {
+      id: 5,
+      name: "beIN Sports",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/5/5.png",
+      affiliate_url: "https://www.beinsports.com",
+    },
+    {
+      id: 6,
+      name: "YouTube (Free)",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/6/6.png",
+      affiliate_url: "https://www.youtube.com",
+    },
+    {
+      id: 7,
+      name: "BT Sport",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/7/7.png",
+      affiliate_url: "https://www.bt.com/sport",
+    },
+    {
+      id: 8,
+      name: "Amazon Prime Video",
+      logo_url: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png",
+      affiliate_url: "https://www.primevideo.com",
+    }
+  ];
+
+  // Use skeleton data if no real broadcasters available
+  const displayBroadcasters = validBroadcasters.length > 0 ? validBroadcasters : skeletonBroadcasters;
+
+  // Filter broadcasters based on selected filters
+  const filteredBroadcasters = displayBroadcasters.filter((broadcaster: any) => {
+    // For now, we'll use basic filtering based on broadcaster names
+    // This can be enhanced when you have more detailed data
+    
+    // Subscription type filtering (multi-select)
+    if (filters.subscriptionType.length > 0) {
+      const isFree = broadcaster.name.toLowerCase().includes('free') || 
+                   broadcaster.name.toLowerCase().includes('youtube');
+      
+      const hasFree = filters.subscriptionType.includes('free');
+      const hasSubscription = filters.subscriptionType.includes('subscription');
+      const hasTrial = filters.subscriptionType.includes('trial');
+      
+      // If filtering for free and this is not free, exclude it
+      if (hasFree && !isFree) return false;
+      
+      // If filtering for subscription and this is free, exclude it
+      if (hasSubscription && isFree) return false;
+      
+      // For trial filtering, you can enhance this logic when you have trial data
+      if (hasTrial && !isFree) return false; // Placeholder logic
+    }
+    
+    // Geo location filtering (basic implementation)
+    if (filters.geoLocation !== 'all') {
+      // This is a placeholder - you can enhance this with actual geo data
+      // For now, we'll show all broadcasters regardless of geo filter
+      // You can add geo-specific logic here when you have that data
+    }
+    
+    return true;
+  });
+
   // Sort broadcasters by click count (highest first)
-  const sortedBroadcasters = [...validBroadcasters].sort((a: any, b: any) => {
+  const sortedBroadcasters = [...filteredBroadcasters].sort((a: any, b: any) => {
     const aClicks = clickCounts[a.id] || 0;
     const bClicks = clickCounts[b.id] || 0;
     return bClicks - aClicks; // Descending order (highest first)
@@ -170,9 +280,9 @@ export default function MatchPageClient({ match }: { match: any }) {
 
   const displayedBroadcasters = showAllBroadcasters 
     ? sortedBroadcasters 
-    : sortedBroadcasters.slice(0, 5);
+    : sortedBroadcasters.slice(0, 4);
 
-  const remainingCount = sortedBroadcasters.length - 5;
+  const remainingCount = sortedBroadcasters.length - 4;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -252,6 +362,10 @@ export default function MatchPageClient({ match }: { match: any }) {
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {formatShortDate(match.start_time)}
                         </span>
+                        {/* Odds Display */}
+                        <div className="mt-4">
+                          <MatchOddsDisplay odds={match.Odds || []} matchStatus={match.status} />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -293,174 +407,66 @@ export default function MatchPageClient({ match }: { match: any }) {
                 </div>
               </div>
 
-              {/* Broadcasters */}
+              {/* Broadcasters - Row Layout */}
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 text-left">
-                  Broadcasters ({sortedBroadcasters.length})
-                </h3>
-                {hasBroadcasters ? (
-                    <div className="space-y-0">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Where to Watch ({sortedBroadcasters.length})
+                  </h3>
+                  
+                  {/* Filters */}
+                  <BroadcasterFilters onFiltersChange={setFilters} />
+                </div>
+                {displayBroadcasters.length > 0 ? (
+                  <div>
+                    {/* Grid Layout - 2 Cards Per Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                       {displayedBroadcasters.map((broadcaster: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer">
-                        {/* Logo Column */}
-                        <div className="flex-shrink-0 w-12">
-                                  {broadcaster.logo_url ? (
-                                    <Image
-                                      src={broadcaster.logo_url}
-                                      alt={`${broadcaster.name} logo`}
-                                      width={32}
-                                      height={32}
-                                      className="w-8 h-8 object-contain rounded bg-white border border-gray-200 dark:border-gray-600"
-                                      onError={(e) => {
-                                        // Fallback to letter if image fails to load
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                        const parent = target.parentElement;
-                                        if (parent) {
-                                          parent.innerHTML = `
-                                            <div class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                              ${broadcaster.name.charAt(0).toUpperCase()}
-                                            </div>
-                                          `;
-                                        }
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                      {broadcaster.name.charAt(0).toUpperCase()}
-                                    </div>
-                                  )}
-                                </div>
-                        
-                        {/* Broadcaster Name Column */}
-                        <div className="flex-1 px-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {broadcaster.name}
-                            </span>
-                            {/* Most Popular Badge */}
-                            {mostPopularBroadcaster && mostPopularBroadcaster.id === broadcaster.id && (
-                              <div className="relative group">
-                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 cursor-help">
-                                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M5 16L3 8l5.5 5L12 4l3.5 9L21 8l-2 8H5zm2.7-2h8.6l.9-4.4L12 8.5 6.8 9.6L7.7 14z"/>
-                                  </svg>
-                                </span>
-                                
-                                {/* Hover Tooltip */}
-                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                                  Most popular broadcaster
-                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Click Here Button Column */}
-                        <div className="flex-shrink-0 flex items-center gap-2">
-                          {/* Social Validation Badge - Always Visible */}
-                          <div 
-                            className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-md text-xs cursor-help relative group"
-                            title={`${clickCounts[broadcaster.id] || 0} users already clicked here`}
-                          >
-                            <svg 
-                              width="12" 
-                              height="12" 
-                              viewBox="0 0 24 24" 
-                              fill="none" 
-                              stroke="currentColor" 
-                              strokeWidth="2" 
-                              strokeLinecap="round" 
-                              strokeLinejoin="round"
-                              className="text-gray-500 dark:text-gray-400"
-                            >
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                              <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                            <span>{clickCounts[broadcaster.id] || 0}</span>
-                            
-                            {/* Custom Tooltip */}
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                              {clickCounts[broadcaster.id] || 0} users already clicked here
-                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
-                            </div>
-                              </div>
-                          
-                          {broadcaster.affiliate_url ? (
-                            <button
-                              onClick={() => {
-                                // Debug: Log broadcaster info
-                                // Track click and open link
-                                
-                                // Track the click
-                                trackBroadcasterClick(broadcaster.id, match.id);
-                                // Open the link
-                                window.open(broadcaster.affiliate_url, '_blank', 'noopener,noreferrer');
-                              }}
-                              className="w-24 px-4 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
-                            >
-                              Click here
-                            </button>
-                          ) : (
-                            <span className="w-24 px-4 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-600 rounded-lg text-center inline-block">
-                              No link
-                                </span>
-                          )}
-                        </div>
-                        </div>
+                        <BroadcasterRow
+                          key={broadcaster.id}
+                          broadcaster={broadcaster}
+                          clickCount={clickCounts[broadcaster.id] || 0}
+                          isMostPopular={mostPopularBroadcaster && mostPopularBroadcaster.id === broadcaster.id}
+                          onBroadcasterClick={trackBroadcasterClick}
+                          matchId={match.id}
+                        />
                       ))}
+                    </div>
                     
+                    {/* Show More/Less Buttons */}
                     {!showAllBroadcasters && remainingCount > 0 && (
                       <button
                         onClick={() => setShowAllBroadcasters(true)}
-                        className="w-full mt-3 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
+                        className="w-full px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
                       >
-                        See more ({remainingCount} more)
+                        Show more broadcasters ({remainingCount} more)
                       </button>
                     )}
                     
-                    {showAllBroadcasters && sortedBroadcasters.length > 5 && (
+                    {showAllBroadcasters && sortedBroadcasters.length > 4 && (
                       <button
                         onClick={() => setShowAllBroadcasters(false)}
-                        className="w-full mt-3 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
+                        className="w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
                       >
                         Show less
                       </button>
                     )}
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">No broadcasters available</p>
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">📺</div>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      Broadcasting details will be confirmed closer to kick-off
+                    </p>
+                  </div>
                 )}
               </div>
-
-
             </div>
           </div>
 
-          {/* Odds Section */}
-          {hasOdds && match.status !== 'Finished' && (
-            <div className="mt-8">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 text-center">Odds Comparison (1X2)</h3>
-              <p className="text-left text-gray-600 dark:text-gray-400 text-xs mb-4">
-                Explore the most competitive betting odds for the {homeTeamName} vs {awayTeamName} match. 
-                Compare all football betting options in the table below.
-              </p>
-
-              <OddsComparisonTable odds={match.Odds} homeTeamName={homeTeamName} awayTeamName={awayTeamName} />
-            </div>
-          )}
-
-          {/* No Odds Message */}
-          {(!hasOdds || match.status === 'Finished') && (
-            <div className="mt-8 text-center py-5 text-gray-500 dark:text-gray-400">
-              No 1X2 odds available for this match.
-            </div>
-          )}
-
           {/* SEO Content Section */}
-          <section className="bg-gray-100 dark:bg-gray-800 py-6 mt-8">
-            <div className="max-w-4xl mx-auto">
+          <section className="bg-gray-100 dark:bg-gray-800 py-4 mt-2">
+            <div className="px-6">
               {/* Match Info */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
@@ -507,6 +513,9 @@ export default function MatchPageClient({ match }: { match: any }) {
           </section>
         </main>
       </div>
+
+      {/* Back to Top Button - Floating */}
+      <BackToTopButton />
 
       {/* Custom CSS for odds table and form circles */}
       <style jsx>{`
