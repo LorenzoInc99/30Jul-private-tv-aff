@@ -23,7 +23,7 @@ export default function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
           {item.href && !item.isActive ? (
             <Link 
               href={item.href}
-              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
+              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 cursor-pointer"
             >
               {item.label}
             </Link>

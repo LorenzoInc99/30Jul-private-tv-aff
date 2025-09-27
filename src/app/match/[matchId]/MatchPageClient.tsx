@@ -355,7 +355,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     <div className="flex items-center justify-center h-6 md:h-8 px-1 md:px-2 w-full max-w-[120px] md:max-w-[140px]">
                       <Link
                         href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/${match.home_team_id}`}
-                        className={`text-sm md:text-base font-bold text-center truncate leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg w-full ${
+                        className={`text-sm md:text-base font-bold text-center truncate leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg w-full cursor-pointer ${
                           match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                             (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
                               'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
@@ -439,7 +439,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     <div className="flex items-center justify-center h-6 md:h-8 px-1 md:px-2 w-full max-w-[120px] md:max-w-[140px]">
                       <Link
                         href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/${match.away_team_id}`}
-                        className={`text-sm md:text-base font-bold text-center truncate leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg w-full ${
+                        className={`text-sm md:text-base font-bold text-center truncate leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg w-full cursor-pointer ${
                           match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                             (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
                               'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
@@ -520,7 +520,7 @@ export default function MatchPageClient({ match }: { match: any }) {
           </div>
 
           {/* SEO Content Section */}
-          <section className="bg-gray-100 dark:bg-gray-800 py-4 mt-2">
+          <section className="py-4 mt-2">
             <div className="px-6">
               {/* Match Info */}
               <div className="mb-6">
