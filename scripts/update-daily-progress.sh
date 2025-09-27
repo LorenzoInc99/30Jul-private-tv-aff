@@ -42,6 +42,22 @@ EOF
     echo "✅ New entry added for $CURRENT_DATE"
 fi
 
+# Update the "Last Updated" timestamp
+CURRENT_TIMESTAMP=$(date "+%d/%m/%Y at %H:%M")
+if grep -q "\*\*Last Updated:\*\*" DAILY_PROGRESS.md; then
+    # Use awk for more robust timestamp update
+    awk -v timestamp="$CURRENT_TIMESTAMP" '
+    /\*\*Last Updated:\*\*/ {
+        gsub(/\*\*Last Updated:\*\* .*/, "**Last Updated:** " timestamp)
+    }
+    { print }
+    ' DAILY_PROGRESS.md > DAILY_PROGRESS.md.tmp && mv DAILY_PROGRESS.md.tmp DAILY_PROGRESS.md
+    echo "✅ Updated timestamp to $CURRENT_TIMESTAMP"
+fi
+
+# Clean up backup files
+rm -f *.bak 2>/dev/null
+
 echo ""
 echo "📝 Next Steps:"
 echo "  1. Edit DAILY_PROGRESS.md to fill in your work summary"

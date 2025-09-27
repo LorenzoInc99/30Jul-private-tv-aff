@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Custom push command that updates documentation, daily progress, and pushes to git
+# Usage: ./push
+
+echo "🚀 Custom push command - Updating documentation, daily progress, and pushing to git..."
+
+# Update documentation dates and timestamps
+if [ -f "scripts/update-docs.sh" ]; then
+    echo "📅 Updating documentation dates..."
+    ./scripts/update-docs.sh
+else
+    echo "⚠️  Documentation update script not found, skipping..."
+fi
+
+# Update daily progress log
+if [ -f "scripts/update-daily-progress.sh" ]; then
+    echo "📝 Updating daily progress log..."
+    ./scripts/update-daily-progress.sh
+    echo "✅ Daily progress log updated"
+else
+    echo "⚠️  Daily progress update script not found, skipping..."
+fi
+
+# Add all changes to git
+echo "📝 Adding all changes to git..."
+git add .
+
+# Commit with current timestamp
+CURRENT_TIMESTAMP=$(date "+%d/%m/%Y at %H:%M")
+COMMIT_MESSAGE="📅 Auto-update documentation, daily progress, and push - $CURRENT_TIMESTAMP"
+
+echo "💾 Committing changes..."
+git commit -m "$COMMIT_MESSAGE"
+
+# Push to remote repository
+echo "🚀 Pushing to remote repository..."
+git push
+
+echo "✅ Push completed successfully!"
+echo "📅 Documentation and daily progress updated and pushed to git"
+echo "📝 Remember to edit DAILY_PROGRESS.md to add your work summary for today!"
