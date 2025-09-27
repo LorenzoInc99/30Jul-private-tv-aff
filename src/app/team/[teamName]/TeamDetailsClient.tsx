@@ -3,7 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SITE_TITLE } from '../../../lib/constants';
-import Breadcrumbs from '@/components/Breadcrumbs';
+import Breadcrumb from '@/components/Breadcrumb';
 import MatchCard from '@/components/MatchCard';
 import MatchDetails from '@/components/MatchDetails';
 import TeamLogo from '@/components/TeamLogo';
@@ -389,12 +389,17 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
       <div className="mb-4">
-        <Breadcrumbs
-          items={[
-            { name: 'Home', url: '/' },
-            { name: team.name, url: `/team/${slugify(team.name)}` }
-          ]}
-        />
+        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700">
+          <Breadcrumb 
+            items={[
+              { label: 'Home', href: '/' },
+              { 
+                label: team.name, 
+                isActive: true 
+              }
+            ]} 
+          />
+        </div>
       </div>
       
       <div className="container mx-auto max-w-7xl px-1 md:px-2">
