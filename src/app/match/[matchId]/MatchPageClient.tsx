@@ -362,8 +362,19 @@ export default function MatchPageClient({ match }: { match: any }) {
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {formatShortDate(match.start_time)}
                         </span>
+                        {/* Venue Information */}
+                        <div className="flex items-center justify-center mt-2 mb-2">
+                          <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                            <img 
+                              src="/stadium.svg" 
+                              alt="Stadium" 
+                              className="w-4 h-4"
+                            />
+                            <span>Venue</span>
+                          </div>
+                        </div>
                         {/* Odds Display */}
-                        <div className="mt-4">
+                        <div className="mt-2">
                           <MatchOddsDisplay odds={match.Odds || []} matchStatus={match.status} />
                         </div>
                       </div>
@@ -408,11 +419,11 @@ export default function MatchPageClient({ match }: { match: any }) {
               </div>
 
               {/* Broadcasters - Row Layout */}
-              <div className="mb-6">
+              <div className="mb-0">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                     Where to Watch ({sortedBroadcasters.length})
-                  </h3>
+                </h3>
                   
                   {/* Filters */}
                   <BroadcasterFilters onFiltersChange={setFilters} />
