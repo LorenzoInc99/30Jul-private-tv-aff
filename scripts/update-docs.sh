@@ -5,8 +5,11 @@
 
 # Get current date in the format: Month DD, YYYY
 CURRENT_DATE=$(date "+%B %d, %Y")
+# Get current date and time in the format: dd/mm/yyyy at hh:mm
+CURRENT_TIMESTAMP=$(date "+%d/%m/%Y at %H:%M")
 
 echo "🔄 Updating documentation dates to: $CURRENT_DATE"
+echo "🕐 Updating timestamp to: $CURRENT_TIMESTAMP"
 
 # Update PROJECT_OVERVIEW.md
 if [ -f "PROJECT_OVERVIEW.md" ]; then
@@ -44,8 +47,15 @@ if [ -f "docs/REVENUE_OPTIMIZATION.md" ]; then
     echo "✅ Updated docs/REVENUE_OPTIMIZATION.md"
 fi
 
+# Update DAILY_PROGRESS.md timestamp
+if [ -f "DAILY_PROGRESS.md" ]; then
+    sed -i.bak "s/\*\*Last Updated:\*\* .*/\*\*Last Updated:\*\* $CURRENT_TIMESTAMP/" DAILY_PROGRESS.md
+    echo "✅ Updated DAILY_PROGRESS.md timestamp"
+fi
+
 # Clean up backup files
 rm -f *.bak docs/*.bak
 
 echo "🎯 Documentation dates updated successfully!"
 echo "📅 All files now show: $CURRENT_DATE"
+echo "🕐 DAILY_PROGRESS.md timestamp: $CURRENT_TIMESTAMP"
