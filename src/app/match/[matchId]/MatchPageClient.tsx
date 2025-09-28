@@ -10,6 +10,7 @@ import BookmakerLogo from '@/components/BookmakerLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
 import BroadcasterRow from '@/components/BroadcasterRow';
 import BroadcasterFilters from '@/components/BroadcasterFilters';
+import ResponsiveBroadcasterSection from '@/components/ResponsiveBroadcasterSection';
 import MatchOddsDisplay from '@/components/MatchOddsDisplay';
 import BackToTopButton from '@/components/BackToTopButton';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -63,7 +64,6 @@ function MatchSkeleton() {
 export default function MatchPageClient({ match }: { match: any }) {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [showAllBroadcasters, setShowAllBroadcasters] = useState(false);
   const [clickCounts, setClickCounts] = useState<{ [key: number]: number }>({});
   const [filters, setFilters] = useState({ geoLocation: 'all', subscriptionType: [] as string[] });
 
@@ -140,10 +140,78 @@ export default function MatchPageClient({ match }: { match: any }) {
   // Custom time formatter to avoid hydration mismatches
   const formatTimeConsistently = (dateString: string) => {
     const date = new Date(dateString);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+    const targetTz = getTargetTimezone();
+    
+    if (targetTz === 'auto' || targetTz === Intl.DateTimeFormat().resolvedOptions().timeZone) {
+      // Use local time for auto timezone or when target matches local
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    } else {
+      // For specific timezone, convert to target timezone
+      try {
+        const formatter = new Intl.DateTimeFormat('en-GB', {
+          timeZone: targetTz,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        return formatter.format(date);
+      } catch (error) {
+        // Fallback to local time if timezone is invalid
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+    }
   };
+
+  // Countdown timer for matches starting within 2 hours
+  const [countdown, setCountdown] = useState<string>('');
+  const [showCountdown, setShowCountdown] = useState<boolean>(false);
+
+  useEffect(() => {
+    const matchTime = new Date(match.start_time);
+    const now = new Date();
+    const timeDiff = matchTime.getTime() - now.getTime();
+    
+    // Show countdown if match is within 2 hours and hasn't started yet
+    const shouldShowCountdown = timeDiff > 0 && timeDiff <= 2 * 60 * 60 * 1000 && match.status !== 'Live' && match.status !== 'Finished';
+    setShowCountdown(shouldShowCountdown);
+
+    if (shouldShowCountdown) {
+      const updateCountdown = () => {
+        const now = new Date();
+        const timeDiff = matchTime.getTime() - now.getTime();
+        
+        if (timeDiff <= 0) {
+          setCountdown('Starting now!');
+          // Keep showing countdown for a few seconds, then switch to normal time
+          setTimeout(() => {
+            setShowCountdown(false);
+          }, 3000); // Show "Starting now!" for 3 seconds
+          return;
+        }
+        
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
+        if (hours > 0) {
+          setCountdown(`${hours}h ${minutes}m`);
+        } else if (minutes > 0) {
+          setCountdown(`${minutes}m ${seconds}s`);
+        } else {
+          setCountdown(`${seconds}s`);
+        }
+      };
+      
+      updateCountdown(); // Initial call
+      const interval = setInterval(updateCountdown, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [match.start_time, match.status]);
 
   // Custom short date formatter (Today, Tomorrow, or dd/mm)
   const formatShortDate = (dateString: string) => {
@@ -307,11 +375,6 @@ export default function MatchPageClient({ match }: { match: any }) {
     ? sortedBroadcasters[0] 
     : null;
 
-  const displayedBroadcasters = showAllBroadcasters 
-    ? sortedBroadcasters 
-    : sortedBroadcasters.slice(0, 4);
-
-  const remainingCount = sortedBroadcasters.length - 4;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -403,10 +466,10 @@ export default function MatchPageClient({ match }: { match: any }) {
                         ) : (
                           <>
                         <span className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
-                          {formatTimeConsistently(match.start_time)}
+                          {showCountdown ? countdown : formatTimeConsistently(match.start_time)}
                         </span>
                         <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {formatShortDate(match.start_time)}
+                          {showCountdown ? (countdown === 'Starting now!' ? 'Match is starting!' : 'Until kickoff') : formatShortDate(match.start_time)}
                         </span>
                           </>
                         )}
@@ -472,49 +535,13 @@ export default function MatchPageClient({ match }: { match: any }) {
                   {/* Filters */}
                   <BroadcasterFilters onFiltersChange={setFilters} />
                 </div>
-                {displayBroadcasters.length > 0 ? (
-                  <div>
-                    {/* Grid Layout - 2 Cards Per Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                      {displayedBroadcasters.map((broadcaster: any, index: number) => (
-                        <BroadcasterRow
-                          key={broadcaster.id}
-                          broadcaster={broadcaster}
-                          clickCount={clickCounts[broadcaster.id] || 0}
-                          isMostPopular={mostPopularBroadcaster && mostPopularBroadcaster.id === broadcaster.id}
-                          onBroadcasterClick={trackBroadcasterClick}
-                          matchId={match.id}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Show More/Less Buttons */}
-                    {!showAllBroadcasters && remainingCount > 0 && (
-                      <button
-                        onClick={() => setShowAllBroadcasters(true)}
-                        className="w-full px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
-                      >
-                        Show more broadcasters ({remainingCount} more)
-                      </button>
-                    )}
-                    
-                    {showAllBroadcasters && sortedBroadcasters.length > 4 && (
-                      <button
-                        onClick={() => setShowAllBroadcasters(false)}
-                        className="w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 cursor-pointer"
-                      >
-                        Show less
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-4">📺</div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
-                      Broadcasting details will be confirmed closer to kick-off
-                    </p>
-                  </div>
-                )}
+                <ResponsiveBroadcasterSection
+                  broadcasters={sortedBroadcasters}
+                  clickCounts={clickCounts}
+                  mostPopularBroadcaster={mostPopularBroadcaster}
+                  onBroadcasterClick={trackBroadcasterClick}
+                  matchId={match.id}
+                />
               </div>
             </div>
           </div>

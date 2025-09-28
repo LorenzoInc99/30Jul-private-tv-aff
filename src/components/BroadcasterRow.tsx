@@ -67,9 +67,9 @@ export default function BroadcasterRow({
   ].filter(badge => badge.show !== false);
 
   return (
-    <div className="relative">
+    <div className="relative h-48"> {/* Fixed height container */}
       <div className={`
-        group relative rounded-lg border-2 transition-all duration-300
+        group relative rounded-lg border-2 transition-all duration-300 h-full flex flex-col
         ${isMostPopular 
           ? 'border-yellow-400 shadow-yellow-200 dark:shadow-yellow-900/30' 
           : 'border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-gray-200 dark:shadow-gray-900/50'
@@ -84,10 +84,10 @@ export default function BroadcasterRow({
           ${isMostPopular ? 'bg-yellow-200 dark:bg-yellow-800/30' : 'bg-indigo-200 dark:bg-indigo-800/30'}
         `}></div>
         
-        {/* Row Content - 3 Row Layout */}
-        <div className="relative p-3">
-          {/* Row 1: Logo and Name */}
-          <div className="flex items-center space-x-3 mb-2">
+        {/* Row Content - 3 Row Layout with fixed heights */}
+        <div className="relative p-3 flex flex-col h-full">
+          {/* Row 1: Logo and Name - Fixed height */}
+          <div className="flex items-center space-x-3 mb-2 h-12">
             {/* Logo */}
             <div className="w-10 h-10 flex-shrink-0">
               {broadcaster.logo_url && !imageError ? (
@@ -106,22 +106,27 @@ export default function BroadcasterRow({
               )}
             </div>
             
-            {/* Name */}
-            <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-gray-900 dark:text-white text-base">
+            {/* Name - Truncated with smaller font for long names */}
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
+              <h3 className={`
+                font-semibold text-gray-900 dark:text-white truncate
+                ${broadcaster.name.length > 12 ? 'text-sm' : 'text-base'}
+              `}
+              title={broadcaster.name} // Show full name on hover
+              >
                 {broadcaster.name}
               </h3>
             </div>
           </div>
 
-          {/* Row 2: Badges and Geographic Indicators */}
-          <div className="flex items-center justify-between mb-3">
+          {/* Row 2: Badges and Geographic Indicators - Fixed height */}
+          <div className="flex items-center justify-between mb-3 h-8">
             {/* Badges Row - Left Aligned */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 flex-1 min-w-0">
               {badges.map((badge) => (
-                <div key={badge.id} className="relative">
+                <div key={badge.id} className="relative flex-shrink-0">
                   <span 
-                    className={`px-2 py-1 rounded-full text-xs font-medium cursor-help transition-colors duration-200 ${badge.color}`}
+                    className={`px-1.5 py-0.5 rounded-full text-xs font-medium cursor-help transition-colors duration-200 ${badge.color}`}
                     onMouseEnter={() => setHoveredBadge(badge.id)}
                     onMouseLeave={() => setHoveredBadge(null)}
                   >
@@ -139,7 +144,7 @@ export default function BroadcasterRow({
             </div>
 
             {/* Geographic Indicators - Right Aligned */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               {displayCountries.map((flag, index) => (
                 <span key={index} className="text-sm">{flag}</span>
               ))}
@@ -168,13 +173,13 @@ export default function BroadcasterRow({
             </div>
           </div>
 
-          {/* Row 3: CTA Button */}
-          <div className="flex justify-center">
+          {/* Row 3: CTA Button - Fixed height and flex-grow to push to bottom */}
+          <div className="flex justify-center mt-auto">
             {broadcaster.affiliate_url ? (
               <button
                 onClick={handleClick}
                 className={`
-                  w-full max-w-xs px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer
+                  w-full px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer
                   ${isMostPopular 
                     ? 'bg-yellow-500 hover:bg-yellow-600 text-yellow-900 focus:ring-yellow-500 shadow-lg hover:shadow-xl' 
                     : 'bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500 shadow-md hover:shadow-lg'
@@ -184,7 +189,7 @@ export default function BroadcasterRow({
                 {isMostPopular ? '🔥 WATCH NOW' : 'WATCH NOW'}
               </button>
             ) : (
-              <div className="w-full max-w-xs px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-medium text-center">
+              <div className="w-full px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-medium text-center">
                 No link available
               </div>
             )}

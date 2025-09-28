@@ -8,6 +8,7 @@ import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pin
 import { slugify } from '../lib/utils';
 import { LeagueScheduleSkeleton } from '../components/SkeletonLoader';
 import { NoMatchesEmptyState } from '../components/EmptyStates';
+import { trackLeagueInteraction, getPersonalizedLeagueOrder } from '../lib/league-tracking';
 
 export default function LeagueSchedule({ 
   competitions, 
@@ -28,13 +29,24 @@ export default function LeagueSchedule({
   // Removed expanded state - always show all matches
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [personalizedOrder, setPersonalizedOrder] = useState<{ leagueId: number; priority: number }[]>([]);
   const router = useRouter();
 
-  // Load pinned leagues on mount
+  // Load pinned leagues and personalized order on mount
   useEffect(() => {
     setMounted(true);
     updatePinnedLeagues();
+    loadPersonalizedOrder();
   }, [competitions]);
+
+  const loadPersonalizedOrder = async () => {
+    try {
+      const order = await getPersonalizedLeagueOrder();
+      setPersonalizedOrder(order);
+    } catch (error) {
+      console.error('Failed to load personalized order:', error);
+    }
+  };
 
   const updatePinnedLeagues = () => {
     const pinned = getPinnedLeagues();
@@ -48,14 +60,39 @@ export default function LeagueSchedule({
     window.dispatchEvent(new CustomEvent('pinnedLeaguesChanged'));
   };
 
+  const handleLeagueClick = async (league: any) => {
+    // Track league interaction
+    await trackLeagueInteraction(league.competition.id, 'league_view');
+    
+    // Navigate to league page
+    const leagueSlug = slugify(league.competition.name);
+    router.push(`/competition/${league.competition.id}-${leagueSlug}`);
+  };
+
   // Removed useEffect for expanding leagues - always show all matches
 
-  // Sort: pinned leagues first, then alphabetical
+  // Sort: pinned leagues first, then personalized order, then alphabetical
   const sorted = [...competitions].sort((a, b) => {
     const aPinned = isLeaguePinned(a.competition.id);
     const bPinned = isLeaguePinned(b.competition.id);
+    
+    // Pinned leagues always first
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
+    
+    // If both pinned or both not pinned, use personalized order
+    if (aPinned === bPinned) {
+      const aPersonal = personalizedOrder.find(p => p.leagueId === a.competition.id);
+      const bPersonal = personalizedOrder.find(p => p.leagueId === b.competition.id);
+      
+      if (aPersonal && bPersonal) {
+        return aPersonal.priority - bPersonal.priority;
+      }
+      if (aPersonal && !bPersonal) return -1;
+      if (!aPersonal && bPersonal) return 1;
+    }
+    
+    // Fallback to alphabetical
     return a.competition.name.localeCompare(b.competition.name);
   });
 
@@ -88,7 +125,7 @@ export default function LeagueSchedule({
         const isPinned = mounted && isLeaguePinned(group.competition.id);
         return (
           <div key={group.competition.id} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 md:rounded-lg md:shadow">
-            <div className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-2">
                 <svg
                   className={`pin-star w-5 h-5 ${isPinned ? 'text-yellow-500 dark:text-yellow-400' : 'text-gray-400 dark:text-gray-500'}`}
@@ -122,7 +159,10 @@ export default function LeagueSchedule({
                     <Link 
                       href={`/competition/${group.competition.id}-${slugify(group.competition.name)}`}
                       className="text-base font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                      onClick={e => e.stopPropagation()}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await trackLeagueInteraction(group.competition.id, 'league_view');
+                      }}
                     >
                       {group.competition.name}
                       <span className="text-sm font-normal ml-1">({group.matches.length})</span>
@@ -136,7 +176,7 @@ export default function LeagueSchedule({
                 </div>
               </div>
             </div>
-            <div className={`collapse-transition expanded divide-y divide-gray-100 dark:divide-gray-700`} style={{ opacity: 1 }}>
+            <div className={`collapse-transition expanded`} style={{ opacity: 1 }}>
                 {group.matches.map((match: any, idx: number) => {
                   const homeSlug = slugify(match.home_team?.name || 'home');
                   const awaySlug = slugify(match.away_team?.name || 'away');
@@ -145,7 +185,7 @@ export default function LeagueSchedule({
                   const isStarred = starredMatches.has(match.id);
                   
                   return (
-                    <div key={match.id} className="overflow-x-auto w-full py-1">
+                    <div key={match.id} className={`overflow-x-auto w-full ${idx === 0 ? 'border-t border-gray-100 dark:border-gray-700' : ''}`}>
                       <MatchCard
                         match={match}
                         timezone={timezone}
@@ -158,8 +198,10 @@ export default function LeagueSchedule({
                           e.stopPropagation();
                           setExpandedMatch(isExpanded ? null : match.id);
                         }}
-                        onClick={e => {
+                        onClick={async (e) => {
                           e.preventDefault();
+                          // Track match click for league interaction
+                          await trackLeagueInteraction(group.competition.id, 'match_click');
                           router.push(`/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`);
                         }}
                       />
