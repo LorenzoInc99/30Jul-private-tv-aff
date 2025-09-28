@@ -13,3 +13,4 @@ rm -f tsconfig.tsbuildinfo
 
 echo "✅ Cache cleared! Starting dev server..."
 npm run dev
+

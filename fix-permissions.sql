@@ -30,3 +30,4 @@ CREATE POLICY "Allow authenticated access to league_interactions" ON league_inte
 
 CREATE POLICY "Allow authenticated access to league_priorities" ON league_priorities
   FOR ALL TO authenticated USING (true);
+

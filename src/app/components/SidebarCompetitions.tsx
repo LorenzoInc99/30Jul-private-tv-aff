@@ -45,7 +45,8 @@ export default function SidebarCompetitions({
     hideLeague,
     hideTeam,
     isLeagueInSidebar,
-    isTeamInSidebar
+    isTeamInSidebar,
+    resetToDefaults
   } = useSidebar();
 
   // Popular leagues data
@@ -319,12 +320,22 @@ export default function SidebarCompetitions({
     if (competitions && competitions.length > 0) {
       competitions.forEach(comp => {
         if (!allLeagues.some(league => league.id === comp.id)) {
+          // Debug: Log available fields for La Liga specifically
+          if (comp.name === 'La Liga') {
+            console.log('La Liga data fields:', Object.keys(comp));
+            console.log('La Liga logo fields:', {
+              league_logo: comp.league_logo,
+              logo_url: comp.logo_url,
+              image_path: comp.image_path,
+              logo: comp.logo
+            });
+          }
           
           allLeagues.push({
             id: comp.id,
             name: comp.name,
             country: comp.country?.name || 'Unknown',
-            league_logo: comp.league_logo || comp.logo_url
+            league_logo: comp.league_logo || comp.logo_url || comp.image_path || comp.logo || null
           });
         }
       });
@@ -964,12 +975,32 @@ export default function SidebarCompetitions({
           <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
             Popular Teams
           </h2>
-          <ul className="space-y-1">
-            {customTeams.filter((team: any) => !hiddenTeams.has(team.id)).map((team: any) => renderPopularTeamItem(team))}
-          </ul>
+          {customTeams.filter((team: any) => !hiddenTeams.has(team.id)).length > 0 ? (
+            <ul className="space-y-1">
+              {customTeams.filter((team: any) => !hiddenTeams.has(team.id)).map((team: any) => renderPopularTeamItem(team))}
+            </ul>
+          ) : (
+            <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+              Search above to add your favorite teams
+            </div>
+          )}
         </div>
           </>
         )}
+
+        {/* Reset to Defaults Button */}
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={resetToDefaults}
+            className="w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors duration-200 flex items-center justify-center"
+            title="Reset sidebar to default leagues and teams"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Clear Teams & Reset
+          </button>
+        </div>
       </div>
     </aside>
   );

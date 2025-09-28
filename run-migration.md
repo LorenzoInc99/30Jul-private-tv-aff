@@ -85,3 +85,4 @@ If you get errors:
 2. **Verify table names** match your schema
 3. **Check foreign key references** (leagues table)
 4. **Run migration again** if needed
+
