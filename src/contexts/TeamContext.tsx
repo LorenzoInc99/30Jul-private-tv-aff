@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 
 interface TeamContextType {
   teamData: any | null;
@@ -22,40 +22,42 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   const [currentPage, setCurrentPage] = useState(0);
   const matchesPerPage = 5; // Show 5 matches per page
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
     }
-  };
+  }, [currentPage]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (teamMatches && currentPage < Math.ceil((teamMatches.length - 1) / matchesPerPage)) {
       setCurrentPage(currentPage + 1);
     }
-  };
+  }, [teamMatches, currentPage]);
 
-  const handleMatchClick = (match: any) => {
+  const handleMatchClick = useCallback((match: any) => {
     if (match) {
       const homeSlug = match.home_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'home';
       const awaySlug = match.away_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'away';
       const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}`;
       window.open(matchUrl, '_blank');
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    teamData,
+    teamMatches,
+    currentPage,
+    matchesPerPage,
+    setTeamData,
+    setTeamMatches,
+    setCurrentPage,
+    handlePrevious,
+    handleNext,
+    handleMatchClick
+  }), [teamData, teamMatches, currentPage, matchesPerPage, handlePrevious, handleNext, handleMatchClick]);
 
   return (
-    <TeamContext.Provider value={{
-      teamData,
-      teamMatches,
-      currentPage,
-      matchesPerPage,
-      setTeamData,
-      setTeamMatches,
-      setCurrentPage,
-      handlePrevious,
-      handleNext,
-      handleMatchClick
-    }}>
+    <TeamContext.Provider value={contextValue}>
       {children}
     </TeamContext.Provider>
   );

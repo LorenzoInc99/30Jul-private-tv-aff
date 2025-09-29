@@ -4,12 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev-fast": "next dev",
     "build": "next build",
+    "build-analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "clear-cache": "rm -rf .next && rm -f tsconfig.tsbuildinfo",
     "dev-clean": "npm run clear-cache && npm run dev",
-    "reset": "rm -rf .next node_modules package-lock.json && npm install"
+    "reset": "rm -rf .next node_modules package-lock.json && npm install",
+    "analyze": "npm run build-analyze",
+    "optimize": "./scripts/optimize-performance.sh",
+    "perf-check": "npm run build && npm run analyze"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -19,6 +24,7 @@
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "critters": "^0.0.23",
     "lucide-react": "^0.536.0",
     "next": "15.4.1",
     "pg": "^8.16.3",
@@ -29,6 +35,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.5.4",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^20",
     "@types/react": "^19",

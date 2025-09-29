@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { SITE_TITLE } from '../../../lib/constants';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -137,7 +137,7 @@ function NextMatchDetails({ match }: { match: any }) {
                   className="w-10 h-10 object-contain mb-1" 
                 />
                 <Link
-                  href={`/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`}
+                  href={match.home_team?.id ? `/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}` : `/team/${slugify(match.home_team?.name || '')}`}
                   className={`text-xs truncate w-full text-center hover:underline ${
                     match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                       (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
@@ -167,7 +167,7 @@ function NextMatchDetails({ match }: { match: any }) {
                   className="w-10 h-10 object-contain mb-1" 
                 />
                 <Link
-                  href={`/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`}
+                  href={match.away_team?.id ? `/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}` : `/team/${slugify(match.away_team?.name || '')}`}
                   className={`text-xs truncate w-full text-center hover:underline ${
                     match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                       (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
@@ -196,7 +196,7 @@ function NextMatchDetails({ match }: { match: any }) {
                 className="w-14 h-14 object-contain mb-1"
               />
               <Link
-                href={`/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}`}
+                href={match.home_team?.id ? `/team/${slugify(match.home_team?.name || '')}/${match.home_team?.id}` : `/team/${slugify(match.home_team?.name || '')}`}
                 className={`text-base truncate w-full text-center hover:underline ${
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
@@ -226,7 +226,7 @@ function NextMatchDetails({ match }: { match: any }) {
                 className="w-14 h-14 object-contain mb-1"
               />
               <Link
-                href={`/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}`}
+                href={match.away_team?.id ? `/team/${slugify(match.away_team?.name || '')}/${match.away_team?.id}` : `/team/${slugify(match.away_team?.name || '')}`}
                 className={`text-base truncate w-full text-center hover:underline ${
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
@@ -300,23 +300,34 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   // Use team context
   const { setTeamData, setTeamMatches, setCurrentPage: setContextCurrentPage } = useTeam();
 
-  // Transform matches for display
-  const transformedPreviousMatches = previousMatches.map(transformMatchForCard).filter(Boolean);
-  const transformedUpcomingMatches = (upcomingMatches || []).map(transformMatchForCard).filter(Boolean);
+  // Transform matches for display - memoized to prevent infinite loops
+  const transformedPreviousMatches = useMemo(() => 
+    previousMatches.map(transformMatchForCard).filter(Boolean), 
+    [previousMatches]
+  );
+  
+  const transformedUpcomingMatches = useMemo(() => 
+    (upcomingMatches || []).map(transformMatchForCard).filter(Boolean), 
+    [upcomingMatches]
+  );
 
   // Combine all matches in chronological order (2 upcoming + 8 previous)
   // Upcoming matches first (ascending), then previous matches (descending)
-  const allMatches = [
+  const allMatches = useMemo(() => [
     ...transformedUpcomingMatches,
     ...transformedPreviousMatches
-  ];
+  ], [transformedUpcomingMatches, transformedPreviousMatches]);
 
   // Set team data in context when component mounts
   useEffect(() => {
     setTeamData(team);
     setTeamMatches(allMatches);
+  }, [team, allMatches]);
+
+  // Set current page in context separately to avoid dependency issues
+  useEffect(() => {
     setContextCurrentPage(currentPage);
-  }, [team, allMatches, currentPage]);
+  }, [currentPage]);
 
   // Navigation functions
   const handlePrevious = () => {
@@ -389,7 +400,7 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
-      <div className="mb-4">
+      <div className="mb-4 mt-4">
         <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700">
           <Breadcrumb 
             items={[
@@ -407,8 +418,8 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
         <main className="bg-gray-50 dark:bg-gray-900 rounded-lg shadow-lg">
           
           {/* Team Header Section */}
-          <div className="p-6">
-            <div className="flex items-start gap-4 mb-4">
+          <div className="px-6 pt-6 pb-2">
+            <div className="flex items-start gap-4 mb-2">
               <TeamLogo
                 logoUrl={team.team_logo_url}
                 teamName={team.name}
@@ -428,7 +439,7 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
                 )}
               </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
               Get the latest {team.name} fixtures and {team.name} matches schedule. Find where to watch {team.name} matches live on TV and discover where to watch {team.name} tonight. Get the best odds for {team.name} games from top bookmakers. Never miss a {team.name} fixture with our comprehensive match coverage.
             </p>
           </div>
@@ -447,153 +458,6 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
             )}
           </div>
 
-          {/* Team Form Section */}
-          <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Team Form</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{teamForm.wins}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Wins</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">{teamForm.draws}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Draws</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{teamForm.losses}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Losses</div>
-                </div>
-              </div>
-              <div className="mt-4 text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Last 5 matches</div>
-                <div className="flex justify-center space-x-2">
-                  {teamForm.formResults.map((result: string, index: number) => (
-                    <span
-                      key={index}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        result === 'W' ? 'bg-green-100 text-green-800' :
-                        result === 'D' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {result}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                Goals: {teamForm.goalsFor} for, {teamForm.goalsAgainst} against
-              </div>
-            </div>
-          </div>
-
-          {/* Matches Section - Simple List */}
-          <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent & Upcoming Matches</h2>
-              
-              {/* Simple Navigation */}
-              <div className="flex justify-between items-center mb-4">
-                <button 
-                  onClick={handlePrevious}
-                  disabled={currentPage === 0}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    currentPage === 0 
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Previous
-                </button>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Page {currentPage + 1}
-                </span>
-                <button 
-                  onClick={handleNext}
-                  disabled={currentPage >= Math.ceil((allMatches.length - 1) / matchesPerPage)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    currentPage >= Math.ceil((allMatches.length - 1) / matchesPerPage)
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
-                >
-                  Next
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* All Matches in Chronological Order */}
-              <div className="space-y-2">
-                {getCurrentPageMatches(allMatches).map((match) => {
-                  if (!match) return null;
-                  return (
-                    <div key={match.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                      <MatchCard
-                        match={match}
-                        timezone={timezone}
-                        isExpanded={false}
-                        onExpandToggle={() => {}}
-                        onClick={() => {
-                          const homeSlug = slugify(match.home_team?.name || 'home');
-                          const awaySlug = slugify(match.away_team?.name || 'away');
-                          const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
-                          window.open(matchUrl, '_blank');
-                        }}
-                        hideCompetitionName={false}
-                        showOdds={true}
-                        showTv={true}
-                        isStarred={starredMatches.includes(match.id)}
-                        onStarToggle={handleStarToggle}
-                      />
-                    </div>
-                  );
-                })}
-                {getCurrentPageMatches(allMatches).length === 0 && (
-                  <div className="text-center text-gray-500 py-8">
-                    No matches found
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* League Standing Placeholder */}
-          <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">League Standing</h2>
-              <div className="text-center py-8">
-                <div className="text-gray-500 dark:text-gray-400 mb-2">
-                  <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400">League standings coming soon</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">We're working on adding detailed league tables</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stadium Info Placeholder */}
-          <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Stadium Information</h2>
-              <div className="text-center py-8">
-                <div className="text-gray-500 dark:text-gray-400 mb-2">
-                  <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400">Stadium information coming soon</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">We're working on adding stadium details and capacity information</p>
-              </div>
-            </div>
-          </div>
 
         </main>
       </div>

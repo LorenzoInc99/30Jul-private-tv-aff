@@ -68,17 +68,27 @@ export default function MatchCardDisplay({ match, timezone = 'auto' }: MatchCard
         <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
           {/* Logo Row */}
           <div className="flex items-center justify-center h-16 md:h-20 mb-1">
-            <TeamLogo 
-              logoUrl={match.home_team?.team_logo_url} 
-              teamName={homeTeamName} 
-              size="xl" 
-            />
+            <Link 
+              href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+              className="group cursor-pointer transition-transform hover:scale-105"
+            >
+              <TeamLogo 
+                logoUrl={match.home_team?.team_logo_url} 
+                teamName={homeTeamName} 
+                size="xl" 
+              />
+            </Link>
           </div>
           {/* Team Name Row */}
           <div className="flex items-center justify-center h-6 md:h-8 px-1 md:px-2 w-full max-w-[120px] md:max-w-[140px]">
-            <span className="text-sm md:text-base font-bold text-center truncate leading-tight text-white">
-              {homeTeamName}
-            </span>
+            <Link 
+              href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+              className="group cursor-pointer"
+            >
+              <span className="text-sm md:text-base font-bold text-center truncate leading-tight text-white group-hover:text-blue-400 transition-colors">
+                {homeTeamName}
+              </span>
+            </Link>
           </div>
           {/* Form Row */}
           <div className="flex items-center justify-center h-4">
@@ -134,17 +144,27 @@ export default function MatchCardDisplay({ match, timezone = 'auto' }: MatchCard
         <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
           {/* Logo Row */}
           <div className="flex items-center justify-center h-16 md:h-20 mb-1">
-            <TeamLogo 
-              logoUrl={match.away_team?.team_logo_url} 
-              teamName={awayTeamName} 
-              size="xl" 
-            />
+            <Link 
+              href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+              className="group cursor-pointer transition-transform hover:scale-105"
+            >
+              <TeamLogo 
+                logoUrl={match.away_team?.team_logo_url} 
+                teamName={awayTeamName} 
+                size="xl" 
+              />
+            </Link>
           </div>
           {/* Team Name Row */}
           <div className="flex items-center justify-center h-6 md:h-8 px-1 md:px-2 w-full max-w-[120px] md:max-w-[140px]">
-            <span className="text-sm md:text-base font-bold text-center truncate leading-tight text-white">
-              {awayTeamName}
-            </span>
+            <Link 
+              href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+              className="group cursor-pointer"
+            >
+              <span className="text-sm md:text-base font-bold text-center truncate leading-tight text-white group-hover:text-blue-400 transition-colors">
+                {awayTeamName}
+              </span>
+            </Link>
           </div>
           {/* Form Row */}
           <div className="flex items-center justify-center h-4">

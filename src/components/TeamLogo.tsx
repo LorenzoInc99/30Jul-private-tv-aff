@@ -4,7 +4,7 @@ import Image from 'next/image';
 interface TeamLogoProps {
   logoUrl?: string | null;
   teamName: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
 }
 
@@ -14,7 +14,8 @@ export default function TeamLogo({ logoUrl, teamName, size = 'sm', className = '
     sm: 'w-4 h-4',
     md: 'w-6 h-6',
     lg: 'w-8 h-8',
-    xl: 'w-24 h-24'
+    xl: 'w-20 h-20',
+    '2xl': 'w-24 h-24'
   };
 
   const sizeClass = sizeClasses[size];
@@ -28,14 +29,21 @@ export default function TeamLogo({ logoUrl, teamName, size = 'sm', className = '
     );
   }
 
+  const imageSize = size === 'xs' ? 12 : size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : size === 'xl' ? 80 : 96;
+  
   return (
-    <div className={`${sizeClass} ${className} relative flex items-center justify-center`}>
+    <div className={`${sizeClass} ${className} relative flex items-center justify-center`} style={{ minWidth: imageSize, minHeight: imageSize }}>
       <Image
         src={logoUrl}
         alt={`${teamName} logo`}
-        width={size === 'xs' ? 12 : size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
-        height={size === 'xs' ? 12 : size === 'sm' ? 16 : size === 'md' ? 24 : size === 'lg' ? 32 : 96}
+        width={imageSize}
+        height={imageSize}
         className="object-contain"
+        loading={size === 'xl' ? 'eager' : 'lazy'}
+        priority={size === 'xl'}
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+        sizes={`${imageSize}px`}
         onError={(e) => {
           // Fallback to letter if image fails to load
           const target = e.target as HTMLImageElement;

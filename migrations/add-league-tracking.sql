@@ -35,3 +35,8 @@ INSERT INTO league_priorities (league_id, priority) VALUES
   (462, 13) -- Liga Portugal
 ON CONFLICT (league_id) DO NOTHING;
 
+
+
+
+
+
