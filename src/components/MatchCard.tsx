@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
 import TeamLogo from './TeamLogo';
 import BroadcasterLogo from './BroadcasterLogo';
@@ -6,7 +7,7 @@ import LeagueLogo from './LeagueLogo';
 import { slugify } from '../lib/utils';
 import { Calendar } from 'lucide-react';
 
-export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, isStarred = false, onStarToggle }: {
+export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, isStarred = false, onStarToggle, useShortDateFormat = false, homePageFormat = false }: {
   match: any;
   timezone: string;
   isExpanded: boolean;
@@ -17,7 +18,21 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   showTv?: boolean;
   isStarred?: boolean;
   onStarToggle?: (matchId: string) => void;
+  useShortDateFormat?: boolean;
+  homePageFormat?: boolean;
 }) {
+  const router = useRouter();
+  
+  const handleLeagueClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (match.Competitions?.id && match.Competitions?.name) {
+      const leagueSlug = slugify(match.Competitions.name);
+      const leagueUrl = `/competition/${match.Competitions.id}-${leagueSlug}`;
+      console.log('🏆 Navigating to league:', leagueUrl);
+      router.push(leagueUrl);
+    }
+  };
+  
   function getTargetTimezone() {
     if (timezone === 'auto') {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -25,19 +40,123 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     return timezone;
   }
 
-  // Format date for finished matches (e.g., "20-Jul")
+  // Format date for finished matches
   function formatMatchDate(dateString: string): string {
     const date = new Date(dateString);
+    
+    if (useShortDateFormat) {
+      // For Results: use dd/mm format
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `${day}/${month}`;
+    } else {
+      // For Fixtures: use existing format (e.g., "20-Jul")
     const day = date.getDate().toString().padStart(2, '0');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const month = months[date.getMonth()];
     return `${day}-${month}`;
+    }
   }
 
   // Custom time formatter to avoid hydration mismatches
   function formatTimeConsistently(dateString: string, targetTimezone: string): string {
     const date = new Date(dateString);
     
+    // For home page format, always show time (since date is already shown in the group header)
+    if (homePageFormat) {
+      if (targetTimezone === 'auto') {
+        // Use local time for auto timezone
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      } else {
+        // For specific timezone, use proper timezone conversion
+        try {
+          const formatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: targetTimezone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+          return formatter.format(date);
+        } catch (error) {
+          // Fallback to local time if timezone is invalid
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        }
+      }
+    }
+    
+    // For other pages, use the existing logic
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const matchDate = new Date(dateString);
+    matchDate.setHours(0, 0, 0, 0);
+    
+    // If match is not today, show date format (dd-mm)
+    if (matchDate.getTime() !== today.getTime()) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `${day}-${month}`;
+    }
+    
+    // If match is today, show time
+    if (targetTimezone === 'auto') {
+      // Use local time for auto timezone
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    } else {
+      // For specific timezone, use proper timezone conversion
+      try {
+        const formatter = new Intl.DateTimeFormat('en-GB', {
+          timeZone: targetTimezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        return formatter.format(date);
+      } catch (error) {
+        // Fallback to local time if timezone is invalid
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+    }
+  }
+
+  // Format time for display below date when match is not today
+  function formatTimeForFutureMatches(dateString: string, targetTimezone: string): string {
+    const date = new Date(dateString);
+    
+    // For home page format, always show time (since date is already shown in the group header)
+    if (homePageFormat) {
+      if (targetTimezone === 'auto') {
+        // Use local time for auto timezone
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      } else {
+        // For specific timezone, use proper timezone conversion
+        try {
+          const formatter = new Intl.DateTimeFormat('en-GB', {
+            timeZone: targetTimezone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+          return formatter.format(date);
+        } catch (error) {
+          // Fallback to local time if timezone is invalid
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        }
+      }
+    }
+    
+    // For other pages, use the existing logic
     if (targetTimezone === 'auto') {
       // Use local time for auto timezone
       const hours = date.getHours().toString().padStart(2, '0');
@@ -95,8 +214,13 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         tabIndex={0}
         aria-label={`View details for ${match.home_team?.name} vs ${match.away_team?.name}`}
         role="button"
-        onClick={onClick}
+        onClick={(e) => {
+          // Disable MatchCard's own click handling since we handle it at the outer div level
+          e.stopPropagation();
+          console.log('🎯 MatchCard click blocked - handled by outer div');
+        }}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onClick(e as any); }}
+        style={{ pointerEvents: 'auto' }}
       >
         {/* Live Match Indicator */}
         {isLive && (
@@ -107,10 +231,10 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         <div className={`flex items-center gap-2 md:hidden w-full h-full ${
           isLive ? 'border-l-4 border-l-red-500' : ''
         }`}>
-          {/* Left Content Group - Fixed width */}
-          <div className="flex items-center w-48">
-            {/* Time Column - Compact and close to border */}
-            <div className="flex-shrink-0 w-14 flex flex-col items-center justify-center py-1">
+          {/* Grid layout for perfect alignment */}
+          <div className="grid grid-cols-[60px_1fr_80px] gap-2 w-full items-center pl-3">
+            {/* Date/Time Column */}
+            <div className="flex flex-col items-center justify-center py-1">
               <span className="text-xs font-bold text-gray-900 dark:text-white text-center pt-1">
                 {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
                   ? formatMatchDate(match.start_time)
@@ -123,7 +247,48 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   <span className="text-xs font-medium text-red-500 animate-pulse">
                     {match.elapsed || 'LIVE'}
                   </span>
-                ) : (
+                ) : (() => {
+                  // For home page format, always show calendar icon (since time is already shown above)
+                  if (homePageFormat) {
+                    return (
+                      <button
+                        data-calendar-click="true"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Add to calendar functionality
+                          const startTime = new Date(match.start_time);
+                          const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                          const title = `${match.home_team?.name || 'Home'} vs ${match.away_team?.name || 'Away'}`;
+                          const description = `${match.competition?.name || 'Football Match'}`;
+                          
+                          const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
+                          window.open(calendarUrl, '_blank');
+                        }}
+                        className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                        title="Add to calendar"
+                      >
+                        <Calendar size={16} />
+                      </button>
+                    );
+                  }
+                  
+                  // For other pages, use the existing logic
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const matchDate = new Date(match.start_time);
+                  matchDate.setHours(0, 0, 0, 0);
+                  
+                  // If match is not today, show time below date
+                  if (matchDate.getTime() !== today.getTime()) {
+                    return (
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        {formatTimeForFutureMatches(match.start_time, getTargetTimezone())}
+                      </span>
+                    );
+                  }
+                  
+                  // If match is today, show calendar icon
+                  return (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -136,17 +301,18 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
                       window.open(calendarUrl, '_blank');
                     }}
-                    className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer p-1 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                      className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                     title="Add to calendar"
                   >
                     <Calendar size={16} />
                   </button>
-                )}
+                  );
+                })()}
               </div>
             </div>
 
-            {/* Teams Column - Two rows, closer together */}
-            <div className="flex-1 min-w-0 flex flex-col gap-0.5 pl-4">
+            {/* Teams Column */}
+            <div className="flex flex-col gap-0.5 min-w-0">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 flex-shrink-0">
                 <TeamLogo 
@@ -156,7 +322,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 />
               </div>
               <button
-                onClick={(e) => handleTeamClick(e, match.home_team?.name, match.home_team?.id)}
+                data-team-click="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTeamClick(e, match.home_team?.name, match.home_team?.id);
+                }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -176,7 +346,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 />
               </div>
               <button
-                onClick={(e) => handleTeamClick(e, match.away_team?.name, match.away_team?.id)}
+                data-team-click="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTeamClick(e, match.away_team?.name, match.away_team?.id);
+                }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -287,9 +461,21 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           </div>
 
+            {/* Score Column */}
+            <div className="flex flex-col items-center justify-center">
+              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  {match.home_score || 0} - {match.away_score || 0}
+                </span>
+              ) : (
+                <span className="text-sm text-gray-400">-</span>
+            )}
+          </div>
+          </div>
+
         </div>
         {/* Desktop: Row layout - Three column layout */}
-        <div className="hidden md:flex w-full h-full relative items-center">
+        <div className="hidden md:flex w-full h-full relative items-center pl-3">
           {/* Left Content Group - Fixed width */}
           <div className="flex items-center w-80">
             {/* Time */}
@@ -306,7 +492,48 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   <span className="text-xs font-medium text-red-500 animate-pulse">
                     {match.elapsed || 'LIVE'}
                   </span>
-                ) : (
+                ) : (() => {
+                  // For home page format, always show calendar icon (since time is already shown above)
+                  if (homePageFormat) {
+                    return (
+                      <button
+                        data-calendar-click="true"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Add to calendar functionality
+                          const startTime = new Date(match.start_time);
+                          const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                          const title = `${match.home_team?.name || 'Home'} vs ${match.away_team?.name || 'Away'}`;
+                          const description = `${match.competition?.name || 'Football Match'}`;
+                          
+                          const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
+                          window.open(calendarUrl, '_blank');
+                        }}
+                        className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                        title="Add to calendar"
+                      >
+                        <Calendar size={16} />
+                      </button>
+                    );
+                  }
+                  
+                  // For other pages, use the existing logic
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const matchDate = new Date(match.start_time);
+                  matchDate.setHours(0, 0, 0, 0);
+                  
+                  // If match is not today, show time below date
+                  if (matchDate.getTime() !== today.getTime()) {
+                    return (
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        {formatTimeForFutureMatches(match.start_time, getTargetTimezone())}
+                      </span>
+                    );
+                  }
+                  
+                  // If match is today, show calendar icon
+                  return (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -319,16 +546,17 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
                       window.open(calendarUrl, '_blank');
                     }}
-                    className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer p-1 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                      className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                     title="Add to calendar"
                   >
                     <Calendar size={16} />
                   </button>
-                )}
+                  );
+                })()}
               </div>
             </div>
             {/* Teams with logos */}
-            <div className="flex flex-col min-w-0 flex-1"> {/* Teams column: takes remaining space in left group */}
+            <div className="flex flex-col min-w-0 flex-1 max-w-[300px]"> {/* Teams column: takes remaining space in left group */}
             {/* Competition name with league logo */}
             {!hideCompetitionName && match.competition?.name && (
               <div className="flex items-center gap-2 mb-1">
@@ -341,7 +569,13 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                     className="flex-shrink-0"
                   />
                 )}
-                <div className="text-base font-bold text-gray-900 dark:text-white">{match.competition.name}</div>
+                <button 
+                  onClick={handleLeagueClick}
+                  className="text-base font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline transition-colors duration-200 cursor-pointer"
+                  title={`View ${match.competition.name} league page`}
+                >
+                  {match.competition.name}
+                </button>
               </div>
             )}
             <div className="flex items-center gap-2">
@@ -351,7 +585,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 size="sm" 
               />
               <button
-                onClick={(e) => handleTeamClick(e, match.home_team?.name, match.home_team?.id)}
+                data-team-click="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTeamClick(e, match.home_team?.name, match.home_team?.id);
+                }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -369,7 +607,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 size="sm" 
               />
               <button
-                onClick={(e) => handleTeamClick(e, match.away_team?.name, match.away_team?.id)}
+                data-team-click="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTeamClick(e, match.away_team?.name, match.away_team?.id);
+                }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
@@ -405,6 +647,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex flex-col items-center justify-center text-center w-full px-2 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[58px] min-h-[36px]"
+                      data-odds-click="true"
                       onClick={e => e.stopPropagation()}
                       tabIndex={0}
                       aria-label={`Best odds for ${label} by ${data.operator?.name || 'Unknown'}`}
@@ -450,6 +693,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       <div
                         key={b.name + idx}
                         className="flex-shrink-0 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out"
+                        data-tv-click="true"
                         onClick={e => { e.stopPropagation(); }}
                       >
                         <BroadcasterLogo
@@ -501,7 +745,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           </div>
           
-        </div>
       </div>
     </div>
   );

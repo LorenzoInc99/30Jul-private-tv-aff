@@ -7,9 +7,10 @@ import MatchOddsDisplay from './MatchOddsDisplay';
 interface MatchCardDisplayProps {
   match: any;
   timezone?: string;
+  useShortDateFormat?: boolean;
 }
 
-export default function MatchCardDisplay({ match, timezone = 'auto' }: MatchCardDisplayProps) {
+export default function MatchCardDisplay({ match, timezone = 'auto', useShortDateFormat = false }: MatchCardDisplayProps) {
   if (!match) return null;
 
   const homeTeamName = match.home_team?.name || 'Home Team';
@@ -43,19 +44,28 @@ export default function MatchCardDisplay({ match, timezone = 'auto' }: MatchCard
   // Format short date
   function formatShortDate(dateString: string): string {
     const date = new Date(dateString);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow';
+    if (useShortDateFormat) {
+      // For Results: use dd/mm format
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `${day}/${month}`;
     } else {
-      return date.toLocaleDateString('en-GB', {
-        month: 'short',
-        day: 'numeric'
-      });
+      // For Fixtures: use existing format
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      if (date.toDateString() === today.toDateString()) {
+        return 'Today';
+      } else if (date.toDateString() === tomorrow.toDateString()) {
+        return 'Tomorrow';
+      } else {
+        return date.toLocaleDateString('en-GB', {
+          month: 'short',
+          day: 'numeric'
+        });
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTeamForm, transformOddsByBookmaker } from '@/lib/database-adapter';
@@ -64,6 +64,7 @@ function MatchSkeleton() {
 
 export default function MatchPageClient({ match }: { match: any }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [clickCounts, setClickCounts] = useState<{ [key: number]: number }>({});
   const [filters, setFilters] = useState({ geoLocation: 'all', subscriptionType: [] as string[] });
@@ -122,6 +123,15 @@ export default function MatchPageClient({ match }: { match: any }) {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
     return timezone;
+  };
+
+  const handleLeagueClick = () => {
+    if (match.Competitions?.id && match.Competitions?.name) {
+      const leagueSlug = match.Competitions.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const leagueUrl = `/competition/${match.Competitions.id}-${leagueSlug}`;
+      console.log('🏆 Navigating to league:', leagueUrl);
+      router.push(leagueUrl);
+    }
   };
 
   // Custom date formatter to avoid hydration mismatches
@@ -435,7 +445,13 @@ export default function MatchPageClient({ match }: { match: any }) {
               {/* Match Info */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  {homeTeamName} vs {awayTeamName} - {match.Competitions?.name || 'Match'}
+                  {homeTeamName} vs {awayTeamName} - <button 
+                    onClick={handleLeagueClick}
+                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline transition-colors duration-200 cursor-pointer"
+                    title={`View ${match.Competitions?.name || 'League'} page`}
+                  >
+                    {match.Competitions?.name || 'Match'}
+                  </button>
                 </h3>
                 <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
                   <p><strong>Date:</strong> {formatDateConsistently(match.start_time)}</p>

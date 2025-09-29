@@ -13,6 +13,8 @@ import BroadcasterLogo from '@/components/BroadcasterLogo';
 import { getMatchStatus } from '@/lib/database-config';
 import { slugify } from '../../../lib/utils';
 import { useTeam } from '../../../contexts/TeamContext';
+import StandingsTable from '@/components/StandingsTable';
+
 
 function transformMatchForCard(match: any) {
   if (!match) return null;
@@ -295,6 +297,8 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   teamForm: any;
 }) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [activeTab, setActiveTab] = useState('Standing');
+  const [matchesSubTab, setMatchesSubTab] = useState('Results');
   const matchesPerPage = 5; // Show 5 matches per page (2 upcoming + 3 previous, then 5 previous)
   
   // Use team context
@@ -398,6 +402,173 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
 
   const transformedNextMatch = transformMatchForCard(nextMatch);
 
+  // Get league ID from next match or upcoming matches
+  const getLeagueId = () => {
+    if (nextMatch?.league?.id) {
+      return nextMatch.league.id;
+    }
+    if (upcomingMatches && upcomingMatches.length > 0 && upcomingMatches[0]?.league?.id) {
+      return upcomingMatches[0].league.id;
+    }
+    if (previousMatches && previousMatches.length > 0 && previousMatches[0]?.league?.id) {
+      return previousMatches[0].league.id;
+    }
+    return null;
+  };
+
+  // Tab content components
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'Standing':
+        const leagueId = getLeagueId();
+        if (!leagueId) {
+          return (
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+              <p>No league information available for this team.</p>
+            </div>
+          );
+        }
+        return <StandingsTable leagueId={leagueId} />;
+      case 'Matches':
+        // Get matches based on sub-tab
+        const getMatchesForSubTab = () => {
+          if (matchesSubTab === 'Results') {
+            // Last 10 matches, most recent first
+            return transformedPreviousMatches.slice(0, 10);
+          } else {
+            // Next 10 matches, next first
+            return transformedUpcomingMatches.slice(0, 10);
+          }
+        };
+
+        const matchesToShow = getMatchesForSubTab();
+        
+        // Group matches by league in chronological order
+        const groupMatchesByLeague = (matches: any[]) => {
+          const leagueGroups: { [key: string]: any[] } = {};
+          
+          matches.forEach(match => {
+            const leagueName = match.Competitions?.name || match.league?.name || 'Unknown League';
+            if (!leagueGroups[leagueName]) {
+              leagueGroups[leagueName] = [];
+            }
+            leagueGroups[leagueName].push(match);
+          });
+          
+          // Convert to array and sort by most recent match in each league
+          return Object.entries(leagueGroups)
+            .map(([leagueName, leagueMatches]) => ({
+              leagueName,
+              matches: leagueMatches
+            }))
+            .sort((a, b) => {
+              // Sort by the most recent match in each league
+              const aMostRecent = new Date(a.matches[0].start_time);
+              const bMostRecent = new Date(b.matches[0].start_time);
+              return bMostRecent.getTime() - aMostRecent.getTime();
+            });
+        };
+
+        const groupedMatches = groupMatchesByLeague(matchesToShow);
+
+        return (
+          <div className="space-y-4">
+            {/* Sub-tabs for Results/Fixtures */}
+            <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+              <button
+                onClick={() => setMatchesSubTab('Results')}
+                className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
+                  matchesSubTab === 'Results'
+                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Results ({transformedPreviousMatches.length})
+              </button>
+              <button
+                onClick={() => setMatchesSubTab('Fixtures')}
+                className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
+                  matchesSubTab === 'Fixtures'
+                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Fixtures ({transformedUpcomingMatches.length})
+              </button>
+            </div>
+
+            {/* Matches display grouped by league */}
+            {matchesToShow.length === 0 ? (
+              <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                No {matchesSubTab.toLowerCase()} available for this team.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {groupedMatches.map((leagueGroup, groupIdx) => (
+                  <div key={leagueGroup.leagueName} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 md:rounded-lg md:shadow">
+                    <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex flex-col">
+                          <Link 
+                            href={`/competition/${leagueGroup.matches[0]?.Competitions?.id || leagueGroup.matches[0]?.league?.id}-${leagueGroup.leagueName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`}
+                            className="text-base font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors duration-200"
+                          >
+                            {leagueGroup.leagueName}
+                            <span className="text-sm font-normal ml-1">({leagueGroup.matches.length})</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="collapse-transition expanded" style={{ opacity: 1 }}>
+                      {leagueGroup.matches.map((match, idx) => {
+                        const homeSlug = match.home_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'home';
+                        const awaySlug = match.away_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'away';
+                        const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}`;
+                        const isStarred = starredMatches.includes(match.id);
+                        
+                        return (
+                          <div key={match.id} className={`overflow-x-auto w-full ${idx === 0 ? 'border-t border-gray-100 dark:border-gray-700' : ''}`}>
+                            <MatchCard
+                              match={match}
+                              timezone={timezone}
+                              isExpanded={false}
+                              showOdds={matchesSubTab === 'Fixtures'}
+                              showTv={matchesSubTab === 'Fixtures'}
+                              isStarred={isStarred}
+                              onStarToggle={handleStarToggle}
+                              onExpandToggle={() => {}}
+                              onClick={() => {
+                                window.open(matchUrl, '_blank');
+                              }}
+                              useShortDateFormat={matchesSubTab === 'Results'}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case 'Statistics':
+        return (
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+            <p>Team statistics will be displayed here.</p>
+          </div>
+        );
+      case 'Players':
+        return (
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+            <p>Player roster will be displayed here.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
       <div className="mb-4 mt-4">
@@ -458,6 +629,36 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
             )}
           </div>
 
+          {/* Tabbed Menu Section */}
+          <div className="px-6 pb-6">
+            <div className="border-b border-gray-200 dark:border-gray-700">
+              <nav className="-mb-px flex space-x-8">
+                {['Standing', 'Matches', 'Statistics', 'Players'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-all duration-300 ease-in-out ${
+                      activeTab === tab
+                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+            
+            {/* Tab Content with Smooth Transition */}
+            <div className="mt-6">
+              <div 
+                key={activeTab}
+                className="animate-in fade-in-0 slide-in-from-top-2 duration-300"
+              >
+                {renderTabContent()}
+              </div>
+            </div>
+          </div>
 
         </main>
       </div>

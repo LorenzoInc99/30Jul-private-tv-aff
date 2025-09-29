@@ -160,6 +160,8 @@ export default function LeagueSchedule({
                       href={`/competition/${group.competition.id}-${slugify(group.competition.name)}`}
                       className="text-base font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                       onClick={async (e) => {
+                        console.log('🏆 League name clicked:', group.competition.name);
+                        console.log('🏆 League ID:', group.competition.id);
                         e.stopPropagation();
                         await trackLeagueInteraction(group.competition.id, 'league_view');
                       }}
@@ -181,11 +183,32 @@ export default function LeagueSchedule({
                   const homeSlug = slugify(match.home_team?.name || 'home');
                   const awaySlug = slugify(match.away_team?.name || 'away');
                   const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                  console.log('Generated match URL:', matchUrl, 'for match:', match.id);
                   const isExpanded = expandedMatch === match.id;
                   const isStarred = starredMatches.has(match.id);
                   
                   return (
-                    <div key={match.id} className={`overflow-x-auto w-full ${idx === 0 ? 'border-t border-gray-100 dark:border-gray-700' : ''}`}>
+                    <div 
+                      key={match.id} 
+                      className={`overflow-x-auto w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${idx === 0 ? 'border-t border-gray-100 dark:border-gray-700' : ''}`}
+                      onClick={async (e) => {
+                        console.log('🔥 MATCH ROW CLICKED:', match.id);
+                        console.log('🔥 Teams:', match.home_team?.name, 'vs', match.away_team?.name);
+                        
+                        // Prevent event bubbling to avoid conflicts
+                        e.stopPropagation();
+                        
+                        try {
+                          // Track match click for league interaction
+                          await trackLeagueInteraction(group.competition.id, 'match_click');
+                          const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                          console.log('🔥 Navigating to:', matchUrl);
+                          router.push(matchUrl);
+                        } catch (error) {
+                          console.error('🔥 Error navigating to match:', error);
+                        }
+                      }}
+                    >
                       <MatchCard
                         match={match}
                         timezone={timezone}
@@ -198,12 +221,8 @@ export default function LeagueSchedule({
                           e.stopPropagation();
                           setExpandedMatch(isExpanded ? null : match.id);
                         }}
-                        onClick={async (e) => {
-                          e.preventDefault();
-                          // Track match click for league interaction
-                          await trackLeagueInteraction(group.competition.id, 'match_click');
-                          router.push(`/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`);
-                        }}
+                        onClick={() => {}} // Disable MatchCard's own click handler
+                        homePageFormat={true}
                       />
                     </div>
                   );
