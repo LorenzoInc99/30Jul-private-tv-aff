@@ -1,20 +1,23 @@
 "use client";
 import { useState } from 'react';
+import CountryDropdown from './CountryDropdown';
 
 interface BroadcasterFiltersProps {
   onFiltersChange: (filters: {
     geoLocation: string;
     subscriptionType: string[];
+    selectedCountry: { id: number; name: string; image_path?: string } | null;
   }) => void;
 }
 
 export default function BroadcasterFilters({ onFiltersChange }: BroadcasterFiltersProps) {
   const [geoLocation, setGeoLocation] = useState('all');
   const [subscriptionType, setSubscriptionType] = useState<string[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<{ id: number; name: string; image_path?: string } | null>(null);
 
   const handleGeoChange = (value: string) => {
     setGeoLocation(value);
-    onFiltersChange({ geoLocation: value, subscriptionType });
+    onFiltersChange({ geoLocation: value, subscriptionType, selectedCountry });
   };
 
   const handleSubscriptionChange = (value: string) => {
@@ -23,30 +26,23 @@ export default function BroadcasterFilters({ onFiltersChange }: BroadcasterFilte
       : [...subscriptionType, value];
     
     setSubscriptionType(newSelection);
-    onFiltersChange({ geoLocation, subscriptionType: newSelection });
+    onFiltersChange({ geoLocation, subscriptionType: newSelection, selectedCountry });
+  };
+
+  const handleCountryChange = (country: { id: number; name: string; image_path?: string } | null) => {
+    setSelectedCountry(country);
+    onFiltersChange({ geoLocation, subscriptionType, selectedCountry: country });
   };
 
   return (
     <div className="flex gap-2">
-      {/* Location Filter */}
-      <select
-        value={geoLocation}
-        onChange={(e) => handleGeoChange(e.target.value)}
-        className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-      >
-        <option value="all">All Regions</option>
-        <option value="uk">United Kingdom</option>
-        <option value="us">United States</option>
-        <option value="eu">Europe</option>
-        <option value="ca">Canada</option>
-        <option value="au">Australia</option>
-        <option value="de">Germany</option>
-        <option value="fr">France</option>
-        <option value="es">Spain</option>
-        <option value="it">Italy</option>
-        <option value="nl">Netherlands</option>
-        <option value="be">Belgium</option>
-      </select>
+      {/* Country Filter */}
+      <CountryDropdown 
+        selectedCountry={selectedCountry} 
+        onCountryChange={handleCountryChange}
+        className="min-w-[140px]"
+        showLabel={false}
+      />
 
       {/* Access Filter - Multi-select */}
       <select

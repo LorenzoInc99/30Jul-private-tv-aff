@@ -11,6 +11,7 @@ import TeamFormRectangles from '@/components/TeamFormRectangles';
 import BroadcasterRow from '@/components/BroadcasterRow';
 import BroadcasterFilters from '@/components/BroadcasterFilters';
 import ResponsiveBroadcasterSection from '@/components/ResponsiveBroadcasterSection';
+import CompactBroadcasterSection from '@/components/CompactBroadcasterSection';
 import MatchOddsDisplay from '@/components/MatchOddsDisplay';
 import MatchCardDisplay from '@/components/MatchCardDisplay';
 import BackToTopButton from '@/components/BackToTopButton';
@@ -67,7 +68,11 @@ export default function MatchPageClient({ match }: { match: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [clickCounts, setClickCounts] = useState<{ [key: number]: number }>({});
-  const [filters, setFilters] = useState({ geoLocation: 'all', subscriptionType: [] as string[] });
+  const [filters, setFilters] = useState({ 
+    geoLocation: 'all', 
+    subscriptionType: [] as string[], 
+    selectedCountry: null as { id: number; name: string; image_path?: string } | null 
+  });
 
   const timezone = searchParams.get('timezone') || 'auto';
 
@@ -371,6 +376,15 @@ export default function MatchPageClient({ match }: { match: any }) {
       // You can add geo-specific logic here when you have that data
     }
     
+    // Country filtering
+    if (filters.selectedCountry) {
+      // Filter by country if one is selected
+      // This will work when the broadcaster data includes country_id
+      if (broadcaster.country_id && broadcaster.country_id !== filters.selectedCountry.id) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
@@ -428,7 +442,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                   {/* Filters */}
                   <BroadcasterFilters onFiltersChange={setFilters} />
                 </div>
-                <ResponsiveBroadcasterSection
+                <CompactBroadcasterSection
                   broadcasters={sortedBroadcasters}
                   clickCounts={clickCounts}
                   mostPopularBroadcaster={mostPopularBroadcaster}

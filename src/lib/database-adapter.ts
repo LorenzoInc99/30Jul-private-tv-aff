@@ -136,6 +136,7 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
       .from('fixturetvstations')
       .select(`
         fixture_id,
+        country_id,
         tvstation:tvstations(*)
       `)
       .in('fixture_id', fixtureIds);
@@ -151,7 +152,12 @@ export async function getMatchesForDate(date: Date, supabase = supabaseBrowser) 
     if (!tvStationsByFixture.has(tvData.fixture_id)) {
       tvStationsByFixture.set(tvData.fixture_id, []);
     }
-    tvStationsByFixture.get(tvData.fixture_id).push(tvData.tvstation);
+    // Include country information with TV station
+    const tvStationWithCountry = {
+      ...tvData.tvstation,
+      country_id: tvData.country_id
+    };
+    tvStationsByFixture.get(tvData.fixture_id).push(tvStationWithCountry);
   }
 
   // Fetch countries from database

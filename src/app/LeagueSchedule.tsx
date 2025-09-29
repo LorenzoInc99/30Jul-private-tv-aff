@@ -15,6 +15,7 @@ export default function LeagueSchedule({
   timezone = 'auto', 
   showOdds = true, 
   showTv = true,
+  selectedCountry = null,
   starredMatches = new Set<string>(),
   onStarToggle
 }: { 
@@ -22,6 +23,7 @@ export default function LeagueSchedule({
   timezone?: string; 
   showOdds?: boolean; 
   showTv?: boolean;
+  selectedCountry?: { id: number; name: string; image_path?: string } | null;
   starredMatches?: Set<string>;
   onStarToggle?: (matchId: string) => void;
 }) {
@@ -215,6 +217,7 @@ export default function LeagueSchedule({
                         isExpanded={isExpanded}
                         showOdds={showOdds}
                         showTv={showTv}
+                        selectedCountry={selectedCountry}
                         isStarred={isStarred}
                         onStarToggle={onStarToggle ? () => onStarToggle(match.id) : undefined}
                         onExpandToggle={e => {

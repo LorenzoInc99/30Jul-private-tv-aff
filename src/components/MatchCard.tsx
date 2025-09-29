@@ -7,7 +7,7 @@ import LeagueLogo from './LeagueLogo';
 import { slugify } from '../lib/utils';
 import { Calendar } from 'lucide-react';
 
-export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, isStarred = false, onStarToggle, useShortDateFormat = false, homePageFormat = false }: {
+export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, selectedCountry = null, isStarred = false, onStarToggle, useShortDateFormat = false, homePageFormat = false }: {
   match: any;
   timezone: string;
   isExpanded: boolean;
@@ -16,6 +16,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   hideCompetitionName?: boolean;
   showOdds?: boolean;
   showTv?: boolean;
+  selectedCountry?: { id: number; name: string; image_path?: string } | null;
   isStarred?: boolean;
   onStarToggle?: (matchId: string) => void;
   useShortDateFormat?: boolean;
@@ -671,7 +672,15 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           {/* TV Stream Logos */}
           <div className={`flex flex-row-reverse items-center gap-1 justify-end min-w-0 w-35 mr-4 ${!showTv ? 'invisible' : ''}`}> {/* TV column: 128px width, 16px margin */}
             {(() => {
-              const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
+              let broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
+              
+              // Filter by selected country if one is selected
+              if (selectedCountry) {
+                broadcasters = broadcasters.filter((eb: any) => 
+                  eb.Broadcasters && eb.Broadcasters.country_id === selectedCountry.id
+                );
+              }
+              
               const count = broadcasters.length;
               const maxToShow = 3; // Reduced to 3 visible channels to accommodate bigger logos
               const visible = broadcasters.slice(0, maxToShow);

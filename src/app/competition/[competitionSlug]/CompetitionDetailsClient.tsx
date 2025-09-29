@@ -1,4 +1,5 @@
 "use client";
+// Updated date heading styles - force rebuild
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { SITE_TITLE } from '../../../lib/constants';
@@ -272,7 +273,7 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                           Object.entries(resultsByDate).map(([date, dateMatches]) => (
                             <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
                               <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
-                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                <h2 className="text-sm font-medium text-white dark:text-white">
                                   {date}
                                 </h2>
                               </div>
@@ -317,7 +318,7 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                           Object.entries(fixturesByDate).map(([date, dateMatches]) => (
                             <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
                               <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
-                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                <h2 className="text-sm font-medium text-white dark:text-white">
                                   {date}
                                 </h2>
                               </div>

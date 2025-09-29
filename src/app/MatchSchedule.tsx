@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import DateNavigator from './DateNavigator';
 import LeagueSchedule from './LeagueSchedule';
 import TimezoneSelector from './TimezoneSelector';
+import CountryDropdown from '../components/CountryDropdown';
 import { getMatchesForDate } from '@/lib/database-adapter';
 import { DateNavigatorSkeleton } from '../components/SkeletonLoader';
 import { LoadingEmptyState } from '../components/EmptyStates';
@@ -69,6 +70,7 @@ export default function MatchSchedule({
   const [showOdds, setShowOdds] = useState(true);
   const [showTv, setShowTv] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'live' | 'finished' | 'upcoming'>('all');
+  const [selectedCountry, setSelectedCountry] = useState<{ id: number; name: string; image_path?: string } | null>(null);
 
   // Hydrate selectedDate and toggle preference from localStorage on mount
   useEffect(() => {
@@ -232,7 +234,31 @@ export default function MatchSchedule({
               />
             </button>
             <span className={`text-sm transition-colors duration-500 ${showTv ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>TV</span>
+            <button
+              onClick={() => setShowTv(!showTv)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-500 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
+                showTv ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-500 ${
+                  showTv ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
+        </div>
+
+        {/* Country Dropdown for Mobile */}
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Filter channels by country:</span>
+          </div>
+          <CountryDropdown 
+            selectedCountry={selectedCountry} 
+            onCountryChange={setSelectedCountry}
+            className="w-full"
+          />
         </div>
 
         {/* Filter Pills */}
@@ -393,6 +419,12 @@ export default function MatchSchedule({
                  />
                </button>
              </div>
+             
+             {/* Country Dropdown */}
+             <CountryDropdown 
+               selectedCountry={selectedCountry} 
+               onCountryChange={setSelectedCountry}
+             />
            </div>
          </div>
        </div>
@@ -433,6 +465,7 @@ export default function MatchSchedule({
             timezone={timezone} 
             showOdds={showOdds} 
             showTv={showTv}
+            selectedCountry={selectedCountry}
             starredMatches={starredMatches}
             onStarToggle={handleStarToggle}
           />
