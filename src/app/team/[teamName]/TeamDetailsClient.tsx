@@ -572,7 +572,7 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
       <div className="mb-4 mt-4">
-        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700">
+        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <Breadcrumb 
             items={[
               { label: 'Home', href: '/' },

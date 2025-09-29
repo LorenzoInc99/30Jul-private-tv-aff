@@ -393,7 +393,7 @@ export default function MatchPageClient({ match }: { match: any }) {
         {/* Main Content */}
         <main>
           {/* Match Header */}
-          <div className="rounded-none shadow-none overflow-hidden mb-2 w-full">
+          <div className="rounded-lg shadow-sm overflow-hidden mb-2 w-full">
             <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 mt-4">
               <Breadcrumb 
                 items={[
