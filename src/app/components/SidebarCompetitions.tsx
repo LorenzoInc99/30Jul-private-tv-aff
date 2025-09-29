@@ -317,25 +317,30 @@ export default function SidebarCompetitions({
   // Get all available leagues for search (uses existing competitions data)
   const getAllAvailableLeagues = () => {
     const allLeagues: any[] = [];
+    
+    // First, add popular leagues with their hardcoded logos
+    popularLeagues.forEach(popularLeague => {
+      allLeagues.push({
+        id: popularLeague.id,
+        name: popularLeague.name,
+        country: popularLeague.country,
+        league_logo: popularLeague.league_logo
+      });
+    });
+    
+    // Then add leagues from database, but don't override popular leagues
     if (competitions && competitions.length > 0) {
       competitions.forEach(comp => {
         if (!allLeagues.some(league => league.id === comp.id)) {
-          // Debug: Log available fields for La Liga specifically
-          if (comp.name === 'La Liga') {
-            console.log('La Liga data fields:', Object.keys(comp));
-            console.log('La Liga logo fields:', {
-              league_logo: comp.league_logo,
-              logo_url: comp.logo_url,
-              image_path: comp.image_path,
-              logo: comp.logo
-            });
-          }
+          // Check if this is a popular league with hardcoded logo
+          const popularLeague = popularLeagues.find(pl => pl.id === comp.id);
+          const logoUrl = popularLeague?.league_logo || comp.league_logo || comp.logo_url || comp.image_path || comp.logo || null;
           
           allLeagues.push({
             id: comp.id,
             name: comp.name,
             country: comp.country?.name || 'Unknown',
-            league_logo: comp.league_logo || comp.logo_url || comp.image_path || comp.logo || null
+            league_logo: logoUrl
           });
         }
       });

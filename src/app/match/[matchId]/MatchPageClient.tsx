@@ -12,6 +12,7 @@ import BroadcasterRow from '@/components/BroadcasterRow';
 import BroadcasterFilters from '@/components/BroadcasterFilters';
 import ResponsiveBroadcasterSection from '@/components/ResponsiveBroadcasterSection';
 import MatchOddsDisplay from '@/components/MatchOddsDisplay';
+import MatchCardDisplay from '@/components/MatchCardDisplay';
 import BackToTopButton from '@/components/BackToTopButton';
 import Breadcrumb from '@/components/Breadcrumb';
 import { trackBroadcasterClick, formatClickCount, initializeClickTracking } from '@/lib/broadcaster-tracking';
@@ -399,130 +400,12 @@ export default function MatchPageClient({ match }: { match: any }) {
               />
             </div>
             <div className="p-6">
-              {/* Teams and Score */}
+              {/* Match Card Display */}
               <div className="flex flex-col items-center justify-center mb-6">
-                
-                {/* Teams and Score Row - Grid layout for perfect alignment */}
-                <div className="grid grid-cols-3 items-center justify-center w-full max-w-4xl gap-2 md:gap-8">
-                  {/* Home Team */}
-                  <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
-                    {/* Logo Row */}
-                    <div className="flex items-center justify-center h-16 md:h-20 mb-1">
-                      <TeamLogo 
-                        logoUrl={match.home_team?.team_logo_url} 
-                        teamName={homeTeamName} 
-                        size="xl" 
-                      />
-                    </div>
-                    {/* Team Name Row */}
-                    <div className="flex items-center justify-center h-6 md:h-8 px-1 md:px-2 w-full max-w-[120px] md:max-w-[140px]">
-                      <Link
-                        href={`/team/${homeTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/${match.home_team_id}`}
-                        className={`text-sm md:text-base font-bold text-center truncate leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg w-full cursor-pointer ${
-                          match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                            (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 
-                              'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
-                              'font-light text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400') :
-                          'font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
-                        }`}
-                        aria-label={`Go to ${homeTeamName} team page`}
-                      >
-                        {homeTeamName}
-                      </Link>
-                    </div>
-                    {/* Form Row */}
-                    <div className="flex items-center justify-center h-4">
-                      <TeamFormRectangles
-                        teamId={match.home_team_id}
-                        matchStartTime={match.start_time}
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Center content */}
-                  <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px] px-2 md:px-4">
-                    {(match.status === 'Full Time' || match.status === 'Live' || 
-                      match.status === 'After Extra Time' || match.status === 'After Penalties' ||
-                      (match.home_score !== null && match.away_score !== null)) ? (
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
-                          {match.home_score || 0} - {match.away_score || 0}
-                        </span>
-                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {(match.status === 'Live' || match.id === 19427283) ? 'LIVE' : 'FULL TIME'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center">
-                        {(match.status === 'Live' || match.id === 19427283) ? (
-                          <>
-                            <span className="text-xl md:text-3xl font-extrabold text-red-600 dark:text-red-400">
-                              {match.id === 19427283 ? '0 - 0' : (match.home_score || 0) + ' - ' + (match.away_score || 0)}
-                            </span>
-                            <span className="text-xs md:text-sm text-red-500 dark:text-red-400 mt-1">
-                              {match.id === 19427283 ? '13:45' : getMatchMinute(match.start_time) + "'"}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                        <span className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
-                          {showCountdown ? countdown : formatTimeConsistently(match.start_time)}
-                        </span>
-                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {showCountdown ? (countdown === 'Starting now!' ? 'Match is starting!' : 'Until kickoff') : formatShortDate(match.start_time)}
-                        </span>
-                          </>
-                        )}
-                        {/* Venue Information */}
-                        <div className="flex items-center justify-center mt-2 mb-2">
-                          <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                            <span className="text-sm">🏟️</span>
-                            <span>Venue Information</span>
-                          </div>
-                        </div>
-                        {/* Odds Display */}
-                        <div className="mt-2">
-                          <MatchOddsDisplay odds={match.Odds || []} matchStatus={match.status} />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Away Team */}
-                  <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
-                    {/* Logo Row */}
-                    <div className="flex items-center justify-center h-16 md:h-20 mb-1">
-                      <TeamLogo 
-                        logoUrl={match.away_team?.team_logo_url} 
-                        teamName={awayTeamName} 
-                        size="xl" 
-                      />
-                    </div>
-                    {/* Team Name Row */}
-                    <div className="flex items-center justify-center h-6 md:h-8 px-1 md:px-2 w-full max-w-[120px] md:max-w-[140px]">
-                      <Link
-                        href={`/team/${awayTeamName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/${match.away_team_id}`}
-                        className={`text-sm md:text-base font-bold text-center truncate leading-tight transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-lg w-full cursor-pointer ${
-                          match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
-                            (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 
-                              'font-black text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400' : 
-                              'font-light text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400') :
-                          'font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
-                        }`}
-                        aria-label={`Go to ${awayTeamName} team page`}
-                      >
-                        {awayTeamName}
-                      </Link>
-                    </div>
-                    {/* Form Row */}
-                    <div className="flex items-center justify-center h-4">
-                      <TeamFormRectangles
-                        teamId={match.away_team_id}
-                        matchStartTime={match.start_time}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <MatchCardDisplay 
+                  match={match} 
+                  timezone={timezone}
+                />
               </div>
 
               {/* Broadcasters - Row Layout */}

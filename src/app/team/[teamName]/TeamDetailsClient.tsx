@@ -6,6 +6,7 @@ import { SITE_TITLE } from '../../../lib/constants';
 import Breadcrumb from '@/components/Breadcrumb';
 import MatchCard from '@/components/MatchCard';
 import MatchDetails from '@/components/MatchDetails';
+import MatchCardDisplay from '@/components/MatchCardDisplay';
 import TeamLogo from '@/components/TeamLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
@@ -427,15 +428,18 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
                 )}
               </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
               Get the latest {team.name} fixtures and {team.name} matches schedule. Find where to watch {team.name} matches live on TV and discover where to watch {team.name} tonight. Get the best odds for {team.name} games from top bookmakers. Never miss a {team.name} fixture with our comprehensive match coverage.
             </p>
           </div>
 
-          {/* Next Match Section */}
+          {/* Next Match Section - Using MatchCardDisplay Component */}
           <div className="mb-8">
             {transformedNextMatch ? (
-              <NextMatchDetails match={transformedNextMatch} />
+              <MatchCardDisplay 
+                match={transformedNextMatch} 
+                timezone={timezone}
+              />
             ) : (
               <div className="text-center text-gray-500 py-8">
                 No upcoming matches scheduled for {team.name}.
