@@ -196,11 +196,12 @@ export default async function RootLayout({
         {/* Right vertical banner ad (desktop only) */}
         <ADVRight />
         <div className="md:mx-auto md:max-w-[1000px] md:px-8 md:rounded-2xl overflow-hidden">
-          {/* Static Header/Nav Bar */}
+          {/* Fixed Header/Nav Bar */}
           <HeaderClient competitions={competitions || []} />
           {/* Top horizontal banner ad (desktop only) */}
           <ADVTop />
-          {/* Main layout below header and banner */}
+          {/* Main layout below header and banner - Add padding for fixed header */}
+          <div className="pt-16">
           <SidebarProvider>
             <TeamProvider>
               <AdminWrapper 
@@ -304,6 +305,7 @@ export default async function RootLayout({
               </AdminWrapper>
             </TeamProvider>
           </SidebarProvider>
+          </div>
         </div>
       </body>
     </html>

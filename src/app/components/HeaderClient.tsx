@@ -9,6 +9,7 @@ type TabType = 'scores' | 'news' | 'bet-calculator';
 
 export default function HeaderClient({ competitions }: { competitions: any[] }) {
   const [activeTab, setActiveTab] = useState<TabType>('scores');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     // Load active tab from localStorage on mount
@@ -18,6 +19,16 @@ export default function HeaderClient({ competitions }: { competitions: any[] }) 
         setActiveTab(savedTab);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleTabChange = (tab: TabType) => {
@@ -41,7 +52,11 @@ export default function HeaderClient({ competitions }: { competitions: any[] }) 
   };
 
   return (
-    <header className="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8">
+    <header className={`w-full border-b border-gray-200 dark:border-gray-800 shadow-sm h-16 flex items-center px-2 md:px-8 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md' 
+        : 'bg-white dark:bg-gray-900'
+    }`}>
       <div className="flex justify-between items-center w-full">
         <div className="flex items-center gap-6">
           <HeaderLogo />
