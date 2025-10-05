@@ -289,9 +289,10 @@ function NextMatchDetails({ match }: { match: any }) {
   );
 }
 
-export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, previousMatches, teamForm }: { 
+export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomingMatches, previousMatches, teamForm }: { 
   team: any; 
   nextMatch: any; 
+  todayMatch: any;
   upcomingMatches: any[];
   previousMatches: any[]; 
   teamForm: any;
@@ -299,7 +300,12 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
   const [currentPage, setCurrentPage] = useState(0);
   const [activeTab, setActiveTab] = useState('Standing');
   const [matchesSubTab, setMatchesSubTab] = useState('Results');
-  const matchesPerPage = 5; // Show 5 matches per page (2 upcoming + 3 previous, then 5 previous)
+  const matchesPerPage = 10; // Show 10 matches per page
+  
+  // Swipe functionality state
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   
   // Use team context
   const { setTeamData, setTeamMatches, setCurrentPage: setContextCurrentPage } = useTeam();
@@ -315,23 +321,129 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
     [upcomingMatches]
   );
 
-  // Combine all matches in chronological order (2 upcoming + 8 previous)
-  // Upcoming matches first (ascending), then previous matches (descending)
-  const allMatches = useMemo(() => [
-    ...transformedUpcomingMatches,
-    ...transformedPreviousMatches
-  ], [transformedUpcomingMatches, transformedPreviousMatches]);
+  const transformedNextMatch = useMemo(() => 
+    nextMatch ? transformMatchForCard(nextMatch) : null, 
+    [nextMatch]
+  );
+
+  const transformedTodayMatch = useMemo(() => 
+    todayMatch ? transformMatchForCard(todayMatch) : null, 
+    [todayMatch]
+  );
+
+  // Combine all matches in chronological order (oldest to newest) for proper navigation
+  const allMatches = useMemo(() => {
+    // Combine all matches
+    const allMatchesArray = [];
+    if (transformedTodayMatch) {
+      allMatchesArray.push(transformedTodayMatch);
+    }
+    allMatchesArray.push(...transformedUpcomingMatches, ...transformedPreviousMatches);
+    
+    // Sort all matches chronologically (oldest to newest)
+    return allMatchesArray.sort((a, b) => {
+      if (!a || !b) return 0;
+      return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
+    });
+  }, [transformedTodayMatch, transformedUpcomingMatches, transformedPreviousMatches]);
+
+  // Create sliding window of matches around current position (-10 to +10)
+  const slidingWindowMatches = useMemo(() => {
+    if (allMatches.length === 0) return [];
+    
+    const windowSize = 21; // -10 previous + current + +10 next
+    const startIndex = Math.max(0, currentMatchIndex - 10);
+    const endIndex = Math.min(allMatches.length, startIndex + windowSize);
+    
+    return allMatches.slice(startIndex, endIndex);
+  }, [allMatches, currentMatchIndex]);
+
+  // Calculate the offset for the sliding window
+  const windowOffset = useMemo(() => {
+    return Math.max(0, currentMatchIndex - 10);
+  }, [currentMatchIndex]);
+
+  // Memoize the length to prevent unnecessary re-renders
+  const allMatchesLength = useMemo(() => allMatches.length, [allMatches]);
 
   // Set team data in context when component mounts
   useEffect(() => {
     setTeamData(team);
     setTeamMatches(allMatches);
-  }, [team, allMatches]);
+  }, [team, allMatches, setTeamData, setTeamMatches]);
+
+  // Set initial match index to show the most relevant match
+  useEffect(() => {
+    if (allMatches.length > 0) {
+      if (transformedTodayMatch) {
+        // If there's a today match, show it (find its index in the sorted array)
+        const todayIndex = allMatches.findIndex(match => 
+          match && transformedTodayMatch && match.id === transformedTodayMatch.id
+        );
+        if (todayIndex !== -1) {
+          setCurrentMatchIndex(todayIndex);
+        }
+      } else if (transformedNextMatch) {
+        // If no today match, show the next upcoming match
+        const nextIndex = allMatches.findIndex(match => 
+          match && transformedNextMatch && match.id === transformedNextMatch.id
+        );
+        if (nextIndex !== -1) {
+          setCurrentMatchIndex(nextIndex);
+        }
+      }
+    }
+  }, [allMatches, transformedTodayMatch, transformedNextMatch]);
 
   // Set current page in context separately to avoid dependency issues
   useEffect(() => {
     setContextCurrentPage(currentPage);
   }, [currentPage]);
+
+
+  // Navigation functions - Next shows newer match, Previous shows older match
+  const goToNextMatch = () => {
+    if (currentMatchIndex < allMatches.length - 1) {
+      setCurrentMatchIndex(currentMatchIndex + 1);
+    }
+  };
+
+  const goToPreviousMatch = () => {
+    if (currentMatchIndex > 0) {
+      setCurrentMatchIndex(currentMatchIndex - 1);
+    }
+  };
+
+  // Get current match from sliding window
+  const currentMatch = useMemo(() => {
+    const windowIndex = currentMatchIndex - windowOffset;
+    return slidingWindowMatches[windowIndex] || transformedTodayMatch || transformedNextMatch;
+  }, [slidingWindowMatches, currentMatchIndex, windowOffset, transformedTodayMatch, transformedNextMatch]);
+
+  // Touch event handlers for swipe detection
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      goToNextMatch(); // Swipe left = next match (newer)
+    }
+    if (isRightSwipe) {
+      goToPreviousMatch(); // Swipe right = previous match (older)
+    }
+  };
 
   // Navigation functions
   const handlePrevious = () => {
@@ -400,7 +512,6 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
     return timezone;
   }
 
-  const transformedNextMatch = transformMatchForCard(nextMatch);
 
   // Get league ID from next match or upcoming matches
   const getLeagueId = () => {
@@ -615,16 +726,59 @@ export default function TeamDetailsClient({ team, nextMatch, upcomingMatches, pr
             </p>
           </div>
 
-          {/* Next Match Section - Using MatchCardDisplay Component */}
+          {/* Match Section with Swipe Functionality */}
           <div className="mb-8">
-            {transformedNextMatch ? (
-              <MatchCardDisplay 
-                match={transformedNextMatch} 
-                timezone={timezone}
-              />
+            {currentMatch ? (
+              <div 
+                className="relative"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {/* Navigation Indicators */}
+                <div className="flex justify-between items-center mb-4 px-6">
+                  <button
+                    onClick={goToPreviousMatch}
+                    disabled={currentMatchIndex === 0}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentMatchIndex === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Previous
+                  </button>
+                  
+                  
+                  <button
+                    onClick={goToNextMatch}
+                    disabled={currentMatchIndex === allMatches.length - 1}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentMatchIndex === allMatches.length - 1
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                    }`}
+                  >
+                    Next
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Match Display */}
+                <MatchCardDisplay 
+                  match={currentMatch} 
+                  timezone={timezone}
+                />
+                
+              </div>
             ) : (
               <div className="text-center text-gray-500 py-8">
-                No upcoming matches scheduled for {team.name}.
+                No matches available for {team.name}.
               </div>
             )}
           </div>

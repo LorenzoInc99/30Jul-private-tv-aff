@@ -194,8 +194,8 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
           </div>
         </div>
         <CompetitionStructuredData competition={competition} matches={matches} />
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+        <div className="container mx-auto max-w-7xl" style={{ outline: 'none', border: 'none' }}>
+          <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300" style={{ outline: 'none', border: 'none' }}>
             <main className="p-0 w-full bg-gray-50 dark:bg-gray-900">
               <div className="mb-8">
                 <div className="flex items-start gap-4 mb-4">
@@ -255,74 +255,33 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                   No matches found for this competition.
                 </div>
               ) : (
-                <div className="bg-gray-50 dark:bg-gray-900">
-                  <div className="w-full">
-                    <Tabs defaultValue="fixtures" className="w-full">
+                <div className="bg-gray-50 dark:bg-gray-900" style={{ outline: 'none', border: 'none' }}>
+                  <div className="w-full" style={{ outline: 'none', border: 'none' }}>
+                    <Tabs defaultValue="standings" className="w-full" style={{ outline: 'none', border: 'none' }}>
                       <TabsList className="flex w-full border-b border-gray-200 dark:border-gray-700 mb-6 bg-transparent">
+                        <TabsTrigger value="standings" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Standings</TabsTrigger>
                         <TabsTrigger value="fixtures" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Fixtures</TabsTrigger>
                         <TabsTrigger value="results" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Results</TabsTrigger>
-                        <TabsTrigger value="standings" className="flex-1 py-3 px-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white bg-transparent rounded-none">Standings</TabsTrigger>
                       </TabsList>
                       
-                      <TabsContent value="results" className="space-y-8">
-                        {Object.keys(resultsByDate).length === 0 ? (
-                          <div className="text-center text-gray-500 py-10">
-                            No results available yet.
-                          </div>
-                        ) : (
-                          Object.entries(resultsByDate).map(([date, dateMatches]) => (
-                            <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
-                              <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
-                                <h2 className="text-sm font-medium text-white dark:text-white">
-                                  {date}
-                                </h2>
-                              </div>
-                              <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {(dateMatches as any[]).map((match: any) => {
-                                  const homeSlug = slugify(match.home_team?.name || 'home');
-                                  const awaySlug = slugify(match.away_team?.name || 'away');
-                                  const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
-                                  return (
-                                    <MatchCard
-                                      key={match.id}
-                                      match={match}
-                                      timezone={timezone}
-                                      isExpanded={expandedMatch === match.id}
-                                      onExpandToggle={e => {
-                                        e.stopPropagation();
-                                        setExpandedMatch(expandedMatch === match.id ? null : match.id);
-                                      }}
-                                      onClick={e => {
-                                        window.open(matchUrl, '_blank');
-                                      }}
-                                      hideCompetitionName={true}
-                                      showOdds={true}
-                                      showTv={true}
-                                      isStarred={starredMatches.includes(match.id)}
-                                      onStarToggle={handleStarToggle}
-                                    />
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))
-                        )}
+                      <TabsContent value="standings" className="space-y-8" style={{ outline: 'none', border: 'none' }}>
+                        <StandingsTable leagueId={competition.id} />
                       </TabsContent>
                       
-                      <TabsContent value="fixtures" className="space-y-8">
+                      <TabsContent value="fixtures" className="space-y-8" style={{ outline: 'none', border: 'none' }}>
                         {Object.keys(fixturesByDate).length === 0 ? (
                           <div className="text-center text-gray-500 py-10">
                             No upcoming fixtures available.
                           </div>
                         ) : (
                           Object.entries(fixturesByDate).map(([date, dateMatches]) => (
-                            <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto">
+                            <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto focus:outline-none" style={{ outline: 'none' }}>
                               <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
                                 <h2 className="text-sm font-medium text-white dark:text-white">
                                   {date}
                                 </h2>
                               </div>
-                              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                              <div className="divide-y divide-gray-100 dark:divide-gray-700" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
                                 {(dateMatches as any[]).map((match: any) => {
                                   const homeSlug = slugify(match.home_team?.name || 'home');
                                   const awaySlug = slugify(match.away_team?.name || 'away');
@@ -338,6 +297,10 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                                         setExpandedMatch(expandedMatch === match.id ? null : match.id);
                                       }}
                                       onClick={e => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        console.log('🔥 Match clicked, navigating to:', matchUrl);
+                                        console.log('🔥 Match details:', { id: match.id, home: match.home_team?.name, away: match.away_team?.name });
                                         window.open(matchUrl, '_blank');
                                       }}
                                       hideCompetitionName={true}
@@ -354,8 +317,53 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
                         )}
                       </TabsContent>
                       
-                      <TabsContent value="standings" className="space-y-8">
-                        <StandingsTable leagueId={competition.id} />
+                      <TabsContent value="results" className="space-y-8" style={{ outline: 'none', border: 'none' }}>
+                        {Object.keys(resultsByDate).length === 0 ? (
+                          <div className="text-center text-gray-500 py-10">
+                            No results available yet.
+                          </div>
+                        ) : (
+                          Object.entries(resultsByDate).map(([date, dateMatches]) => (
+                            <div key={date} className="bg-white dark:bg-gray-800 rounded shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-3 mx-auto focus:outline-none" style={{ outline: 'none' }}>
+                              <div className="flex items-center py-2 bg-gray-100 dark:bg-gray-700 text-base md:text-base font-semibold border-b border-gray-200 dark:border-gray-700 px-4 md:px-6">
+                                <h2 className="text-sm font-medium text-white dark:text-white">
+                                  {date}
+                                </h2>
+                              </div>
+                              <div className="divide-y divide-gray-100 dark:divide-gray-700" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+                                {(dateMatches as any[]).map((match: any) => {
+                                  const homeSlug = slugify(match.home_team?.name || 'home');
+                                  const awaySlug = slugify(match.away_team?.name || 'away');
+                                  const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}?timezone=${encodeURIComponent(getTargetTimezone())}`;
+                                  return (
+                                    <MatchCard
+                                      key={match.id}
+                                      match={match}
+                                      timezone={timezone}
+                                      isExpanded={expandedMatch === match.id}
+                                      onExpandToggle={e => {
+                                        e.stopPropagation();
+                                        setExpandedMatch(expandedMatch === match.id ? null : match.id);
+                                      }}
+                                      onClick={e => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        console.log('🔥 Match clicked, navigating to:', matchUrl);
+                                        console.log('🔥 Match details:', { id: match.id, home: match.home_team?.name, away: match.away_team?.name });
+                                        window.open(matchUrl, '_blank');
+                                      }}
+                                      hideCompetitionName={true}
+                                      showOdds={true}
+                                      showTv={true}
+                                      isStarred={starredMatches.includes(match.id)}
+                                      onStarToggle={handleStarToggle}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </TabsContent>
                     </Tabs>
                   </div>

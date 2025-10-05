@@ -69,6 +69,15 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
     }
   }
 
+  // Format date for finished matches (e.g., "18 Oct")
+  function formatFinishedMatchDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short'
+    });
+  }
+
   return (
     <div className="rounded-lg overflow-hidden">
       
@@ -109,45 +118,47 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
           </div>
         </div>
         
-        {/* Center content */}
+        {/* Center content - Standardized layout for all match states */}
         <div className="flex flex-col items-center justify-center min-h-[140px] md:min-h-[160px] px-6 md:px-12">
-          {(match.status === 'Full Time' || match.status === 'Live' || 
-            match.status === 'After Extra Time' || match.status === 'After Penalties' ||
-            (match.home_score !== null && match.away_score !== null)) ? (
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xl md:text-3xl font-extrabold text-white">
-                {match.home_score || 0} - {match.away_score || 0}
-              </span>
-              <span className="text-xs md:text-sm text-gray-400 mt-1">
-                {(match.status === 'Live') ? 'LIVE' : 'FULL TIME'}
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xl md:text-3xl font-extrabold text-white">
-                {formatTimeConsistently(match.start_time, timezone)}
-              </span>
-              <span className="text-xs md:text-sm text-white mt-0">
-                {formatShortDate(match.start_time)}
-              </span>
-              {/* League Name and Venue Information */}
-              <div className="flex items-center justify-center mt-1 mb-1 gap-3 whitespace-nowrap">
-                <div className="flex items-center gap-2 text-xs text-blue-400">
-                  <span className="text-sm font-medium">
-                    {match.Competitions?.name || match.league?.name}
-                  </span>
-                </div>
-                <span className="text-white text-sm">|</span>
-                <div className="flex items-center gap-2 text-xs text-white">
-                  <span>Venue Information</span>
-                </div>
+          <div className="flex flex-col items-center justify-center">
+            {/* Main content - Time/Score based on match status */}
+            <span className="text-xl md:text-3xl font-extrabold text-white">
+              {match.status === 'Live' ? 
+                `${match.home_score || 0} - ${match.away_score || 0}` :
+                (match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || (match.home_score !== null && match.away_score !== null)) ?
+                `${match.home_score || 0} - ${match.away_score || 0}` :
+                formatTimeConsistently(match.start_time, timezone)
+              }
+            </span>
+            
+            {/* Secondary content - Date/Live minute based on match status */}
+            <span className="text-xs md:text-sm text-white mt-0">
+              {match.status === 'Live' ? 
+                `${match.live_minute || 'LIVE'}'` :
+                (match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || (match.home_score !== null && match.away_score !== null)) ?
+                formatFinishedMatchDate(match.start_time) :
+                formatShortDate(match.start_time)
+              }
+            </span>
+            
+            {/* League Name and Venue Information - Always show */}
+            <div className="flex items-center justify-center mt-1 mb-1 gap-3 whitespace-nowrap">
+              <div className="flex items-center gap-2 text-xs text-blue-400">
+                <span className="text-sm font-medium">
+                  {match.Competitions?.name || match.league?.name}
+                </span>
               </div>
-              {/* Odds Display */}
-              <div className="mt-1">
-                <MatchOddsDisplay odds={match.Odds || []} matchStatus={match.status} />
+              <span className="text-white text-sm">|</span>
+              <div className="flex items-center gap-2 text-xs text-white">
+                <span>Venue Information</span>
               </div>
             </div>
-          )}
+            
+            {/* Odds Display - Show for all match states */}
+            <div className="mt-1">
+              <MatchOddsDisplay odds={match.Odds || []} matchStatus={match.status} />
+            </div>
+          </div>
         </div>
         
         {/* Away Team */}

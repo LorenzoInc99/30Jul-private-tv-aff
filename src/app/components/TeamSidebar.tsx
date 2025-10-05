@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { slugify } from '../../lib/utils';
+import { Button } from '../../components/ui/button';
 
 interface TeamSidebarProps {
   team: any;
@@ -31,8 +32,8 @@ export default function TeamSidebar({
     <aside className="block w-64 bg-white dark:bg-gray-900 h-full min-h-screen">
       <div className="p-4 h-full">
         {/* Team Matches Header */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <div className="mb-12">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
             {team.name} Matches
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -41,39 +42,35 @@ export default function TeamSidebar({
         </div>
         
         {/* Navigation Buttons */}
-        <div className="flex justify-between items-center mb-4">
-          <button 
+        <div className="flex justify-between items-center mb-4 gap-2">
+          <Button 
             onClick={onPrevious}
             disabled={currentPage === 0}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              currentPage === 0 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-indigo-600 text-white hover:bg-indigo-700'
-            }`}
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground hover:underline"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            PREVIOUS
-          </button>
-          <button 
+            PREV
+          </Button>
+          <Button 
             onClick={onNext}
             disabled={currentPage >= Math.ceil((allMatches.length - 1) / matchesPerPage)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              currentPage >= Math.ceil((allMatches.length - 1) / matchesPerPage)
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-indigo-600 text-white hover:bg-indigo-700'
-            }`}
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground hover:underline"
           >
             NEXT
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Matches List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1">
           {getCurrentPageMatches(allMatches).map((match) => {
             if (!match) return null;
             

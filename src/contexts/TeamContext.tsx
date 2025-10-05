@@ -7,7 +7,7 @@ interface TeamContextType {
   currentPage: number;
   matchesPerPage: number;
   setTeamData: (team: any) => void;
-  setTeamMatches: (matches: any[]) => void;
+  setTeamMatches: (matches: any[] | null) => void;
   setCurrentPage: (page: number) => void;
   handlePrevious: () => void;
   handleNext: () => void;
@@ -20,7 +20,7 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   const [teamData, setTeamData] = useState<any | null>(null);
   const [teamMatches, setTeamMatches] = useState<any[] | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const matchesPerPage = 5; // Show 5 matches per page
+  const matchesPerPage = 10; // Show 10 matches per page
 
   const handlePrevious = useCallback(() => {
     if (currentPage > 0) {

@@ -60,10 +60,26 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         // Load existing data but clear teams if they have wrong logos
         if (savedCustomLeagues) {
           try {
-            setCustomLeagues(JSON.parse(savedCustomLeagues));
+            const parsedLeagues = JSON.parse(savedCustomLeagues);
+            // If parsed leagues is empty or invalid, fall back to defaults
+            if (Array.isArray(parsedLeagues) && parsedLeagues.length > 0) {
+              setCustomLeagues(parsedLeagues);
+            } else {
+              console.log('No valid custom leagues found, using defaults');
+              setCustomLeagues(defaultLeagues);
+              localStorage.setItem('sidebar-custom-leagues', JSON.stringify(defaultLeagues));
+            }
           } catch (e) {
             console.error('Error parsing custom leagues:', e);
+            console.log('Falling back to default leagues');
+            setCustomLeagues(defaultLeagues);
+            localStorage.setItem('sidebar-custom-leagues', JSON.stringify(defaultLeagues));
           }
+        } else {
+          // No saved leagues, use defaults
+          console.log('No saved custom leagues, using defaults');
+          setCustomLeagues(defaultLeagues);
+          localStorage.setItem('sidebar-custom-leagues', JSON.stringify(defaultLeagues));
         }
 
         if (savedCustomTeams) {
@@ -79,13 +95,24 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
               console.log('Detected wrong logos, clearing teams');
               setCustomTeams([]);
               localStorage.setItem('sidebar-custom-teams', JSON.stringify([]));
-            } else {
+            } else if (Array.isArray(teams)) {
               setCustomTeams(teams);
+            } else {
+              console.log('Invalid teams data, using defaults');
+              setCustomTeams(defaultTeams);
+              localStorage.setItem('sidebar-custom-teams', JSON.stringify(defaultTeams));
             }
           } catch (e) {
             console.error('Error parsing custom teams:', e);
-            setCustomTeams([]);
+            console.log('Falling back to default teams');
+            setCustomTeams(defaultTeams);
+            localStorage.setItem('sidebar-custom-teams', JSON.stringify(defaultTeams));
           }
+        } else {
+          // No saved teams, use defaults
+          console.log('No saved custom teams, using defaults');
+          setCustomTeams(defaultTeams);
+          localStorage.setItem('sidebar-custom-teams', JSON.stringify(defaultTeams));
         }
       }
 
@@ -215,6 +242,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       window.location.reload();
     }
   };
+
 
   const value: SidebarContextType = {
     customLeagues,

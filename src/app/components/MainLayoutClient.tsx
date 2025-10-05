@@ -8,11 +8,19 @@ import React, { useEffect, useState } from "react";
 export default function MainLayoutClient({ competitions, children }: { competitions: any[]; children: React.ReactNode }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const { teamData, teamMatches, currentPage, matchesPerPage, handlePrevious, handleNext, handleMatchClick } = useTeam();
+  const { teamData, teamMatches, currentPage, matchesPerPage, handlePrevious, handleNext, handleMatchClick, setTeamData, setTeamMatches } = useTeam();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Clear team context when navigating to home page
+  useEffect(() => {
+    if (pathname === '/') {
+      setTeamData(null);
+      setTeamMatches([]);
+    }
+  }, [pathname, setTeamData, setTeamMatches]);
 
   const hideSidebarRoutes = ["/about", "/contact", "/privacy-policy", "/terms-of-service"];
   const shouldShowSidebar = mounted && !hideSidebarRoutes.includes(pathname);

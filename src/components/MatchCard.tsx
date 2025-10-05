@@ -199,7 +199,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                  match.status === 'Penalties';
 
   const handleTeamClick = (e: React.MouseEvent, teamName: string, teamId: number) => {
-    e.stopPropagation();
     console.log('Team clicked:', teamName, 'ID:', teamId);
     const teamSlug = slugify(teamName);
     console.log('Generated slug:', teamSlug);
@@ -208,20 +207,44 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     window.open(teamUrl, '_blank');
   };
 
+  console.log('🎯 MatchCard rendering for match:', match.id, 'onClick provided:', !!onClick);
+  
   return (
-    <div className="w-full md:w-full h-full overflow-hidden hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 border-b border-gray-100 dark:border-gray-700">
+    <div 
+      className="w-full md:w-full h-full overflow-hidden hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 border-b border-gray-100 dark:border-gray-700 focus:outline-none cursor-pointer" 
+      style={{ outline: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
+      onClick={(e) => {
+        console.log('🔥 OUTER DIV CLICKED:', match.id);
+        // Call onClick directly from outer div
+        if (onClick) {
+          console.log('🎯 Calling onClick from outer div');
+          e.preventDefault();
+          e.stopPropagation();
+          onClick(e);
+        }
+      }}
+    >
       <div
-        className={`group w-full h-full cursor-pointer relative p-2 md:py-0 md:px-3 ${isLive ? 'border-l-0' : ''}`}
+        className={`group w-full h-full cursor-pointer relative p-2 md:py-0 md:px-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none ${isLive ? 'border-l-0' : ''}`}
         tabIndex={0}
         aria-label={`View details for ${match.home_team?.name} vs ${match.away_team?.name}`}
         role="button"
         onClick={(e) => {
-          // Disable MatchCard's own click handling since we handle it at the outer div level
+          console.log('🎯 MATCH CARD CLICKED:', match.id, 'Target:', e.target);
+          console.log('🎯 ALWAYS CALLING ONCLICK - TESTING');
+          
+          // Always call onClick for now to test
+          e.preventDefault();
           e.stopPropagation();
-          console.log('🎯 MatchCard click blocked - handled by outer div');
+          if (onClick) {
+            console.log('🎯 Calling onClick handler');
+            onClick(e);
+          } else {
+            console.log('🎯 No onClick handler provided');
+          }
         }}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onClick(e as any); }}
-        style={{ pointerEvents: 'auto' }}
+        style={{ pointerEvents: 'auto', outline: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
       >
         {/* Live Match Indicator */}
         {isLive && (
@@ -325,7 +348,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <button
                 data-team-click="true"
                 onClick={(e) => {
-                  e.stopPropagation();
                   handleTeamClick(e, match.home_team?.name, match.home_team?.id);
                 }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
@@ -349,7 +371,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <button
                 data-team-click="true"
                 onClick={(e) => {
-                  e.stopPropagation();
                   handleTeamClick(e, match.away_team?.name, match.away_team?.id);
                 }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
@@ -472,8 +493,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 <span className="text-sm text-gray-400">-</span>
             )}
           </div>
-          </div>
-
+        </div>
         </div>
         {/* Desktop: Row layout - Three column layout */}
         <div className="hidden md:flex w-full h-full relative items-center pl-3">
@@ -588,7 +608,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <button
                 data-team-click="true"
                 onClick={(e) => {
-                  e.stopPropagation();
                   handleTeamClick(e, match.home_team?.name, match.home_team?.id);
                 }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
@@ -610,7 +629,6 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <button
                 data-team-click="true"
                 onClick={(e) => {
-                  e.stopPropagation();
                   handleTeamClick(e, match.away_team?.name, match.away_team?.id);
                 }}
                 className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
@@ -752,8 +770,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </>
             )}
           </div>
-          </div>
-          
+        </div>
       </div>
     </div>
   );

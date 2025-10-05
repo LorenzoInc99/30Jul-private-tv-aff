@@ -5,6 +5,7 @@ import LeagueLogo from '../../components/LeagueLogo';
 import TeamLogo from '../../components/TeamLogo';
 import { slugify } from '../../lib/utils';
 import { useSidebar } from '../../contexts/SidebarContext';
+import { Button } from '../../components/ui/button';
 
 
 export default function SidebarCompetitions({ 
@@ -727,8 +728,8 @@ export default function SidebarCompetitions({
         {/* Team Matches Section - Show when on team page */}
         {teamData && teamMatches ? (
           <>
-            <div className="mb-6 pt-2">
-              <h2 className="!text-[20px] !font-normal uppercase tracking-wider mb-2 !text-gray-400 dark:!text-gray-500 flex items-center">
+            <div className="mb-12 pt-2">
+              <h2 className="!text-[16px] !font-normal uppercase tracking-wider mb-4 !text-gray-400 dark:!text-gray-500 flex items-center">
                 {teamData.name} Matches
               </h2>
               
@@ -748,59 +749,65 @@ export default function SidebarCompetitions({
               )}
               
               {/* Navigation Buttons */}
-              <div className="flex justify-between items-center mb-4">
-                <button 
+              <div className="flex justify-between items-center mb-4 gap-2">
+                <Button 
                   onClick={onPrevious}
                   disabled={currentPage === 0}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === 0 
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground hover:underline"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                   PREV
-                </button>
-                <button 
+                </Button>
+                <Button 
                   onClick={onNext}
                   disabled={(currentPage || 0) >= Math.ceil((teamMatches.length - 1) / (matchesPerPage || 3))}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    (currentPage || 0) >= Math.ceil((teamMatches.length - 1) / (matchesPerPage || 3))
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground hover:underline"
                 >
                   NEXT
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                </button>
+                </Button>
               </div>
 
-              {/* Matches List - Grouped by Competition */}
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              {/* Matches List - Sorted by Date with League Context */}
+              <div className="space-y-4">
                 {(() => {
-                  // Group matches by competition
-                  const groupedMatches = teamMatches.slice((currentPage || 0) * (matchesPerPage || 3), ((currentPage || 0) + 1) * (matchesPerPage || 3))
-                    .reduce((groups: any, match) => {
-                      if (!match) return groups;
-                      const competition = match.Competitions?.name || 'Unknown Competition';
-                      if (!groups[competition]) {
-                        groups[competition] = [];
-                      }
-                      groups[competition].push(match);
-                      return groups;
-                    }, {});
+                  // Sort matches by date (most recent first) and group consecutive matches from same competition
+                  const currentPageMatches = teamMatches.slice((currentPage || 0) * (matchesPerPage || 10), ((currentPage || 0) + 1) * (matchesPerPage || 10))
+                    .filter(match => match) // Remove null/undefined matches
+                    .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 
-                  return Object.entries(groupedMatches).map(([competition, matches]) => (
-                    <div key={competition} className="space-y-2">
+                  // Group consecutive matches from the same competition
+                  const groupedMatches: Array<{ competition: string; matches: any[] }> = [];
+                  let currentGroup: { competition: string; matches: any[] } | null = null;
+
+                  currentPageMatches.forEach((match) => {
+                    const competition = match.Competitions?.name || 'Unknown Competition';
+                    
+                    if (!currentGroup || currentGroup.competition !== competition) {
+                      // Start a new group
+                      currentGroup = { competition, matches: [match] };
+                      groupedMatches.push(currentGroup);
+                    } else {
+                      // Add to current group
+                      currentGroup.matches.push(match);
+                    }
+                  });
+
+                  return groupedMatches.map((group, groupIndex) => (
+                    <div key={`${group.competition}-${groupIndex}`} className="space-y-2">
                       {/* Competition Header */}
                       <div className="flex items-center gap-1 py-1">
                         <div className="w-3 h-3 flex-shrink-0">
                           {(() => {
-                            const firstMatch = (matches as any[])[0];
+                            const firstMatch = group.matches[0];
                             const logoUrl = firstMatch?.Competitions?.logo_url || 
                                           firstMatch?.Competitions?.league_logo_url || 
                                           firstMatch?.league?.league_logo_url || 
@@ -809,7 +816,7 @@ export default function SidebarCompetitions({
                             return (
                               <img 
                                 src={logoUrl} 
-                                alt={competition}
+                                alt={group.competition}
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
@@ -819,13 +826,13 @@ export default function SidebarCompetitions({
                           })()}
                         </div>
                         <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                          {competition}
+                          {group.competition}
                         </span>
                       </div>
 
                       {/* Matches for this competition */}
                       <div className="space-y-2">
-                        {(matches as any[]).map((match) => {
+                        {group.matches.map((match) => {
                           const isUpcoming = new Date(match.start_time) > new Date();
                           const isFinished = match.status === 'FT' || match.status === 'AET' || match.status === 'PEN';
                           

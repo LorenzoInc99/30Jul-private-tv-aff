@@ -79,7 +79,34 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     });
   }
 
-  // Get next match for this team (scheduled, not finished)
+  // Get today's match for this team (if any)
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  
+  const { data: todayMatch } = await supabase
+    .from('fixtures')
+    .select(`
+      *,
+      league:leagues(*),
+      home_team:teams_new!fixtures_home_team_id_fkey1(*),
+      away_team:teams_new!fixtures_away_team_id_fkey1(*),
+      odds(
+        id,
+        label,
+        value,
+        market_id,
+        bookmaker:bookmakers(*)
+      )
+    `)
+    .or(`home_team_id.eq.${team.id},away_team_id.eq.${team.id}`)
+    .gte('starting_at', todayStart.toISOString())
+    .lt('starting_at', todayEnd.toISOString())
+    .order('starting_at', { ascending: true })
+    .limit(1)
+    .single();
+
+  // Get next match for this team (scheduled, not finished) - only if no today match
   const { data: nextMatch } = await supabase
     .from('fixtures')
     .select(`
@@ -211,6 +238,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamName:
     <TeamDetailsClient 
       team={team} 
       nextMatch={nextMatchWithCountry}
+      todayMatch={todayMatch ? addCountryToMatch(todayMatch) : null}
       upcomingMatches={upcomingMatchesWithCountry}
       previousMatches={previousMatchesWithCountry}
       teamForm={teamForm}

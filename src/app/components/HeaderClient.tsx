@@ -57,6 +57,7 @@ export default function HeaderClient({ competitions }: { competitions: any[] }) 
         ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md' 
         : 'bg-white dark:bg-gray-900'
     }`}>
+      <div className="w-full max-w-[1000px] mx-auto">
       <div className="flex justify-between items-center w-full">
         <div className="flex items-center gap-6">
           <HeaderLogo />
@@ -119,6 +120,7 @@ export default function HeaderClient({ competitions }: { competitions: any[] }) 
             <MobileCompetitionsMenu competitions={competitions || []} />
           </div>
         </div>
+      </div>
       </div>
     </header>
   );
