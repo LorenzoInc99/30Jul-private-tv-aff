@@ -11,11 +11,19 @@ function getInitialTimezone() {
 export default function MatchScheduleWrapper({ 
   activeTab = 'scores',
   starredMatches = new Set<string>(),
-  onStarToggle
+  onStarToggle,
+  selectedDate,
+  selectedFilter,
+  showOdds,
+  showTv
 }: { 
   activeTab?: 'scores' | 'news' | 'bet-calculator';
   starredMatches?: Set<string>;
   onStarToggle?: (matchId: string) => void;
+  selectedDate?: Date | null;
+  selectedFilter?: 'all' | 'live' | 'finished' | 'upcoming';
+  showOdds?: boolean;
+  showTv?: boolean;
 }) {
   const [timezone, setTimezone] = useState('auto');
   const [hydrated, setHydrated] = useState(false);
@@ -60,6 +68,10 @@ export default function MatchScheduleWrapper({
       activeTab={activeTab}
       starredMatches={starredMatches}
       onStarToggle={onStarToggle}
+      selectedDate={selectedDate}
+      selectedFilter={selectedFilter}
+      showOdds={showOdds}
+      showTv={showTv}
     />
   );
 } 

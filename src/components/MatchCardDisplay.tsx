@@ -81,12 +81,91 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
   return (
     <div className="rounded-lg overflow-hidden">
       
-      {/* Teams and Score Row - Grid layout for perfect alignment */}
-      <div className="grid grid-cols-3 items-center justify-center w-full max-w-7xl gap-6 md:gap-16 px-6 py-2">
+      {/* Mobile: Simplified layout - Home | Time | Away */}
+      <div className="md:hidden flex items-center justify-between w-full px-4 py-4">
+        {/* Home Team */}
+        <div className="flex flex-col items-center flex-1 min-w-0">
+          <Link 
+            href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+            className="group cursor-pointer transition-transform hover:scale-105"
+          >
+            <TeamLogo 
+              logoUrl={match.home_team?.team_logo_url} 
+              teamName={homeTeamName} 
+              size="lg" 
+            />
+          </Link>
+          <Link 
+            href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+            className="group cursor-pointer mt-2"
+          >
+            <span className="text-sm font-bold text-center text-white group-hover:text-blue-400 transition-colors">
+              {homeTeamName}
+            </span>
+          </Link>
+          <div className="mt-1">
+            <TeamFormRectangles
+              teamId={match.home_team_id}
+              matchStartTime={match.start_time}
+            />
+          </div>
+        </div>
+        
+        {/* Center - Time and Date */}
+        <div className="flex flex-col items-center justify-center mx-4">
+          <span className="text-lg font-bold text-white">
+            {match.status === 'Live' ? 
+              `${match.home_score || 0} - ${match.away_score || 0}` :
+              (match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || (match.home_score !== null && match.away_score !== null)) ?
+              `${match.home_score || 0} - ${match.away_score || 0}` :
+              formatTimeConsistently(match.start_time, timezone)
+            }
+          </span>
+          <span className="text-xs text-gray-300 mt-1">
+            {match.status === 'Live' ? 
+              `${match.live_minute || 'LIVE'}'` :
+              (match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || (match.home_score !== null && match.away_score !== null)) ?
+              formatFinishedMatchDate(match.start_time) :
+              formatShortDate(match.start_time)
+            }
+          </span>
+        </div>
+        
+        {/* Away Team */}
+        <div className="flex flex-col items-center flex-1 min-w-0">
+          <Link 
+            href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+            className="group cursor-pointer transition-transform hover:scale-105"
+          >
+            <TeamLogo 
+              logoUrl={match.away_team?.team_logo_url} 
+              teamName={awayTeamName} 
+              size="lg" 
+            />
+          </Link>
+          <Link 
+            href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
+            className="group cursor-pointer mt-2"
+          >
+            <span className="text-sm font-bold text-center text-white group-hover:text-blue-400 transition-colors">
+              {awayTeamName}
+            </span>
+          </Link>
+          <div className="mt-1">
+            <TeamFormRectangles
+              teamId={match.away_team_id}
+              matchStartTime={match.start_time}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop: Original layout */}
+      <div className="hidden md:grid grid-cols-3 items-center justify-center w-full max-w-7xl gap-6 md:gap-16 px-6 py-2">
         {/* Home Team */}
         <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
           {/* Logo Row */}
-          <div className="flex items-center justify-center h-16 md:h-20 mb-1">
+          <div className="flex items-center justify-center h-12 md:h-16 mb-1">
             <Link 
               href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
               className="group cursor-pointer transition-transform hover:scale-105"
@@ -94,7 +173,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
               <TeamLogo 
                 logoUrl={match.home_team?.team_logo_url} 
                 teamName={homeTeamName} 
-                size="xl" 
+                size="lg" 
               />
             </Link>
           </div>
@@ -164,7 +243,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
         {/* Away Team */}
         <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
           {/* Logo Row */}
-          <div className="flex items-center justify-center h-16 md:h-20 mb-1">
+          <div className="flex items-center justify-center h-12 md:h-16 mb-1">
             <Link 
               href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
               className="group cursor-pointer transition-transform hover:scale-105"
@@ -172,7 +251,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
               <TeamLogo 
                 logoUrl={match.away_team?.team_logo_url} 
                 teamName={awayTeamName} 
-                size="xl" 
+                size="lg" 
               />
             </Link>
           </div>

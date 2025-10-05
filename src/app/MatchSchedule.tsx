@@ -54,22 +54,30 @@ export default function MatchSchedule({
   setTimezone, 
   activeTab = 'scores',
   starredMatches = new Set<string>(),
-  onStarToggle
+  onStarToggle,
+  selectedDate: propSelectedDate,
+  selectedFilter: propSelectedFilter,
+  showOdds: propShowOdds,
+  showTv: propShowTv
 }: { 
   timezone: string; 
   setTimezone: (tz: string) => void;
   activeTab?: 'scores' | 'news' | 'bet-calculator';
   starredMatches?: Set<string>;
   onStarToggle?: (matchId: string) => void;
+  selectedDate?: Date | null;
+  selectedFilter?: 'all' | 'live' | 'finished' | 'upcoming';
+  showOdds?: boolean;
+  showTv?: boolean;
 }) {
   const [hydrated, setHydrated] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(propSelectedDate || null);
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showOdds, setShowOdds] = useState(true);
-  const [showTv, setShowTv] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'live' | 'finished' | 'upcoming'>('all');
+  const [showOdds, setShowOdds] = useState(propShowOdds !== undefined ? propShowOdds : true);
+  const [showTv, setShowTv] = useState(propShowTv !== undefined ? propShowTv : true);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'live' | 'finished' | 'upcoming'>(propSelectedFilter || 'all');
   const [selectedCountry, setSelectedCountry] = useState<{ id: number; name: string; image_path?: string } | null>(null);
 
   // Hydrate selectedDate and toggle preference from localStorage on mount
@@ -106,6 +114,31 @@ export default function MatchSchedule({
       setHydrated(true);
     }
   }, []);
+
+  // Sync with props when they change
+  useEffect(() => {
+    if (propSelectedDate) {
+      setSelectedDate(propSelectedDate);
+    }
+  }, [propSelectedDate]);
+
+  useEffect(() => {
+    if (propSelectedFilter) {
+      setSelectedFilter(propSelectedFilter);
+    }
+  }, [propSelectedFilter]);
+
+  useEffect(() => {
+    if (propShowOdds !== undefined) {
+      setShowOdds(propShowOdds);
+    }
+  }, [propShowOdds]);
+
+  useEffect(() => {
+    if (propShowTv !== undefined) {
+      setShowTv(propShowTv);
+    }
+  }, [propShowTv]);
 
   useEffect(() => {
     if (!hydrated || !selectedDate) return;
@@ -228,84 +261,6 @@ export default function MatchSchedule({
 
   return (
     <div>
-      {/* Mobile Navigation Bar */}
-      <div className="md:hidden px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <DateNavigator selectedDate={selectedDate} onChange={setSelectedDate} />
-          <div className="flex items-center gap-2">
-            <span className={`text-sm transition-colors duration-500 ${showOdds ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>Odds</span>
-            <button
-              onClick={() => setShowOdds(!showOdds)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-500 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
-                showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-500 ${
-                  showOdds ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className={`text-sm transition-colors duration-500 ${showTv ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>TV</span>
-            <button
-              onClick={() => setShowTv(!showTv)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-500 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
-                showTv ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-500 ${
-                  showTv ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* Country Dropdown for Mobile */}
-        <div className="mb-3">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400">Filter channels by country:</span>
-          </div>
-          <CountryDropdown 
-            selectedCountry={selectedCountry} 
-            onCountryChange={setSelectedCountry}
-            className="w-full"
-          />
-        </div>
-
-        {/* Filter Pills */}
-        <div className="flex gap-2">
-          {[
-            { key: 'all', label: 'All', count: null },
-            { key: 'live', label: 'Live', count: competitions.flatMap(c => c.matches).filter(m => 
-              m.status === '1st Half' || m.status === '2nd Half' || m.status === 'Half Time' || 
-              m.status === 'Extra Time' || m.status === 'Penalties'
-            ).length },
-            { key: 'finished', label: 'Finished', count: competitions.flatMap(c => c.matches).filter(m => 
-              m.status === 'Finished' || m.status === 'Full Time' || m.status === 'After Extra Time' || m.status === 'After Penalties'
-            ).length },
-            { key: 'upcoming', label: 'Upcoming', count: competitions.flatMap(c => c.matches).filter(m => 
-              m.status === 'Not Started' || m.status === 'Scheduled'
-            ).length }
-          ].map(filter => (
-            <button
-              key={filter.key}
-              onClick={() => setSelectedFilter(filter.key as 'all' | 'live' | 'finished' | 'upcoming')}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none ${
-                selectedFilter === filter.key
-                  ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-              }`}
-            >
-              {filter.label}
-              {filter.count !== null && filter.count > 0 && (
-                <span className="ml-1 text-xs">({filter.count})</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Desktop Navigation */}
       <div className="hidden md:block pt-1.5 pb-1 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded-lg mb-3">

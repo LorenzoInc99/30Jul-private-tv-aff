@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import MatchScheduleWrapper from '../MatchScheduleWrapper';
+import DateNavigator from '../DateNavigator';
 
 type TabType = 'scores' | 'news' | 'bet-calculator';
 
 export default function NavigationWrapper() {
   const [activeTab, setActiveTab] = useState<TabType>('scores');
   const [starredMatches, setStarredMatches] = useState<Set<string>>(new Set());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'live' | 'finished' | 'upcoming'>('all');
+  const [showOdds, setShowOdds] = useState(true);
+  const [showTv, setShowTv] = useState(true);
 
   // Load active tab and starred matches from localStorage on mount
   useEffect(() => {
@@ -28,6 +33,22 @@ export default function NavigationWrapper() {
           console.error('Error loading starred matches:', e);
         }
       }
+
+      // Initialize selectedDate to today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      setSelectedDate(today);
+
+      // Load odds and TV preferences
+      const savedOdds = localStorage.getItem('showOdds');
+      if (savedOdds !== null) {
+        setShowOdds(savedOdds === 'true');
+      }
+      
+      const savedTv = localStorage.getItem('showTv');
+      if (savedTv !== null) {
+        setShowTv(savedTv === 'true');
+      }
     }
   }, []);
 
@@ -44,6 +65,20 @@ export default function NavigationWrapper() {
       localStorage.setItem('starredMatches', JSON.stringify(Array.from(starredMatches)));
     }
   }, [starredMatches]);
+
+  // Save odds preference to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showOdds', showOdds.toString());
+    }
+  }, [showOdds]);
+
+  // Save TV preference to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showTv', showTv.toString());
+    }
+  }, [showTv]);
 
   const handleTabChange = (tab: TabType) => {
     if (tab === activeTab) return;
@@ -65,59 +100,122 @@ export default function NavigationWrapper() {
 
   return (
     <>
-      {/* Mobile Navigation Tabs */}
-      <div className="md:hidden w-full bg-gray-800 dark:bg-gray-900">
-        <div className="flex items-center justify-center px-4 pt-3 pb-2 space-x-6">
-          {/* Scores */}
-          <div 
-            className={`flex items-center px-3 py-1 cursor-pointer rounded-lg transition-all duration-200 ${
-              activeTab === 'scores' 
-                ? 'text-white bg-indigo-600 shadow-lg transform scale-105' 
-                : 'text-gray-300 hover:text-white hover:bg-gray-700 hover:scale-105'
-            }`}
-            onClick={() => handleTabChange('scores')}
-          >
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+      {/* Mobile Date Navigation - Compact */}
+      <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-2 py-1.5">
+          <div className="flex items-center justify-between">
+            {/* Date Navigation with Today/Live Button - Compact */}
+            <div className="flex items-center gap-1">
+              {/* Pill-shaped calendar navigation */}
+              <div className="flex items-center bg-gray-700 dark:bg-gray-800 rounded-full px-2 py-1">
+                <button 
+                  onClick={() => {
+                    if (selectedDate) {
+                      const prevDate = new Date(selectedDate.getTime() - 86400000);
+                      setSelectedDate(prevDate);
+                    }
+                  }}
+                  className="p-1 rounded-full hover:bg-gray-600 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <div className="flex items-center gap-1 mx-1.5">
+                  <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm font-semibold text-white">
+                    {selectedDate ? selectedDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : 'Today'}
+                  </span>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    if (selectedDate) {
+                      const nextDate = new Date(selectedDate.getTime() + 86400000);
+                      setSelectedDate(nextDate);
+                    }
+                  }}
+                  className="p-1 rounded-full hover:bg-gray-600 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="font-medium text-sm">Scores</span>
+                </button>
           </div>
           
-          {/* News */}
-          <div 
-            className={`flex items-center px-3 py-1 cursor-pointer rounded-lg transition-all duration-200 ${
-              activeTab === 'news' 
-                ? 'text-white bg-indigo-600 shadow-lg transform scale-105' 
-                : 'text-gray-300 hover:text-white hover:bg-gray-700 hover:scale-105'
-            }`}
-            onClick={() => handleTabChange('news')}
-          >
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd" />
-              <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V9a1 1 0 00-1-1h-1v-1z" />
-            </svg>
-            <span className="font-medium text-sm">News</span>
+              {/* Today/Live Button next to calendar - closer */}
+              {(() => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const isToday = selectedDate && selectedDate.toDateString() === today.toDateString();
+                
+                if (!isToday) {
+                  // Show Today button when not on today's date
+                  return (
+                    <button
+                      onClick={() => {
+                        const todayDate = new Date();
+                        todayDate.setHours(0, 0, 0, 0);
+                        setSelectedDate(todayDate);
+                      }}
+                      className="ml-1 px-2.5 py-1 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200"
+                    >
+                      Today
+                    </button>
+                  );
+                }
+
+                // When date is today, show Live toggle
+                return (
+                  <button
+                    onClick={() => setSelectedFilter(selectedFilter === 'live' ? 'all' : 'live')}
+                    className={`ml-1 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      selectedFilter === 'live'
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    Live
+                  </button>
+                );
+              })()}
           </div>
           
-          {/* Bet Calculator */}
-          <div 
-            className={`flex items-center px-3 py-1 cursor-pointer rounded-lg transition-all duration-200 ${
-              activeTab === 'bet-calculator' 
-                ? 'text-white bg-indigo-600 shadow-lg transform scale-105' 
-                : 'text-gray-300 hover:text-white hover:bg-gray-700 hover:scale-105'
-            }`}
-            onClick={() => handleTabChange('bet-calculator')}
-          >
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-            </svg>
-            <span className="font-medium text-sm">Bet Calculator</span>
+            {/* Odds/TV Toggle */}
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-medium transition-colors ${
+                showOdds ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
+              }`}>
+                Odds
+              </span>
+              <button
+                onClick={() => {
+                  setShowOdds(!showOdds);
+                  setShowTv(!showTv);
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-0 focus:border-0 cursor-pointer ${
+                  showOdds ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  showOdds ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+              <span className={`text-sm font-medium transition-colors ${
+                showTv ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
+              }`}>
+                TV
+              </span>
+            </div>
           </div>
         </div>
       </div>
       
       {/* Tab Content Container with Smooth Transitions */}
-      <div className="relative min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+      <div className="relative min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300 pb-20 md:pb-0">
         {/* Scores tab */}
         <div 
           className={`tab-transition ${
@@ -131,6 +229,10 @@ export default function NavigationWrapper() {
               activeTab={activeTab} 
               starredMatches={starredMatches}
               onStarToggle={handleStarToggle}
+              selectedDate={selectedDate}
+              selectedFilter={selectedFilter}
+              showOdds={showOdds}
+              showTv={showTv}
             />
           </div>
         </div>
@@ -230,6 +332,53 @@ export default function NavigationWrapper() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 md:hidden">
+        <div className="flex justify-around items-center py-2 px-2">
+          <button
+            onClick={() => handleTabChange('scores')}
+            className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 min-w-0 flex-1 ${
+              activeTab === 'scores'
+                ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span className="text-xs font-medium mt-1">Scores</span>
+          </button>
+          
+          <button
+            onClick={() => handleTabChange('news')}
+            className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 min-w-0 flex-1 ${
+              activeTab === 'news'
+                ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <span className="text-xs font-medium mt-1">News</span>
+          </button>
+          
+          <button
+            onClick={() => handleTabChange('bet-calculator')}
+            className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 min-w-0 flex-1 ${
+              activeTab === 'bet-calculator'
+                ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            <span className="text-xs font-medium mt-1">Calculator</span>
+          </button>
         </div>
       </div>
 

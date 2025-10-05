@@ -258,13 +258,13 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         )}
         
         {/* Mobile: Enhanced compact layout */}
-        <div className={`flex items-center gap-2 md:hidden w-full h-full ${
+        <div className={`flex items-center gap-1 md:hidden w-full h-full ${
           isLive ? 'border-l-4 border-l-red-500' : ''
         }`}>
           {/* Grid layout for perfect alignment */}
-          <div className="grid grid-cols-[60px_1fr_80px] gap-2 w-full items-center pl-3">
+          <div className="grid grid-cols-[35px_1fr_30px] gap-1 w-full items-center pl-0">
             {/* Date/Time Column */}
-            <div className="flex flex-col items-center justify-center py-1">
+            <div className="flex flex-col items-center justify-center py-1 border border-blue-200 dark:border-blue-600 rounded-lg p-1">
               <span className="text-xs font-bold text-gray-900 dark:text-white text-center pt-1">
                 {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
                   ? formatMatchDate(match.start_time)
@@ -342,9 +342,9 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             </div>
 
             {/* Teams Column */}
-            <div className="flex flex-col gap-0.5 min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 flex-shrink-0">
+            <div className="flex flex-col gap-0 min-w-0 overflow-hidden border border-green-200 dark:border-green-600 rounded-lg p-1">
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <div className="w-4 h-4 flex-shrink-0">
                 <TeamLogo 
                   logoUrl={match.home_team?.team_logo_url} 
                   teamName={match.home_team?.name || 'Unknown'} 
@@ -356,7 +356,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 onClick={(e) => {
                   handleTeamClick(e, match.home_team?.name, match.home_team?.id);
                 }}
-                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm inline-block text-left whitespace-nowrap truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -366,8 +366,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 {match.home_team?.name}
               </button>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 flex-shrink-0">
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <div className="w-4 h-4 flex-shrink-0">
                 <TeamLogo 
                   logoUrl={match.away_team?.team_logo_url} 
                   teamName={match.away_team?.name || 'Unknown'} 
@@ -379,7 +379,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 onClick={(e) => {
                   handleTeamClick(e, match.away_team?.name, match.away_team?.id);
                 }}
-                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm inline-block text-left whitespace-nowrap truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -392,10 +392,10 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           </div>
 
-          {/* Middle Content Group - Centered Odds/TV */}
-          <div className="flex items-center justify-center gap-4 flex-1">
+          {/* Middle Content Group - Left-aligned Odds/TV */}
+          <div className="flex items-center justify-start gap-2 border border-purple-200 dark:border-purple-600 rounded-lg p-2">
             {/* Dynamic Right Column - Odds or TV Channels */}
-            <div className="flex-shrink-0 w-20">
+            <div className="flex-shrink-0 w-20 border border-gray-200 dark:border-gray-600 rounded-lg p-2">
             {showOdds ? (
               // Odds Mode
               <div className="flex gap-1">
@@ -431,7 +431,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
             ) : (
               // TV Channels Mode
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 whitespace-nowrap">
                 {(() => {
                   const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
                   const visible = broadcasters.slice(0, 3);
@@ -489,16 +489,30 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           </div>
           </div>
 
-            {/* Score Column */}
-            <div className="flex flex-col items-center justify-center">
-              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
-                <span className="text-lg font-bold text-gray-900 dark:text-white">
-                  {match.home_score || 0} - {match.away_score || 0}
-                </span>
-              ) : (
-                <span className="text-sm text-gray-400">-</span>
-            )}
-          </div>
+             {/* Score Column */}
+             <div className="flex flex-col items-center justify-center">
+               {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
+                 <span className="text-lg font-bold text-gray-900 dark:text-white">
+                   {match.home_score || 0} - {match.away_score || 0}
+                 </span>
+               ) : (
+                 <button
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     if (onStarToggle) onStarToggle(match.id);
+                   }}
+                   className={`p-1 rounded-full transition-colors ${
+                     isStarred 
+                       ? 'text-yellow-500 hover:text-yellow-600' 
+                       : 'text-gray-400 hover:text-yellow-500'
+                   }`}
+                 >
+                   <svg className="w-4 h-4" fill={isStarred ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                   </svg>
+                 </button>
+             )}
+           </div>
         </div>
         </div>
         {/* Desktop: Row layout - Three column layout */}
@@ -605,7 +619,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 </button>
               </div>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <TeamLogo 
                 logoUrl={match.home_team?.team_logo_url} 
                 teamName={match.home_team?.name || 'Unknown'} 
@@ -616,7 +630,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 onClick={(e) => {
                   handleTeamClick(e, match.home_team?.name, match.home_team?.id);
                 }}
-                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm inline-block text-left whitespace-nowrap truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -626,7 +640,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 {match.home_team?.name}
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <TeamLogo 
                 logoUrl={match.away_team?.team_logo_url} 
                 teamName={match.away_team?.name || 'Unknown'} 
@@ -637,7 +651,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 onClick={(e) => {
                   handleTeamClick(e, match.away_team?.name, match.away_team?.id);
                 }}
-                className={`text-sm truncate inline-block text-left transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-sm inline-block text-left whitespace-nowrap truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-300 font-normal' : 
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.away_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :

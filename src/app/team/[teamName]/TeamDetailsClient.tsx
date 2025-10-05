@@ -15,6 +15,7 @@ import { slugify } from '../../../lib/utils';
 import { useTeam } from '../../../contexts/TeamContext';
 import { MatchCardSkeleton, TeamDetailsSkeleton } from '@/components/LoadingSkeleton';
 import StandingsTable from '@/components/StandingsTable';
+import MobileTeamDetails from '@/components/MobileTeamDetails';
 
 
 function transformMatchForCard(match: any) {
@@ -693,8 +694,26 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
     return <TeamDetailsSkeleton />;
   }
 
+  // Mobile version - only show on mobile screens
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+    <>
+      {/* Mobile Layout - Hidden on desktop */}
+      <div className="md:hidden">
+        <MobileTeamDetails
+          team={team}
+          nextMatch={nextMatch}
+          todayMatch={todayMatch}
+          upcomingMatches={upcomingMatches}
+          previousMatches={previousMatches}
+          teamForm={teamForm}
+          timezone={timezone}
+          starredMatches={starredMatches}
+          onStarToggle={handleStarToggle}
+        />
+      </div>
+
+      {/* Desktop Layout - Hidden on mobile */}
+      <div className="hidden md:block flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
       <div className="mb-4 mt-4">
         <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <Breadcrumb 
@@ -829,6 +848,7 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
 
         </main>
       </div>
-    </div>
+      </div>
+    </>
   );
 } 
