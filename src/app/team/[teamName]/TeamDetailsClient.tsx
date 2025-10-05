@@ -13,6 +13,7 @@ import BroadcasterLogo from '@/components/BroadcasterLogo';
 import { getMatchStatus } from '@/lib/database-config';
 import { slugify } from '../../../lib/utils';
 import { useTeam } from '../../../contexts/TeamContext';
+import { MatchCardSkeleton, TeamDetailsSkeleton } from '@/components/LoadingSkeleton';
 import StandingsTable from '@/components/StandingsTable';
 
 
@@ -297,6 +298,13 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
   previousMatches: any[]; 
   teamForm: any;
 }) {
+  // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Set loading to false when component mounts
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
   const [currentPage, setCurrentPage] = useState(0);
   const [activeTab, setActiveTab] = useState('Standing');
   const [matchesSubTab, setMatchesSubTab] = useState('Results');
@@ -679,6 +687,11 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
         return null;
     }
   };
+
+  // Show loading skeleton while data is loading
+  if (isLoading) {
+    return <TeamDetailsSkeleton />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">

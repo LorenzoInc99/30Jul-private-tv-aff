@@ -1,3 +1,5 @@
+'use client';
+
 export default function TestScotlandFlag() {
   const flagUrls = [
     'https://cdn.sportmonks.com/images/countries/png/short/gb-sct.png',

@@ -6,6 +6,7 @@ import BroadcasterLogo from './BroadcasterLogo';
 import LeagueLogo from './LeagueLogo';
 import { slugify } from '../lib/utils';
 import { Calendar } from 'lucide-react';
+import { MatchCardSkeleton } from './LoadingSkeleton';
 
 export default function MatchCard({ match, timezone, isExpanded, onExpandToggle, onClick, hideCompetitionName = false, showOdds = true, showTv = true, selectedCountry = null, isStarred = false, onStarToggle, useShortDateFormat = false, homePageFormat = false }: {
   match: any;
@@ -208,6 +209,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   };
 
   console.log('🎯 MatchCard rendering for match:', match.id, 'onClick provided:', !!onClick);
+  
+  // Show loading skeleton only if match is completely missing
+  if (!match) {
+    return <MatchCardSkeleton />;
+  }
   
   return (
     <div 

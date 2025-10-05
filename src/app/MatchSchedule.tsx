@@ -209,8 +209,21 @@ export default function MatchSchedule({
   const allMatches = filteredCompetitions.flatMap(c => c.matches);
 
   if (!hydrated || !selectedDate) {
-    // Show only background color (no content) while hydrating
-    return <div className="min-h-screen bg-gray-50 dark:bg-gray-900" />;
+    // Show loading skeleton while hydrating
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto max-w-7xl px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

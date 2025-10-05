@@ -2,13 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import MatchCard from '../components/MatchCard';
 import LeagueLogo from '../components/LeagueLogo';
 import { getPinnedLeagues, togglePinnedLeague, isLeaguePinned } from '../lib/pinned-leagues';
 import { slugify } from '../lib/utils';
 import { LeagueScheduleSkeleton } from '../components/SkeletonLoader';
 import { NoMatchesEmptyState } from '../components/EmptyStates';
 import { trackLeagueInteraction, getPersonalizedLeagueOrder } from '../lib/league-tracking';
+import MatchCard from '../components/MatchCard';
 
 export default function LeagueSchedule({ 
   competitions, 
@@ -224,7 +224,15 @@ export default function LeagueSchedule({
                           e.stopPropagation();
                           setExpandedMatch(isExpanded ? null : match.id);
                         }}
-                        onClick={() => {}} // Disable MatchCard's own click handler
+                        onClick={e => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const homeSlug = match.home_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'home';
+                          const awaySlug = match.away_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'away';
+                          const matchUrl = `/match/${match.id}-${homeSlug}-vs-${awaySlug}`;
+                          console.log('🔥 Home page match clicked, navigating to:', matchUrl);
+                          window.open(matchUrl, '_blank');
+                        }}
                         homePageFormat={true}
                       />
                     </div>
