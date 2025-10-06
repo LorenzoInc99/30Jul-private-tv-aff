@@ -126,7 +126,7 @@ export default function NavigationWrapper() {
                   <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-mobile-xs font-semibold text-white">
                     {selectedDate ? selectedDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : 'Today'}
                   </span>
                 </div>
@@ -161,7 +161,7 @@ export default function NavigationWrapper() {
                         todayDate.setHours(0, 0, 0, 0);
                         setSelectedDate(todayDate);
                       }}
-                      className="ml-1 px-2.5 py-1 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200"
+                      className="ml-1 px-2.5 py-1 rounded-lg text-mobile-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200"
                     >
                       Today
                     </button>
@@ -172,7 +172,7 @@ export default function NavigationWrapper() {
                 return (
                   <button
                     onClick={() => setSelectedFilter(selectedFilter === 'live' ? 'all' : 'live')}
-                    className={`ml-1 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`ml-1 px-2.5 py-1 rounded-lg text-mobile-xs font-medium transition-all duration-200 ${
                       selectedFilter === 'live'
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -186,7 +186,7 @@ export default function NavigationWrapper() {
           
             {/* Odds/TV Toggle */}
             <div className="flex items-center gap-2">
-              <span className={`text-sm font-medium transition-colors ${
+              <span className={`text-mobile-xs font-medium transition-colors ${
                 showOdds ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 Odds
@@ -204,7 +204,7 @@ export default function NavigationWrapper() {
                   showOdds ? 'translate-x-6' : 'translate-x-1'
                 }`} />
               </button>
-              <span className={`text-sm font-medium transition-colors ${
+              <span className={`text-mobile-xs font-medium transition-colors ${
                 showTv ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 TV

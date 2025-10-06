@@ -220,6 +220,31 @@ module.exports = {
         'toast': 1700,
         'tooltip': 1800,
       },
+      
+      // Mobile typography scale (optimized for small screens)
+      fontSize: {
+        // Mobile typography scale (optimized for small screens)
+        'mobile-xs': ['10px', { lineHeight: '14px', letterSpacing: '0.025em' }],
+        'mobile-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.025em' }],
+        'mobile-base': ['14px', { lineHeight: '20px', letterSpacing: '0.025em' }],
+        'mobile-lg': ['16px', { lineHeight: '24px', letterSpacing: '0.025em' }],
+        'mobile-xl': ['18px', { lineHeight: '28px', letterSpacing: '0.025em' }],
+        'mobile-2xl': ['20px', { lineHeight: '28px', letterSpacing: '0.025em' }],
+        'mobile-3xl': ['24px', { lineHeight: '32px', letterSpacing: '0.025em' }],
+        'mobile-4xl': ['28px', { lineHeight: '36px', letterSpacing: '0.025em' }],
+        'mobile-5xl': ['32px', { lineHeight: '40px', letterSpacing: '0.025em' }],
+        
+        // Desktop typography scale (larger for desktop)
+        'desktop-xs': ['12px', { lineHeight: '16px', letterSpacing: '0.025em' }],
+        'desktop-sm': ['14px', { lineHeight: '20px', letterSpacing: '0.025em' }],
+        'desktop-base': ['16px', { lineHeight: '24px', letterSpacing: '0.025em' }],
+        'desktop-lg': ['18px', { lineHeight: '28px', letterSpacing: '0.025em' }],
+        'desktop-xl': ['20px', { lineHeight: '28px', letterSpacing: '0.025em' }],
+        'desktop-2xl': ['24px', { lineHeight: '32px', letterSpacing: '0.025em' }],
+        'desktop-3xl': ['30px', { lineHeight: '36px', letterSpacing: '0.025em' }],
+        'desktop-4xl': ['36px', { lineHeight: '40px', letterSpacing: '0.025em' }],
+        'desktop-5xl': ['48px', { lineHeight: '1', letterSpacing: '0.025em' }],
+      },
     },
   },
   plugins: [
@@ -326,6 +351,100 @@ module.exports = {
             outline: 'none',
             boxShadow: `0 0 0 3px ${theme('colors.accent.200')}`,
           },
+        },
+        
+        // Mobile typography utilities
+        '.text-mobile-xs': {
+          fontSize: theme('fontSize.mobile-xs[0]'),
+          lineHeight: theme('fontSize.mobile-xs[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-xs[1].letterSpacing'),
+        },
+        '.text-mobile-sm': {
+          fontSize: theme('fontSize.mobile-sm[0]'),
+          lineHeight: theme('fontSize.mobile-sm[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-sm[1].letterSpacing'),
+        },
+        '.text-mobile-base': {
+          fontSize: theme('fontSize.mobile-base[0]'),
+          lineHeight: theme('fontSize.mobile-base[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-base[1].letterSpacing'),
+        },
+        '.text-mobile-lg': {
+          fontSize: theme('fontSize.mobile-lg[0]'),
+          lineHeight: theme('fontSize.mobile-lg[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-lg[1].letterSpacing'),
+        },
+        '.text-mobile-xl': {
+          fontSize: theme('fontSize.mobile-xl[0]'),
+          lineHeight: theme('fontSize.mobile-xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-xl[1].letterSpacing'),
+        },
+        '.text-mobile-2xl': {
+          fontSize: theme('fontSize.mobile-2xl[0]'),
+          lineHeight: theme('fontSize.mobile-2xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-2xl[1].letterSpacing'),
+        },
+        '.text-mobile-3xl': {
+          fontSize: theme('fontSize.mobile-3xl[0]'),
+          lineHeight: theme('fontSize.mobile-3xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-3xl[1].letterSpacing'),
+        },
+        '.text-mobile-4xl': {
+          fontSize: theme('fontSize.mobile-4xl[0]'),
+          lineHeight: theme('fontSize.mobile-4xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-4xl[1].letterSpacing'),
+        },
+        '.text-mobile-5xl': {
+          fontSize: theme('fontSize.mobile-5xl[0]'),
+          lineHeight: theme('fontSize.mobile-5xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.mobile-5xl[1].letterSpacing'),
+        },
+        
+        // Desktop typography utilities
+        '.text-desktop-xs': {
+          fontSize: theme('fontSize.desktop-xs[0]'),
+          lineHeight: theme('fontSize.desktop-xs[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-xs[1].letterSpacing'),
+        },
+        '.text-desktop-sm': {
+          fontSize: theme('fontSize.desktop-sm[0]'),
+          lineHeight: theme('fontSize.desktop-sm[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-sm[1].letterSpacing'),
+        },
+        '.text-desktop-base': {
+          fontSize: theme('fontSize.desktop-base[0]'),
+          lineHeight: theme('fontSize.desktop-base[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-base[1].letterSpacing'),
+        },
+        '.text-desktop-lg': {
+          fontSize: theme('fontSize.desktop-lg[0]'),
+          lineHeight: theme('fontSize.desktop-lg[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-lg[1].letterSpacing'),
+        },
+        '.text-desktop-xl': {
+          fontSize: theme('fontSize.desktop-xl[0]'),
+          lineHeight: theme('fontSize.desktop-xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-xl[1].letterSpacing'),
+        },
+        '.text-desktop-2xl': {
+          fontSize: theme('fontSize.desktop-2xl[0]'),
+          lineHeight: theme('fontSize.desktop-2xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-2xl[1].letterSpacing'),
+        },
+        '.text-desktop-3xl': {
+          fontSize: theme('fontSize.desktop-3xl[0]'),
+          lineHeight: theme('fontSize.desktop-3xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-3xl[1].letterSpacing'),
+        },
+        '.text-desktop-4xl': {
+          fontSize: theme('fontSize.desktop-4xl[0]'),
+          lineHeight: theme('fontSize.desktop-4xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-4xl[1].letterSpacing'),
+        },
+        '.text-desktop-5xl': {
+          fontSize: theme('fontSize.desktop-5xl[0]'),
+          lineHeight: theme('fontSize.desktop-5xl[1].lineHeight'),
+          letterSpacing: theme('fontSize.desktop-5xl[1].letterSpacing'),
         },
       };
       

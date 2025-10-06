@@ -434,10 +434,21 @@ export default function MatchPageClient({ match }: { match: any }) {
 
               {/* Broadcasters - Row Layout */}
               <div className="mb-0">
-                <div className="flex items-center justify-between mb-4">
+                {/* Mobile: Stacked layout */}
+                <div className="md:hidden mb-4">
+                  <h3 className="text-mobile-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    Where to Watch ({sortedBroadcasters.length})
+                  </h3>
+                  <div className="w-full">
+                    <BroadcasterFilters onFiltersChange={setFilters} />
+                  </div>
+                </div>
+                
+                {/* Desktop: Original layout */}
+                <div className="hidden md:flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                     Where to Watch ({sortedBroadcasters.length})
-                </h3>
+                  </h3>
                   
                   {/* Filters */}
                   <BroadcasterFilters onFiltersChange={setFilters} />

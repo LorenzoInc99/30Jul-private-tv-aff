@@ -3,6 +3,7 @@ import Link from 'next/link';
 import TeamLogo from './TeamLogo';
 import TeamFormRectangles from './TeamFormRectangles';
 import MatchOddsDisplay from './MatchOddsDisplay';
+import MobileOddsCard from './MobileOddsCard';
 
 interface MatchCardDisplayProps {
   match: any;
@@ -92,14 +93,15 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
             <TeamLogo 
               logoUrl={match.home_team?.team_logo_url} 
               teamName={homeTeamName} 
-              size="lg" 
+              size="xl"
+              className="w-[65px] h-[65px]"
             />
           </Link>
           <Link 
             href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
             className="group cursor-pointer mt-2"
           >
-            <span className="text-sm font-bold text-center text-white group-hover:text-blue-400 transition-colors">
+            <span className="text-mobile-xs font-bold text-center text-white group-hover:text-blue-400 transition-colors truncate max-w-full">
               {homeTeamName}
             </span>
           </Link>
@@ -113,7 +115,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
         
         {/* Center - Time and Date */}
         <div className="flex flex-col items-center justify-center mx-4">
-          <span className="text-lg font-bold text-white">
+          <span className="text-mobile-lg font-bold text-white">
             {match.status === 'Live' ? 
               `${match.home_score || 0} - ${match.away_score || 0}` :
               (match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || (match.home_score !== null && match.away_score !== null)) ?
@@ -121,7 +123,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
               formatTimeConsistently(match.start_time, timezone)
             }
           </span>
-          <span className="text-xs text-gray-300 mt-1">
+          <span className="text-mobile-xs text-gray-300 mt-1">
             {match.status === 'Live' ? 
               `${match.live_minute || 'LIVE'}'` :
               (match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || (match.home_score !== null && match.away_score !== null)) ?
@@ -140,14 +142,15 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
             <TeamLogo 
               logoUrl={match.away_team?.team_logo_url} 
               teamName={awayTeamName} 
-              size="lg" 
+              size="xl"
+              className="w-[65px] h-[65px]"
             />
           </Link>
           <Link 
             href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
             className="group cursor-pointer mt-2"
           >
-            <span className="text-sm font-bold text-center text-white group-hover:text-blue-400 transition-colors">
+            <span className="text-mobile-xs font-bold text-center text-white group-hover:text-blue-400 transition-colors truncate max-w-full">
               {awayTeamName}
             </span>
           </Link>
@@ -158,6 +161,14 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
             />
           </div>
         </div>
+      </div>
+
+      {/* Mobile: Best Odds Component */}
+      <div className="md:hidden">
+        <MobileOddsCard 
+          odds={match.Odds && match.Odds.length > 0 ? match.Odds[0] : null}
+          marketType="Full-time"
+        />
       </div>
 
       {/* Desktop: Original layout */}

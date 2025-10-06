@@ -344,11 +344,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
             {/* Teams Column */}
             <div className="flex flex-col gap-0 min-w-0 overflow-hidden border border-green-200 dark:border-green-600 rounded-lg p-1">
             <div className="flex items-center gap-1 whitespace-nowrap">
-              <div className="w-4 h-4 flex-shrink-0">
+              <div className="w-[13px] h-[13px] flex-shrink-0">
                 <TeamLogo 
                   logoUrl={match.home_team?.team_logo_url} 
                   teamName={match.home_team?.name || 'Unknown'} 
-                  size="sm" 
+                  size="sm"
+                  className="w-[12px] h-[12px]"
                 />
               </div>
               <button
@@ -367,11 +368,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </button>
             </div>
             <div className="flex items-center gap-1 whitespace-nowrap">
-              <div className="w-4 h-4 flex-shrink-0">
+              <div className="w-[13px] h-[13px] flex-shrink-0">
                 <TeamLogo 
                   logoUrl={match.away_team?.team_logo_url} 
                   teamName={match.away_team?.name || 'Unknown'} 
-                  size="sm" 
+                  size="sm"
+                  className="w-[12px] h-[12px]"
                 />
               </div>
               <button
@@ -623,7 +625,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <TeamLogo 
                 logoUrl={match.home_team?.team_logo_url} 
                 teamName={match.home_team?.name || 'Unknown'} 
-                size="sm" 
+                size="sm"
+                className="w-[14px] h-[14px]"
               />
               <button
                 data-team-click="true"
@@ -644,7 +647,8 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               <TeamLogo 
                 logoUrl={match.away_team?.team_logo_url} 
                 teamName={match.away_team?.name || 'Unknown'} 
-                size="sm" 
+                size="sm"
+                className="w-[14px] h-[14px]"
               />
               <button
                 data-team-click="true"
