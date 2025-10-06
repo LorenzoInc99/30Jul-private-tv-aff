@@ -14,6 +14,7 @@ import ResponsiveBroadcasterSection from '@/components/ResponsiveBroadcasterSect
 import CompactBroadcasterSection from '@/components/CompactBroadcasterSection';
 import MatchOddsDisplay from '@/components/MatchOddsDisplay';
 import MatchCardDisplay from '@/components/MatchCardDisplay';
+import MobileWhereToWatch from '@/components/MobileWhereToWatch';
 import BackToTopButton from '@/components/BackToTopButton';
 import Breadcrumb from '@/components/Breadcrumb';
 import { trackBroadcasterClick, formatClickCount, initializeClickTracking } from '@/lib/broadcaster-tracking';
@@ -73,6 +74,7 @@ export default function MatchPageClient({ match }: { match: any }) {
     subscriptionType: [] as string[], 
     selectedCountry: null as { id: number; name: string; image_path?: string } | null 
   });
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   const timezone = searchParams.get('timezone') || 'auto';
 
@@ -434,19 +436,112 @@ export default function MatchPageClient({ match }: { match: any }) {
 
               {/* Broadcasters - Row Layout */}
               <div className="mb-0">
-                {/* Mobile: Stacked layout */}
-                <div className="md:hidden mb-4">
-                  <h3 className="text-mobile-sm font-semibold text-gray-900 dark:text-white mb-3">
-                    Where to Watch ({sortedBroadcasters.length})
-                  </h3>
-                  <div className="w-full">
-                    <BroadcasterFilters onFiltersChange={setFilters} />
+                {/* Mobile: New Card Layout */}
+                <div className="md:hidden">
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-[8px] font-semibold text-gray-900 dark:text-white">
+                        Where to Watch <span className="text-[7.5px]">({sortedBroadcasters.length})</span>
+                      </h3>
+                      <div className="relative">
+                        {/* Location Filter */}
+                        <button 
+                          onClick={() => {
+                            setShowLocationDropdown(!showLocationDropdown);
+                          }}
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                          </svg>
+                          {filters.selectedCountry ? (
+                            <span className="text-xs font-medium">
+                              {filters.selectedCountry.name === 'United Kingdom' ? 'UK' :
+                               filters.selectedCountry.name === 'United States' ? 'US' :
+                               filters.selectedCountry.name === 'Spain' ? 'ES' :
+                               filters.selectedCountry.name === 'Germany' ? 'DE' :
+                               filters.selectedCountry.name}
+                            </span>
+                          ) : null}
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+
+                        {/* Location Filter Dropdown */}
+                        {showLocationDropdown && (
+                          <div className="absolute right-0 top-full mt-2 z-10 w-fit">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Select Country:</div>
+                              <div className="space-y-1">
+                                <button 
+                                  onClick={() => {
+                                    setFilters({ ...filters, selectedCountry: null });
+                                    setShowLocationDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                                >
+                                  🌍 All Countries
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setFilters({ ...filters, selectedCountry: { id: 1, name: 'United Kingdom' } });
+                                    setShowLocationDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                                >
+                                  🇬🇧 United Kingdom
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setFilters({ ...filters, selectedCountry: { id: 2, name: 'United States' } });
+                                    setShowLocationDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                                >
+                                  🇺🇸 United States
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setFilters({ ...filters, selectedCountry: { id: 3, name: 'Spain' } });
+                                    setShowLocationDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                                >
+                                  🇪🇸 Spain
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setFilters({ ...filters, selectedCountry: { id: 4, name: 'Germany' } });
+                                    setShowLocationDropdown(false);
+                                  }}
+                                  className="w-full text-left px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                                >
+                                  🇩🇪 Germany
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
                   </div>
+                  
+                  <MobileWhereToWatch
+                    broadcasters={sortedBroadcasters}
+                    clickCounts={clickCounts}
+                    onBroadcasterClick={(broadcasterId: number, matchId: string) => {
+                      trackBroadcasterClick(broadcasterId, parseInt(matchId));
+                    }}
+                    matchId={match.id}
+                  />
                 </div>
                 
                 {/* Desktop: Original layout */}
-                <div className="hidden md:flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <div className="hidden md:block">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">
                     Where to Watch ({sortedBroadcasters.length})
                   </h3>
                   
@@ -460,6 +555,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                   onBroadcasterClick={trackBroadcasterClick}
                   matchId={match.id}
                 />
+                </div>
               </div>
             </div>
           </div>
@@ -469,7 +565,7 @@ export default function MatchPageClient({ match }: { match: any }) {
             <div className="px-6">
               {/* Match Info */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                   {homeTeamName} vs {awayTeamName} - <button 
                     onClick={handleLeagueClick}
                     className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline transition-colors duration-200 cursor-pointer"
@@ -478,7 +574,7 @@ export default function MatchPageClient({ match }: { match: any }) {
                     {match.Competitions?.name || 'Match'}
                   </button>
                 </h3>
-                <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                <div className="text-xs text-gray-700 dark:text-gray-300 space-y-2">
                   <p><strong>Date:</strong> {formatDateConsistently(match.start_time)}</p>
                   <p><strong>Time:</strong> {formatTimeConsistently(match.start_time)}</p>
                   <p><strong>Status:</strong> {match.status}</p>
@@ -490,10 +586,10 @@ export default function MatchPageClient({ match }: { match: any }) {
 
               {/* Where to Watch */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                   Where to Watch {homeTeamName} vs {awayTeamName}
                 </h3>
-                <div className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="text-xs text-gray-700 dark:text-gray-300">
                   {hasBroadcasters ? (
                     <p>The {homeTeamName} vs {awayTeamName} match will be broadcast on {match.Event_Broadcasters.length} channel{match.Event_Broadcasters.length > 1 ? 's' : ''}.</p>
                   ) : (
@@ -504,10 +600,10 @@ export default function MatchPageClient({ match }: { match: any }) {
 
               {/* Best Odds Info */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                   Best Odds for {homeTeamName} vs {awayTeamName}
                 </h3>
-                <div className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="text-xs text-gray-700 dark:text-gray-300">
                   {hasOdds ? (
                     <p>Compare odds from {match.Odds.length} bookmaker{match.Odds.length > 1 ? 's' : ''} for the {homeTeamName} vs {awayTeamName} match.</p>
                   ) : (

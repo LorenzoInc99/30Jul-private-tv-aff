@@ -200,12 +200,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                  match.status === 'Penalties';
 
   const handleTeamClick = (e: React.MouseEvent, teamName: string, teamId: number) => {
-    console.log('Team clicked:', teamName, 'ID:', teamId);
-    const teamSlug = slugify(teamName);
-    console.log('Generated slug:', teamSlug);
-    const teamUrl = `/team/${teamSlug}/${teamId}`;
-    console.log('Opening URL:', teamUrl);
-    window.open(teamUrl, '_blank');
+    e.stopPropagation();
+    console.log('Team clicked, opening match page:', match.id);
+    const matchUrl = `/match/${match.id}`;
+    console.log('Opening match URL:', matchUrl);
+    window.open(matchUrl, '_blank');
   };
 
   console.log('🎯 MatchCard rendering for match:', match.id, 'onClick provided:', !!onClick);

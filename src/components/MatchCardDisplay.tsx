@@ -83,7 +83,16 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
     <div className="rounded-lg overflow-hidden">
       
       {/* Mobile: Simplified layout - Home | Time | Away */}
-      <div className="md:hidden flex items-center justify-between w-full px-4 py-4">
+      <div 
+        className="md:hidden flex items-center justify-between w-full px-4 py-4 rounded-lg"
+        style={{
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+          borderColor: 'rgba(71, 85, 105, 0.4)',
+          boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 8px 16px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          WebkitBoxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 8px 16px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          transform: 'translateY(-2px)',
+        }}
+      >
         {/* Home Team */}
         <div className="flex flex-col items-center flex-1 min-w-0">
           <Link 
@@ -164,7 +173,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
       </div>
 
       {/* Mobile: Best Odds Component */}
-      <div className="md:hidden">
+      <div className="md:hidden mt-6">
         <MobileOddsCard 
           odds={match.Odds && match.Odds.length > 0 ? match.Odds[0] : null}
           marketType="Full-time"
@@ -172,11 +181,20 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
       </div>
 
       {/* Desktop: Original layout */}
-      <div className="hidden md:grid grid-cols-3 items-center justify-center w-full max-w-7xl gap-6 md:gap-16 px-6 py-2">
+      <div 
+        className="hidden md:grid grid-cols-3 items-center justify-center w-full max-w-7xl gap-6 md:gap-16 px-6 py-2 rounded-lg"
+        style={{
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+          borderColor: 'rgba(71, 85, 105, 0.4)',
+          boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 8px 16px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          WebkitBoxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 8px 16px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          transform: 'translateY(-2px)',
+        }}
+      >
         {/* Home Team */}
         <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
           {/* Logo Row */}
-          <div className="flex items-center justify-center h-12 md:h-16 mb-1">
+          <div className="flex items-center justify-center h-12 md:h-16 mb-4">
             <Link 
               href={match.home_team_id ? `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.home_team_id}` : `/team/${encodeURIComponent(homeTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
               className="group cursor-pointer transition-transform hover:scale-105"
@@ -184,7 +202,8 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
               <TeamLogo 
                 logoUrl={match.home_team?.team_logo_url} 
                 teamName={homeTeamName} 
-                size="lg" 
+                size="xl"
+                className="w-24 h-24"
               />
             </Link>
           </div>
@@ -254,7 +273,7 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
         {/* Away Team */}
         <div className="flex flex-col items-center justify-center min-h-[160px] md:min-h-[180px]">
           {/* Logo Row */}
-          <div className="flex items-center justify-center h-12 md:h-16 mb-1">
+          <div className="flex items-center justify-center h-12 md:h-16 mb-4">
             <Link 
               href={match.away_team_id ? `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}/${match.away_team_id}` : `/team/${encodeURIComponent(awayTeamName.toLowerCase().replace(/\s+/g, '-'))}`}
               className="group cursor-pointer transition-transform hover:scale-105"
@@ -262,7 +281,8 @@ export default function MatchCardDisplay({ match, timezone = 'auto', useShortDat
               <TeamLogo 
                 logoUrl={match.away_team?.team_logo_url} 
                 teamName={awayTeamName} 
-                size="lg" 
+                size="xl"
+                className="w-24 h-24"
               />
             </Link>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 import Link from 'next/link';
+import { ChevronRight, Home } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
@@ -14,21 +15,28 @@ interface BreadcrumbProps {
 
 export default function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
   return (
-    <nav className={`flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 overflow-hidden ${className}`}>
+    <nav className={`flex items-center space-x-1 text-xs md:text-sm text-gray-600 dark:text-gray-400 overflow-hidden ${className}`}>
       {items.map((item, index) => (
         <div key={index} className="flex items-center flex-shrink-0 min-w-0">
           {index > 0 && (
-            <span className="text-gray-400 dark:text-gray-500 mx-2 flex-shrink-0">{'>'}</span>
+            <ChevronRight className="w-3 h-3 md:w-4 md:h-4 text-gray-400 dark:text-gray-500 mx-1 flex-shrink-0" />
+          )}
+          {index === 0 && item.label === 'Home' && (
+            <Home className="w-3 h-3 md:w-4 md:h-4 mr-1 flex-shrink-0" />
           )}
           {item.href && !item.isActive ? (
             <Link 
               href={item.href}
-              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 cursor-pointer truncate"
+              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 cursor-pointer truncate max-w-[120px] md:max-w-none"
+              title={item.label}
             >
               {item.label}
             </Link>
           ) : (
-            <span className={`truncate ${item.isActive ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-600 dark:text-gray-400'}`}>
+            <span 
+              className={`truncate max-w-[120px] md:max-w-none ${item.isActive ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-600 dark:text-gray-400'}`}
+              title={item.label}
+            >
               {item.label}
             </span>
           )}
