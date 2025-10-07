@@ -410,7 +410,7 @@ export default function MatchPageClient({ match }: { match: any }) {
         <main>
           {/* Match Header */}
           <div className="rounded-lg shadow-sm overflow-hidden mb-2 w-full">
-            <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 mt-4">
+            <div className="px-6 py-3 mt-4">
               <Breadcrumb 
                 items={[
                   { label: 'Home', href: '/' },
@@ -565,7 +565,7 @@ export default function MatchPageClient({ match }: { match: any }) {
             <div className="px-6">
               {/* Match Info */}
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white mb-3">
                   {homeTeamName} vs {awayTeamName} - <button 
                     onClick={handleLeagueClick}
                     className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline transition-colors duration-200 cursor-pointer"
@@ -574,22 +574,24 @@ export default function MatchPageClient({ match }: { match: any }) {
                     {match.Competitions?.name || 'Match'}
                   </button>
                 </h3>
-                <div className="text-xs text-gray-700 dark:text-gray-300 space-y-2">
-                  <p><strong>Date:</strong> {formatDateConsistently(match.start_time)}</p>
-                  <p><strong>Time:</strong> {formatTimeConsistently(match.start_time)}</p>
-                  <p><strong>Status:</strong> {match.status}</p>
-                  {match.home_score !== null && match.away_score !== null && (
-                    <p><strong>Score:</strong> {match.home_score} - {match.away_score}</p>
-                  )}
+                <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><strong>Date:</strong> {formatDateConsistently(match.start_time)}</li>
+                    <li><strong>Time:</strong> {formatTimeConsistently(match.start_time)}</li>
+                    <li><strong>Status:</strong> {match.status}</li>
+                    {match.home_score !== null && match.away_score !== null && (
+                      <li><strong>Score:</strong> {match.home_score} - {match.away_score}</li>
+                    )}
+                  </ul>
                 </div>
               </div>
 
               {/* Where to Watch */}
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white mb-3">
                   Where to Watch {homeTeamName} vs {awayTeamName}
                 </h3>
-                <div className="text-xs text-gray-700 dark:text-gray-300">
+                <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                   {hasBroadcasters ? (
                     <p>The {homeTeamName} vs {awayTeamName} match will be broadcast on {match.Event_Broadcasters.length} channel{match.Event_Broadcasters.length > 1 ? 's' : ''}.</p>
                   ) : (
@@ -600,10 +602,10 @@ export default function MatchPageClient({ match }: { match: any }) {
 
               {/* Best Odds Info */}
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white mb-3">
                   Best Odds for {homeTeamName} vs {awayTeamName}
                 </h3>
-                <div className="text-xs text-gray-700 dark:text-gray-300">
+                <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                   {hasOdds ? (
                     <p>Compare odds from {match.Odds.length} bookmaker{match.Odds.length > 1 ? 's' : ''} for the {homeTeamName} vs {awayTeamName} match.</p>
                   ) : (

@@ -2,7 +2,6 @@
 
 import HeaderLogo from './HeaderLogo';
 import HeaderTimezoneSelector from '../../components/HeaderTimezoneSelector';
-import MobileCompetitionsMenu from './MobileCompetitionsMenu';
 import { useState, useEffect } from 'react';
 
 type TabType = 'scores' | 'news' | 'bet-calculator';
@@ -115,10 +114,6 @@ export default function HeaderClient({ competitions }: { competitions: any[] }) 
         <div className="flex items-center gap-4">
           {/* Timezone Selector */}
           <HeaderTimezoneSelector />
-          {/* Hamburger menu for mobile */}
-          <div className="md:hidden">
-            <MobileCompetitionsMenu competitions={competitions || []} />
-          </div>
         </div>
       </div>
       </div>

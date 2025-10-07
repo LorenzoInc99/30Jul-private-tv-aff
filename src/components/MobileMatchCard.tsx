@@ -77,18 +77,37 @@ export default function MobileMatchCard({
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    // Use UTC for consistent server/client rendering
+    try {
+      return date.toLocaleTimeString('en-GB', { 
+        timeZone: 'UTC',
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch (error) {
+      // Fallback to UTC time
+      const utcHours = date.getUTCHours().toString().padStart(2, '0');
+      const utcMinutes = date.getUTCMinutes().toString().padStart(2, '0');
+      return `${utcHours}:${utcMinutes}`;
+    }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      month: 'short',
-      day: 'numeric'
-    });
+    // Use UTC for consistent server/client rendering
+    try {
+      return date.toLocaleDateString('en-GB', {
+        timeZone: 'UTC',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      // Fallback to UTC date
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[date.getUTCMonth()];
+      const day = date.getUTCDate();
+      return `${day} ${month}`;
+    }
   };
 
   return (

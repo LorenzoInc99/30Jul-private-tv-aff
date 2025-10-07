@@ -6,7 +6,6 @@ import { supabaseServer } from '../lib/supabase';
 import SidebarCompetitions from './components/SidebarCompetitions';
 import MainLayoutClient from './components/MainLayoutClient';
 import FooterNavClient from './components/FooterNavClient';
-import MobileCompetitionsMenu from './components/MobileCompetitionsMenu';
 import AdminWrapper from './components/AdminWrapper';
 import BannerAd from '../components/BannerAd';
 import ADVLeft from '../components/ADVLeft';
@@ -16,6 +15,7 @@ import NavigationWrapper from './components/NavigationWrapper';
 import HeaderClient from './components/HeaderClient';
 import { SidebarProvider } from '../contexts/SidebarContext';
 import { TeamProvider } from '../contexts/TeamContext';
+import MobileBottomNavigation from '../components/MobileBottomNavigation';
 
 export const metadata: Metadata = {
   title: {
@@ -307,6 +307,9 @@ export default async function RootLayout({
           </SidebarProvider>
           </div>
         </div>
+        
+        {/* Mobile Bottom Navigation - Always visible on mobile */}
+        <MobileBottomNavigation />
       </body>
     </html>
   );

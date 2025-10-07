@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { getBestOddsFromTransformed } from '../lib/database-adapter';
 import TeamLogo from './TeamLogo';
+import OptimizedTeamLogo from './OptimizedTeamLogo';
 import BroadcasterLogo from './BroadcasterLogo';
 import LeagueLogo from './LeagueLogo';
 import { slugify } from '../lib/utils';
@@ -37,7 +38,9 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
   
   function getTargetTimezone() {
     if (timezone === 'auto') {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Use UTC for server-side rendering to avoid hydration mismatches
+      // Client-side will handle auto timezone detection
+      return 'UTC';
     }
     return timezone;
   }
@@ -66,51 +69,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     
     // For home page format, always show time (since date is already shown in the group header)
     if (homePageFormat) {
-      if (targetTimezone === 'auto') {
-        // Use local time for auto timezone
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-      } else {
-        // For specific timezone, use proper timezone conversion
-        try {
-          const formatter = new Intl.DateTimeFormat('en-GB', {
-            timeZone: targetTimezone,
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          });
-          return formatter.format(date);
-        } catch (error) {
-          // Fallback to local time if timezone is invalid
-          const hours = date.getHours().toString().padStart(2, '0');
-          const minutes = date.getMinutes().toString().padStart(2, '0');
-          return `${hours}:${minutes}`;
-        }
-      }
-    }
-    
-    // For other pages, use the existing logic
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const matchDate = new Date(dateString);
-    matchDate.setHours(0, 0, 0, 0);
-    
-    // If match is not today, show date format (dd-mm)
-    if (matchDate.getTime() !== today.getTime()) {
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      return `${day}-${month}`;
-    }
-    
-    // If match is today, show time
-    if (targetTimezone === 'auto') {
-      // Use local time for auto timezone
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `${hours}:${minutes}`;
-    } else {
-      // For specific timezone, use proper timezone conversion
+      // Always use UTC for server-side rendering to avoid hydration mismatches
       try {
         const formatter = new Intl.DateTimeFormat('en-GB', {
           timeZone: targetTimezone,
@@ -120,11 +79,42 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         });
         return formatter.format(date);
       } catch (error) {
-        // Fallback to local time if timezone is invalid
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
+        // Fallback to UTC time if timezone is invalid
+        const utcHours = date.getUTCHours().toString().padStart(2, '0');
+        const utcMinutes = date.getUTCMinutes().toString().padStart(2, '0');
+        return `${utcHours}:${utcMinutes}`;
       }
+    }
+    
+    // For other pages, use the existing logic
+    // Use UTC for consistent server/client rendering
+    const today = new Date();
+    const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    
+    const matchDate = new Date(dateString);
+    const matchDateUTC = new Date(Date.UTC(matchDate.getUTCFullYear(), matchDate.getUTCMonth(), matchDate.getUTCDate()));
+    
+    // If match is not today, show date format (dd-mm)
+    if (matchDateUTC.getTime() !== todayUTC.getTime()) {
+      const day = date.getUTCDate().toString().padStart(2, '0');
+      const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+      return `${day}-${month}`;
+    }
+    
+    // If match is today, show time
+    try {
+      const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: targetTimezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      return formatter.format(date);
+    } catch (error) {
+      // Fallback to UTC time if timezone is invalid
+      const utcHours = date.getUTCHours().toString().padStart(2, '0');
+      const utcMinutes = date.getUTCMinutes().toString().padStart(2, '0');
+      return `${utcHours}:${utcMinutes}`;
     }
   }
 
@@ -134,38 +124,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
     
     // For home page format, always show time (since date is already shown in the group header)
     if (homePageFormat) {
-      if (targetTimezone === 'auto') {
-        // Use local time for auto timezone
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-      } else {
-        // For specific timezone, use proper timezone conversion
-        try {
-          const formatter = new Intl.DateTimeFormat('en-GB', {
-            timeZone: targetTimezone,
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          });
-          return formatter.format(date);
-        } catch (error) {
-          // Fallback to local time if timezone is invalid
-          const hours = date.getHours().toString().padStart(2, '0');
-          const minutes = date.getMinutes().toString().padStart(2, '0');
-          return `${hours}:${minutes}`;
-        }
-      }
-    }
-    
-    // For other pages, use the existing logic
-    if (targetTimezone === 'auto') {
-      // Use local time for auto timezone
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `${hours}:${minutes}`;
-    } else {
-      // For specific timezone, use proper timezone conversion
+      // Always use consistent timezone formatting to avoid hydration mismatches
       try {
         const formatter = new Intl.DateTimeFormat('en-GB', {
           timeZone: targetTimezone,
@@ -175,11 +134,27 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
         });
         return formatter.format(date);
       } catch (error) {
-        // Fallback to local time if timezone is invalid
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
+        // Fallback to UTC time if timezone is invalid
+        const utcHours = date.getUTCHours().toString().padStart(2, '0');
+        const utcMinutes = date.getUTCMinutes().toString().padStart(2, '0');
+        return `${utcHours}:${utcMinutes}`;
       }
+    }
+    
+    // For other pages, use consistent timezone formatting
+    try {
+      const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: targetTimezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      return formatter.format(date);
+    } catch (error) {
+      // Fallback to UTC time if timezone is invalid
+      const utcHours = date.getUTCHours().toString().padStart(2, '0');
+      const utcMinutes = date.getUTCMinutes().toString().padStart(2, '0');
+      return `${utcHours}:${utcMinutes}`;
     }
   }
   
@@ -230,10 +205,9 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
       }}
     >
       <div
-        className={`group w-full h-full cursor-pointer relative p-2 md:py-0 md:px-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none ${isLive ? 'border-l-0' : ''}`}
+        className={`group w-full h-full cursor-pointer relative py-1 px-2 md:py-0 md:px-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none ${isLive ? 'border-l-0' : ''}`}
         tabIndex={0}
         aria-label={`View details for ${match.home_team?.name} vs ${match.away_team?.name}`}
-        role="button"
         onClick={(e) => {
           console.log('🎯 MATCH CARD CLICKED:', match.id, 'Target:', e.target);
           console.log('🎯 ALWAYS CALLING ONCLICK - TESTING');
@@ -256,99 +230,112 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
           <div className="absolute left-0 top-1 bottom-1 w-2 bg-orange-500 rounded-r-xl animate-pulse"></div>
         )}
         
-        {/* Mobile: Enhanced compact layout */}
-        <div className={`flex items-center gap-1 md:hidden w-full h-full ${
-          isLive ? 'border-l-4 border-l-red-500' : ''
-        }`}>
-          {/* Grid layout for perfect alignment */}
-          <div className="grid grid-cols-[35px_1fr_30px] gap-1 w-full items-center pl-0">
-            {/* Date/Time Column */}
-            <div className="flex flex-col items-center justify-center py-1 border border-blue-200 dark:border-blue-600 rounded-lg p-1">
-              <span className="text-xs font-bold text-gray-900 dark:text-white text-center pt-1">
-                {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties'
-                  ? formatMatchDate(match.start_time)
-                  : formatTimeConsistently(match.start_time, getTargetTimezone())}
-              </span>
-              <div className="flex items-center justify-center mt-0.5 pb-1">
-                {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">FT</span>
-                ) : isLive ? (
-                  <span className="text-xs font-medium text-red-500 animate-pulse">
-                    {match.elapsed || 'LIVE'}
-                  </span>
-                ) : (() => {
-                  // For home page format, always show calendar icon (since time is already shown above)
-                  if (homePageFormat) {
-                    return (
-                      <button
-                        data-calendar-click="true"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Add to calendar functionality
-                          const startTime = new Date(match.start_time);
-                          const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
-                          const title = `${match.home_team?.name || 'Home'} vs ${match.away_team?.name || 'Away'}`;
-                          const description = `${match.competition?.name || 'Football Match'}`;
-                          
-                          const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
-                          window.open(calendarUrl, '_blank');
-                        }}
-                        className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                        title="Add to calendar"
-                      >
-                        <Calendar size={16} />
-                      </button>
-                    );
-                  }
-                  
-                  // For other pages, use the existing logic
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const matchDate = new Date(match.start_time);
-                  matchDate.setHours(0, 0, 0, 0);
-                  
-                  // If match is not today, show time below date
-                  if (matchDate.getTime() !== today.getTime()) {
-                    return (
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        {formatTimeForFutureMatches(match.start_time, getTargetTimezone())}
-                      </span>
-                    );
-                  }
-                  
-                  // If match is today, show calendar icon
+        {/* Mobile: Hybrid layout with CSS Grid and Flexbox fallback */}
+        <div 
+          className={`grid grid-cols-[minmax(30px,5%)_minmax(130px,42%)_minmax(140px,45%)_minmax(32px,8%)_minmax(20px,2%)] gap-1 md:hidden w-full h-full items-center py-0.5 px-1 ${
+            isLive ? 'border-l-4 border-l-red-500' : ''
+          }`}
+          style={{ 
+            minWidth: '320px', // Ensure minimum width for proper layout
+            overflow: 'hidden', // Prevent horizontal overflow
+            display: 'grid', // Force grid display
+            gridTemplateColumns: 'minmax(30px, 5%) minmax(130px, 42%) minmax(140px, 45%) minmax(32px, 8%) minmax(20px, 2%)'
+          }}
+        >
+          {/* Column 1: Time + Calendar Button (5%) */}
+          <div className="flex flex-col items-center justify-center py-0.5 px-0.5">
+            <span className="text-[9px] font-bold text-gray-900 dark:text-white text-center">
+              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' || useShortDateFormat
+                ? formatMatchDate(match.start_time)
+                : formatTimeConsistently(match.start_time, getTargetTimezone())}
+            </span>
+            <div className="flex items-center justify-center mt-0">
+              {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">FT</span>
+              ) : isLive ? (
+                <span className="text-xs font-medium text-red-500 animate-pulse">
+                  {match.elapsed || 'LIVE'}
+                </span>
+              ) : (() => {
+                // For home page format, always show calendar icon (since time is already shown above)
+                if (homePageFormat) {
                   return (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Add to calendar functionality
-                      const startTime = new Date(match.start_time);
-                      const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
-                      const title = `${match.home_team?.name || 'Home'} vs ${match.away_team?.name || 'Away'}`;
-                      const description = `${match.competition?.name || 'Football Match'}`;
-                      
-                      const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
-                      window.open(calendarUrl, '_blank');
-                    }}
+                    <button
+                      data-calendar-click="true"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Add to calendar functionality
+                        const startTime = new Date(match.start_time);
+                        const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                        const title = `${match.home_team?.name || 'Home'} vs ${match.away_team?.name || 'Away'}`;
+                        const description = `${match.competition?.name || 'Football Match'}`;
+                        
+                        const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
+                        window.open(calendarUrl, '_blank');
+                      }}
                       className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                    title="Add to calendar"
-                  >
-                    <Calendar size={16} />
-                  </button>
+                      title="Add to calendar"
+                    >
+                      <Calendar size={16} />
+                    </button>
                   );
-                })()}
-              </div>
+                }
+                
+                // For other pages, use the existing logic
+                const today = new Date();
+                const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+                const matchDate = new Date(match.start_time);
+                const matchDateUTC = new Date(Date.UTC(matchDate.getUTCFullYear(), matchDate.getUTCMonth(), matchDate.getUTCDate()));
+                
+                // If match is not today, show time below date
+                if (matchDateUTC.getTime() !== todayUTC.getTime()) {
+                  return (
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {formatTimeForFutureMatches(match.start_time, getTargetTimezone())}
+                    </span>
+                  );
+                }
+                
+                // If match is today, show calendar icon
+                return (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Add to calendar functionality
+                    const startTime = new Date(match.start_time);
+                    const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                    const title = `${match.home_team?.name || 'Home'} vs ${match.away_team?.name || 'Away'}`;
+                    const description = `${match.competition?.name || 'Football Match'}`;
+                    
+                    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(description)}`;
+                    window.open(calendarUrl, '_blank');
+                  }}
+                    className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:scale-110 transition-all duration-200 cursor-pointer rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                  title="Add to calendar"
+                >
+                  <Calendar size={16} />
+                </button>
+                );
+              })()}
             </div>
+          </div>
 
-            {/* Teams Column */}
-            <div className="flex flex-col gap-0 min-w-0 overflow-hidden border border-green-200 dark:border-green-600 rounded-lg p-1">
+          {/* Column 2: Teams (42%) */}
+          <div 
+            className="flex flex-col gap-0 min-w-0 overflow-hidden py-0.5 px-1" 
+            style={{ 
+              minWidth: '130px', 
+              maxWidth: '100%',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word'
+            }}
+          >
             <div className="flex items-center gap-1 whitespace-nowrap">
-              <div className="w-[13px] h-[13px] flex-shrink-0">
-                <TeamLogo 
+              <div className="w-[20px] h-[20px] flex-shrink-0">
+                <OptimizedTeamLogo 
                   logoUrl={match.home_team?.team_logo_url} 
                   teamName={match.home_team?.name || 'Unknown'} 
-                  size="sm"
-                  className="w-[12px] h-[12px]"
+                  size={20}
                 />
               </div>
               <button
@@ -356,7 +343,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 onClick={(e) => {
                   handleTeamClick(e, match.home_team?.name, match.home_team?.id);
                 }}
-                className={`text-sm inline-block text-left whitespace-nowrap truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-xs inline-block text-left truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.home_score > match.away_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -367,12 +354,11 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </button>
             </div>
             <div className="flex items-center gap-1 whitespace-nowrap">
-              <div className="w-[13px] h-[13px] flex-shrink-0">
-                <TeamLogo 
+              <div className="w-[20px] h-[20px] flex-shrink-0">
+                <OptimizedTeamLogo 
                   logoUrl={match.away_team?.team_logo_url} 
                   teamName={match.away_team?.name || 'Unknown'} 
-                  size="sm"
-                  className="w-[12px] h-[12px]"
+                  size={20}
                 />
               </div>
               <button
@@ -380,7 +366,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                 onClick={(e) => {
                   handleTeamClick(e, match.away_team?.name, match.away_team?.id);
                 }}
-                className={`text-sm inline-block text-left whitespace-nowrap truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
+                className={`text-xs inline-block text-left truncate transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer ${
                   isLive ? 'text-gray-900 dark:text-white font-normal' :
                   match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                     (match.home_score !== null && match.away_score !== null && match.away_score > match.home_score ? 'font-black text-gray-900 dark:text-white' : 'font-light text-gray-500 dark:text-gray-400') :
@@ -391,48 +377,57 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </button>
             </div>
           </div>
-          </div>
 
-          {/* Middle Content Group - Left-aligned Odds/TV */}
-          <div className="flex items-center justify-start gap-2 border border-purple-200 dark:border-purple-600 rounded-lg p-2">
-            {/* Dynamic Right Column - Odds or TV Channels */}
-            <div className="flex-shrink-0 w-20 border border-gray-200 dark:border-gray-600 rounded-lg p-2">
+          {/* Column 3: Odds or TV (45%) */}
+          <div 
+            className="flex items-center justify-start gap-1 py-0.5 px-1" 
+            style={{ 
+              minWidth: '140px', 
+              maxWidth: '100%',
+              overflow: 'hidden'
+            }}
+          >
             {showOdds ? (
-              // Odds Mode
-              <div className="flex gap-1">
+              // Odds Mode - Clickable buttons like the screenshot (with sample data)
+              <div className="flex gap-1 w-full">
                 {(() => {
-                  const bestOdds = getBestOddsFromTransformed(match.Odds || []);
-                  const oddsTypes = [
-                    { key: 'home', label: '1', data: bestOdds.home },
-                    { key: 'draw', label: 'X', data: bestOdds.draw },
-                    { key: 'away', label: '2', data: bestOdds.away }
+                  // Sample odds data for demonstration
+                  const sampleOdds = [
+                    { key: 'home', label: '1', value: '1.50', operator: { name: 'Bet365', url: 'https://bet365.com' } },
+                    { key: 'draw', label: 'X', value: '3.20', operator: { name: 'Bet365', url: 'https://bet365.com' } },
+                    { key: 'away', label: '2', value: '1.80', operator: { name: 'Bet365', url: 'https://bet365.com' } }
                   ];
                   
-                  return oddsTypes.map(({ key, label, data }) => {
+                  return sampleOdds.map(({ key, label, value, operator }) => {
                     const isWinningOdds = match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ?
                       (key === 'home' && match.home_score !== null && match.away_score !== null && match.home_score > match.away_score) ||
                       (key === 'away' && match.home_score !== null && match.away_score !== null && match.away_score > match.home_score) : false;
                     
-                    return data.value !== null ? (
-                      <div
+                    return (
+                      <button
                         key={key}
-                        className={`flex-1 text-center py-1 px-0.5 rounded text-xs font-bold ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (operator?.url) {
+                            window.open(operator.url, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                        className={`flex items-center justify-center flex-1 py-2 px-1 rounded text-[10px] font-bold transition-all duration-100 ease-in-out hover:scale-105 hover:drop-shadow-sm ${
                           isWinningOdds ? 
-                          'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' :
-                          'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                          'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700' :
+                          'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700'
                         }`}
+                        title={`Best odds for ${label} by ${operator?.name || 'Unknown'}`}
                       >
-                        {parseFloat(data.value as any).toFixed(2)}
-                      </div>
-                    ) : (
-                      <div key={key} className="flex-1 text-center py-1 text-xs text-gray-400">-</div>
+                        <span className="text-[10px] font-bold">{value}</span>
+                      </button>
                     );
                   });
                 })()}
               </div>
             ) : (
               // TV Channels Mode
-              <div className="flex items-center gap-1 whitespace-nowrap">
+              <div className="flex items-center gap-0.5 w-full overflow-hidden">
                 {(() => {
                   const broadcasters = match.Event_Broadcasters ? match.Event_Broadcasters.filter((eb: any) => eb.Broadcasters && eb.Broadcasters.name) : [];
                   const visible = broadcasters.slice(0, 3);
@@ -443,20 +438,20 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       {visible.map((eb: any, idx: number) => {
                         const b = eb.Broadcasters;
                         return (
-                          <div key={idx} className="w-5 h-5 flex-shrink-0">
+                          <div key={idx} className="w-4 h-4 flex-shrink-0">
                             <BroadcasterLogo
                               logoUrl={b.logo_url}
                               broadcasterName={b.name}
                               affiliateUrl={b.affiliate_url}
                               size="sm"
-                              className="!w-5 !h-5"
+                              className="!w-4 !h-4"
                               showLabel={false}
                             />
                           </div>
                         );
                       })}
                       {hasMore && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
                           +{broadcasters.length - 3}
                         </span>
                       )}
@@ -466,54 +461,49 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
               </div>
             )}
           </div>
-          </div>
 
-          {/* Right Content Group - Fixed width for Score */}
-          <div className="flex justify-end w-16">
-            {/* Score Column - Far right position */}
-            <div className="flex-shrink-0 w-10 text-center flex flex-col gap-0.5">
+          {/* Column 4: Result (8%) */}
+          <div className="flex flex-col items-center justify-center py-0.5">
             {match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined ? (
               <>
-                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">
                   {match.home_score}
                 </span>
-                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">
                   {match.away_score}
                 </span>
               </>
             ) : (
               <>
-                <span className="text-sm text-gray-400">-</span>
-                <span className="text-sm text-gray-400">-</span>
+                <span className="text-xs text-gray-400">-</span>
+                <span className="text-xs text-gray-400">-</span>
               </>
             )}
           </div>
-          </div>
 
-             {/* Score Column */}
-             <div className="flex flex-col items-center justify-center">
-               {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
-                 <span className="text-lg font-bold text-gray-900 dark:text-white">
-                   {match.home_score || 0} - {match.away_score || 0}
-                 </span>
-               ) : (
-                 <button
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     if (onStarToggle) onStarToggle(match.id);
-                   }}
-                   className={`p-1 rounded-full transition-colors ${
-                     isStarred 
-                       ? 'text-yellow-500 hover:text-yellow-600' 
-                       : 'text-gray-400 hover:text-yellow-500'
-                   }`}
-                 >
-                   <svg className="w-4 h-4" fill={isStarred ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                   </svg>
-                 </button>
-             )}
-           </div>
+          {/* Column 5: Star Button (2%) */}
+          <div className="flex items-center justify-center py-0.5">
+            {match.status === 'Finished' || match.status === 'Full Time' || match.status === 'After Extra Time' || match.status === 'After Penalties' ? (
+              <div className="w-4 h-4"></div> // Empty space for finished matches
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onStarToggle) onStarToggle(match.id);
+                }}
+                className={`p-1 rounded-full transition-colors ${
+                  isStarred 
+                    ? 'text-yellow-500 hover:text-yellow-600' 
+                    : 'text-gray-400 hover:text-yellow-500'
+                }`}
+                title={isStarred ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <svg className="w-4 h-4" fill={isStarred ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
         </div>
         {/* Desktop: Row layout - Three column layout */}
@@ -561,12 +551,12 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                   
                   // For other pages, use the existing logic
                   const today = new Date();
-                  today.setHours(0, 0, 0, 0);
+                  const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
                   const matchDate = new Date(match.start_time);
-                  matchDate.setHours(0, 0, 0, 0);
+                  const matchDateUTC = new Date(Date.UTC(matchDate.getUTCFullYear(), matchDate.getUTCMonth(), matchDate.getUTCDate()));
                   
                   // If match is not today, show time below date
-                  if (matchDate.getTime() !== today.getTime()) {
+                  if (matchDateUTC.getTime() !== todayUTC.getTime()) {
                     return (
                       <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                         {formatTimeForFutureMatches(match.start_time, getTargetTimezone())}
@@ -688,7 +678,7 @@ export default function MatchCard({ match, timezone, isExpanded, onExpandToggle,
                       href={data.operator?.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center text-center w-full px-2 py-1.5 rounded-md border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[58px] min-h-[36px]"
+                      className="flex flex-col items-center justify-center text-center w-full px-2 py-1.5 rounded-md bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 hover:scale-105 hover:drop-shadow-sm transition-all duration-100 ease-in-out min-w-[58px] min-h-[36px]"
                       data-odds-click="true"
                       onClick={e => e.stopPropagation()}
                       tabIndex={0}

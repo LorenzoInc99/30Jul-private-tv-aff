@@ -1,0 +1,544 @@
+Date: Tue, 7 Oct 2025 08:32:50 +0000 (UTC)
+Message-ID: <465443536.51.1759825970279@5f6618bd7c79>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_50_68950699.1759825970278"
+
+------=_Part_50_68950699.1759825970278
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>Netherlands Desk Policy</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>Netherlands Desk Policy</h1>
+    <div class=3D"Section1">
+        <div class=3D"contentLayout2">
+<div class=3D"columnLayout two-equal" data-layout=3D"two-equal">
+<div class=3D"cell normal" data-type=3D"normal">
+<div class=3D"innerCell">
+<p><strong>Do</strong></p>
+<ul>
+<li>
+<p>Use the Dutch language only. For live casino games, the use of the Engli=
+sh language for =E2=80=93 in short =E2=80=93 =E2=80=98small talk=E2=80=99 o=
+r conversations by a host (for example croupier/dealer) is permitted. Howev=
+er all other information on the game (game rules, game instructions, game b=
+uttons, and information that will influence the course of the game or the p=
+layer=E2=80=99s behavior and game decisions should only be in Dutch.</p></l=
+i>
+<li>
+<p>Include the minimum age for participation in a game of chance, in a mann=
+er sufficiently visible to the player, for<u> each </u>individual advertise=
+ment. <br>
+Ex: 18+ icon.</p></li>
+<li>
+<p>Include a responsible gambling message.</p></li>
+<li>
+<p>Advertise licensed operators only.</p></li>
+<li>
+<p>Keep players away from any illegal offerings.</p></li>
+<li>
+<p>Advertise in a responsible and balanced manner.</p></li>
+<li>
+<p>Target advertising away from vulnerable groups.</p></li>
+<li>
+<p>When assessing whether advertising is aimed at vulnerable groups, take i=
+nto account content, medium of communication, location and time, and target=
+ group. Please refer to the <a class=3D"external-link" data-card-appearance=
+=3D"inline" href=3D"https://gaminginnovationgroup.atlassian.net/wiki/pages/=
+resumedraft.action?draftId=3D1557824188" rel=3D"nofollow">https://gaminginn=
+ovationgroup.atlassian.net/wiki/pages/resumedraft.action?draftId=3D15578241=
+88</a> for further details.</p></li>
+<li>
+<p>Retain proof of best efforts to prevent advertising from reaching vulner=
+able groups (eg. monitoring results of advertising activities, intervene or=
+ report to operators where necessary). This will show that the company is i=
+mplementing best efforts with taking precautions to prevent the targeting o=
+f vulnerable groups.</p></li>
+<li>
+<p>Use age filters for messages on any (social) media channel used, to ensu=
+re vulnerable groups are not targeted.</p></li>
+<li>
+<p>Use closed groups with, for example, an age limited on the (social) medi=
+a channel used, to ensure vulnerable groups are not targeted.</p></li>
+<li>
+<p>Reserve advertisements in terms of form, target group, content, purport,=
+ number and type of channels where advertisements are offered.</p></li>
+<li>
+<p>Inform players fully and adequately with respect to participation in gam=
+es of chance, including:</p>
+<ul>
+<li>
+<p>the specific characteristics of the games of chance offered;</p></li>
+<li>
+<p>the determination of winnings or the potential prizes, and the deduction=
+ of gaming tax on games of chance;</p></li>
+<li>
+<p>the cost of participation;</p></li>
+<li>
+<p>other obligations that are attached to participation or the winnings of =
+a prize;</p></li>
+<li>
+<p>the categories of individuals who must not be offered any games of chanc=
+e;</p></li>
+<li>
+<p>safeguarding the privacy of participants;</p></li>
+<li>
+<p>the manner in which participation in games of chance may be terminated;<=
+/p></li>
+<li>
+<p>the volume and the designated use of the revenues from games of chance.<=
+/p></li>
+</ul></li>
+<li>
+<p>Draw attention to players to the risks of excessive participation in gam=
+es of chance, indications to the risks, and whether it is a single particip=
+ation or a continuous participation until notice of termination is given.</=
+p></li>
+<li>
+<p>For each activity, make separate references to the risks of excessive pa=
+rticipation in games of chance.</p></li>
+<li>
+<p>Inform players clearly and fully about applicable conditions relating to=
+ bonuses.</p></li>
+<li>
+<p>Inform players about responsible participation in games of chance and th=
+e dangers of gambling addiction.</p></li>
+<li>
+<p>Keep any advertisements for video games, and games of chance, entirely s=
+eparate (ie. separate websites).</p></li>
+<li>
+<p>Clearly distinguish between =E2=80=9Cgames=E2=80=9D and =E2=80=9Cgames o=
+f chance=E2=80=9D.</p></li>
+<li>
+<p>Advertise prizes and other benefits forming part of the game of chance, =
+as separate from bonuses. These are not regarded as bonuses.</p></li>
+</ul>
+</div>
+</div>
+<div class=3D"cell normal" data-type=3D"normal">
+<div class=3D"innerCell">
+<p><strong>Do not</strong></p>
+<ul>
+<li>
+<p>Direct and target advertising to persons aged between 18 and 24 years ol=
+d.</p></li>
+<li>
+<p>Direct and target advertising to socially vulnerable groups of persons e=
+g. minors and consumers with an intellectual disability.</p></li>
+<li>
+<p>Direct and target advertising to persons who have excluded themselves fr=
+om participating in any games (this is at least expected where such persons=
+ are specifically known to have excluded themselves by the licence holder).=
+</p></li>
+<li>
+<p>Use active professional athletes or teams of professional athletes in ad=
+vertising.</p></li>
+<li>
+<p>Use *role models or any other persons (including for eg. celebrities), w=
+ho otherwise have a substantial reach in advertising. Whether the advertisi=
+ng has substantial reach, is independent of whether the advertising targets=
+ vulnerable groups.&nbsp;</p></li>
+<li>
+<p>Use teams comprising professional sportspersons for advertising.</p></li=
+>
+<li>
+<p>Encourage excessive participation by inciting making impulsive decisions=
+ Eg. =E2=80=9CToday only=E2=80=9D, =E2=80=9CEarly birds=E2=80=9D, =E2=80=9C=
+For quick decision makers=E2=80=9D, =E2=80=9COnly valid for 1 hour=E2=80=9D=
+, or with a bonus such as a =E2=80=9Chappy hour=E2=80=9D bonus, or temporar=
+y discount promotions such as =E2=80=9CTwo for one=E2=80=9D.</p></li>
+<li>
+<p>Suggest financial gain, increased social acceptance or happiness through=
+ advertisements.</p></li>
+<li>
+<p>Use advertising that is intrusive or aggressive.</p></li>
+<li>
+<p>Use highly persuasive advertising for high risk games Eg. through banner=
+s, pop-ups or emails alerting players to big bonuses or saving schemes.</p>=
+</li>
+<li>
+<p>Use misleading advertising regarding, among other things:</p>
+<ul>
+<li>
+<p>the chance of winning</p></li>
+<li>
+<p>the characteristics of games of chance</p></li>
+<li>
+<p>the commitment of the participants</p></li>
+<li>
+<p>the benefits to participants.</p></li>
+</ul></li>
+<li>
+<p>Present an unrealistic or incorrect picture of a product or service.</p>=
+</li>
+<li>
+<p>Attach conditions to the free participation in a game of chance.</p></li=
+>
+<li>
+<p>Give the impression that the regulator has approved the specific adverti=
+sing activities or the games of chance, other than through a neutral statem=
+ent that a licence holder has a licence pursuant to the Betting and Gamblin=
+g Act.</p></li>
+<li>
+<p>Give the impression that the licence holder holds a European licence or =
+falls under European supervision.</p></li>
+<li>
+<p>Create the impression that a player can exercise a dominant influence on=
+ the outcomes of a game of chance or their winnings.</p></li>
+<li>
+<p>Use personal data processed in connection with other promotions.</p></li=
+>
+<li>
+<p>Combine advertising with statements about addiction prevention.</p></li>
+<li>
+<p>Aim advertising at players looking for information on facilities relatin=
+g to gambling addictions.</p></li>
+<li>
+<p>Advertise during sporting events and horse races if such advertising is =
+directed at spectators or viewers of such activities.</p></li>
+<li>
+<p>Allow advertising for any goods or services, other than licensed games o=
+f chance of the respective operator we are working with.</p></li>
+<li>
+<p>Advertise alongside any information provided to players about limits.</p=
+></li>
+<li>
+<p>Extend advertising to sideline activities (eg. it is not permitted to ma=
+ke participation in games of chance a condition to the participation in oth=
+er activities or products.</p></li>
+<li>
+<p>Advertise for or within video games or on websites or applications where=
+ video games are on offer.</p></li>
+<li>
+<p>Aim and specify advertising at persons watching a sporting contest durin=
+g such contest (this includes the period after the start and before the end=
+ of the contest, and also includes the interval/half-time). An <strong>exce=
+ption</strong> to this is where licence holders organize betting on a speci=
+fic contest and show the progress of that contest.<strong> </strong>This al=
+so does preclude the general promotion of live betting that does not relate=
+ to a specific sporting event and the promotion of listings at a specific s=
+porting event prior to that event.</p></li>
+<li>
+<p>Advertise bonuses linked to taking part a certain number of times in a g=
+ame of chance. Bonuses linked to taking part a certain number of times in a=
+ game of chance, or advertising aimed at exerting social pressure in a high=
+-risk game, are examples of irresponsible advertising activities aimed at e=
+ncouraging players to continue playing.</p></li>
+<li>
+<p>Aim to exert social pressure in a high-risk game.</p></li>
+<li>
+<p>Suggest or create the impression that participants or prize winners are =
+obliged to cooperate in any form advertising by the licence holder.</p></li=
+>
+<li>
+<p>Display online video advertisements except between 21:00 and 6:00am.</p>=
+</li>
+<li>
+<p>Non-NL compliance checked websites should be geo-blocked for Dutch IPs o=
+therwise those websites and offers on them will be considered by the NGA to=
+ be non-compliant offers. Penalties have been issued to affiliates for such=
+ breach.</p></li>
+</ul>
+<p></p>
+<p></p>
+<p></p>
+</div>
+</div>
+</div>
+<div class=3D"columnLayout fixed-width" data-layout=3D"fixed-width">
+<div class=3D"cell normal" data-type=3D"normal">
+<div class=3D"innerCell">
+<p></p>
+<p>*The following individuals/careers are defined as Role models;</p>
+<p><em>Persons who derive their fame from activities in the present or past=
+ as:</em><br>
+1=C2=B0.professional sportsman, sports trainer or other person with a publi=
+cly visible role within professional sports;<br>
+2=C2=B0. an actor, director, presenter, singer or other person with a publi=
+cly visible role in the television, film, theatre, music or other entertain=
+ment industry;<br>
+3=C2=B0.model, fashion designer or other person with a publicly visible rol=
+e within the beauty or fashion industry;<br>
+4=C2=B0.author, journalist, columnist, influencer, vlogger, blogger or any =
+other person with a publicly visible role due to the use of printed, audiov=
+isual, audio, online or other media;<br>
+5=C2=B0.representative of a political party or another person with a public=
+ly visible role within national, regional or local politics;<br>
+6=C2=B0.frequent participant in games of chance or another person with a pu=
+blicly visible role in the area of games of chance;<br>
+b. persons who visibly perform or depict an office or profession that serve=
+s as a social role model.<br>
+The explanatory notes to the amendment explain that social role models are =
+for example doctors, police officers or teachers.<br>
+We note that the prohibition makes no distinction to the content of recruit=
+ment or advertising activities involving the use of role models, including =
+pictures of role models. License holders also not use role models in advert=
+ising to raise awareness for the risks of participating in risky games of c=
+hance. Land based providers of games of chance may, however, use role model=
+s on location or in advertisements if it does not relate to online games of=
+ chance, for example using a famous cook in the restaurant or promoting the=
+ performance of a singer on location.</p>
+<hr>
+<p><em>Summary </em>of the Decree on untargeted advertising of online games=
+ of chance):</p>
+<ol start=3D"1">
+<li>
+<p>No advertsing activities through broadcasting media, printed media or pu=
+blic places (does not prohibit internet advertising)</p></li>
+<li>
+<p>Online advertising is allowed if operator <em>(a)</em> gives individuals=
+ the<strong> opportunity that they do not wish to be advertised</strong> to=
+ socially vulnerable groups (minors/high risk/self-excluded players)<em> (b=
+)</em> takes the best available measures to prevent advertising to persons =
+socially vulnerable groups (minors/high risk/self-excluded players) (c) <st=
+rong>demonstrates, using best available techniques, that at least 95% of th=
+ose reached by advertising activity had reached the age of 24</strong></p><=
+/li>
+<li>
+<p>Enter into force on the <strong>1st July 2023.</strong></p></li>
+</ol>
+<p><em>Important considerations:</em></p>
+<ul>
+<li>
+<p>If one cannot show that 95% of those visiting a website are over the age=
+ of 24-<strong> no advertising of online games of chance is allowed on thos=
+e websites</strong>. Google Analytics can be used for this purpose</p></li>
+<li>
+<p>In account based environments we must ensure<strong> opt out options and=
+ age verification measures</strong></p></li>
+<li>
+<p>Outside account environment - <strong>SEO practices such as use lists of=
+ negative keywords </strong>to exclude vulnerable groups&nbsp; (minors/18-2=
+4/high risk/self-excluded players)</p></li>
+<li>
+<p>Regulator suggests to operators only to work with affiliates who have hi=
+storical (retroactive) data showing they are targetting 24+ year olds.</p><=
+/li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+    </div>
+</body>
+</html>
+------=_Part_50_68950699.1759825970278--

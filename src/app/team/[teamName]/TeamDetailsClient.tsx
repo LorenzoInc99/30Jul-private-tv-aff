@@ -7,6 +7,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import MatchCard from '@/components/MatchCard';
 import MatchDetails from '@/components/MatchDetails';
 import MatchCardDisplay from '@/components/MatchCardDisplay';
+import DesktopTeamHeaderCard from '@/components/DesktopTeamHeaderCard';
 import TeamLogo from '@/components/TeamLogo';
 import TeamFormRectangles from '@/components/TeamFormRectangles';
 import BroadcasterLogo from '@/components/BroadcasterLogo';
@@ -715,7 +716,7 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
       {/* Desktop Layout - Hidden on mobile */}
       <div className="hidden md:block flex flex-col min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
       <div className="mb-4 mt-4">
-        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div className="px-6 py-3">
           <Breadcrumb 
             items={[
               { label: 'Home', href: '/' },
@@ -731,32 +732,11 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
       <div className="container mx-auto max-w-7xl px-1 md:px-2">
         <main className="bg-gray-50 dark:bg-gray-900 rounded-lg shadow-lg">
           
-          {/* Team Header Section */}
-          <div className="px-6 pt-6 pb-2">
-            <div className="flex items-start gap-4 mb-2">
-              <TeamLogo
-                logoUrl={team.team_logo_url}
-                teamName={team.name}
-                size="xl"
-                className="flex-shrink-0"
-              />
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {team.name}
-                  </h1>
-                </div>
-                {teamCountry && (
-                  <p className="text-lg text-gray-600 dark:text-gray-400">
-                    {teamCountry}
-                  </p>
-                )}
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              Get the latest {team.name} fixtures and {team.name} matches schedule. Find where to watch {team.name} matches live on TV and discover where to watch {team.name} tonight. Get the best odds for {team.name} games from top bookmakers. Never miss a {team.name} fixture with our comprehensive match coverage.
-            </p>
-          </div>
+          {/* Desktop Team Header Card */}
+          <DesktopTeamHeaderCard 
+            team={team} 
+            teamCountry={teamCountry} 
+          />
 
           {/* Match Section with Swipe Functionality */}
           <div className="mb-8">

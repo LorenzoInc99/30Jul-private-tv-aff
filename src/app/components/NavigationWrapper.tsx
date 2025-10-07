@@ -123,9 +123,21 @@ export default function NavigationWrapper() {
                 </button>
                 
                 <div className="flex items-center gap-1 mx-1.5">
-                  <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <button
+                    onClick={() => {
+                      // Open calendar picker or today's date
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      setSelectedDate(today);
+                      localStorage.setItem('selectedDate', today.toISOString());
+                    }}
+                    className="p-1 rounded-full hover:bg-gray-600 dark:hover:bg-gray-600 transition-colors"
+                    title="Go to today"
+                  >
+                    <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </button>
                   <span className="text-mobile-xs font-semibold text-white">
                     {selectedDate ? selectedDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : 'Today'}
                   </span>

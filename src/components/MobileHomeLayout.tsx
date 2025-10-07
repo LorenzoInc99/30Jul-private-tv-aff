@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import MobileMatchCard from './MobileMatchCard';
 import MobileSearchFilters from './MobileSearchFilters';
+import VirtualMatchList from './VirtualMatchList';
+import LazyMatchCard from './LazyMatchCard';
+import { EmptyState } from './EmptyStates';
 
 interface MobileHomeLayoutProps {
   matches: any[];
@@ -23,6 +26,7 @@ export default function MobileHomeLayout({
 }: MobileHomeLayoutProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('live');
+  const [useVirtualScrolling, setUseVirtualScrolling] = useState(false);
 
   // Only show on mobile screens
   useEffect(() => {
@@ -34,6 +38,24 @@ export default function MobileHomeLayout({
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // Handle tab switching from EmptyState component
+  useEffect(() => {
+    const handleTabSwitch = (event: CustomEvent) => {
+      const tab = event.detail;
+      if (['live', 'today', 'tomorrow', 'weekend'].includes(tab)) {
+        setActiveTab(tab);
+      }
+    };
+
+    window.addEventListener('switchTab', handleTabSwitch as EventListener);
+    return () => window.removeEventListener('switchTab', handleTabSwitch as EventListener);
+  }, []);
+
+  // Determine if we should use virtual scrolling based on match count
+  useEffect(() => {
+    setUseVirtualScrolling(filteredMatches.length > 20);
+  }, [filteredMatches.length]);
 
   // Filter matches based on active tab
   const getFilteredMatches = () => {
@@ -139,30 +161,44 @@ export default function MobileHomeLayout({
       {/* Matches List */}
       <div className="pb-20">
         {filteredMatches.length === 0 ? (
-          <div className="p-8 text-center">
-            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.562M15 6.75a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No matches found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {activeTab === 'live' 
-                ? 'No live matches at the moment'
-                : `No matches scheduled for ${activeTab}`
+          <EmptyState 
+            type="no-matches" 
+            activeTab={activeTab}
+            onAction={() => {
+              // Default action - go to today
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('selectedDate', today.toISOString());
+                window.location.reload();
               }
-            </p>
-          </div>
+            }}
+            actionText="Explore Today's Matches"
+          />
+        ) : useVirtualScrolling ? (
+          <VirtualMatchList
+            matches={filteredMatches}
+            timezone={timezone}
+            starredMatches={starredMatches}
+            onStarToggle={onStarToggle}
+            showOdds={activeTab !== 'live'}
+            showTv={true}
+            className="h-screen"
+          />
         ) : (
-          <div className="p-4 space-y-3">
+          <div className="p-2 space-y-1">
             {filteredMatches.map((match) => (
-              <MobileMatchCard
+              <LazyMatchCard
                 key={match.id}
                 match={match}
                 timezone={timezone}
+                isExpanded={false}
                 showOdds={activeTab !== 'live'}
                 showTv={true}
                 isStarred={starredMatches.includes(match.id)}
                 onStarToggle={onStarToggle}
-                onTap={() => {
+                onExpandToggle={() => {}}
+                onClick={() => {
                   // Navigate to match details
                   const homeSlug = match.home_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'home';
                   const awaySlug = match.away_team?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'away';

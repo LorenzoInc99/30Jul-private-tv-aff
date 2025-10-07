@@ -173,3 +173,10 @@ p {
 .tab-nav-item:active {
   transform: translateY(0);
 }
+
+/* Mobile Bottom Navigation Spacing */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 80px; /* Space for fixed bottom navigation */
+  }
+}

@@ -181,7 +181,7 @@ export default function CompetitionDetailsClient({ competition, matches }: { com
       </Head>
       <div className="flex flex-col min-h-screen bg-gray-50 w-full">
         <div className="w-full bg-gray-50 dark:bg-gray-900">
-          <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 mt-4 mb-4 rounded-lg">
+          <div className="px-6 py-3 mt-4 mb-4">
             <Breadcrumb 
               items={[
                 { label: 'Home', href: '/' },

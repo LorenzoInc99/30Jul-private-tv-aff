@@ -1,0 +1,613 @@
+Date: Tue, 7 Oct 2025 08:36:04 +0000 (UTC)
+Message-ID: <1459513267.35.1759826164527@ca173ee1aef0>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_34_940451476.1759826164526"
+
+------=_Part_34_940451476.1759826164526
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>=F0=9F=93=A9 Email Marketing: Market Specific Requirements</titl=
+e>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>=F0=9F=93=A9 Email Marketing: Market Specific Requirements</h1>
+    <div class=3D"Section1">
+        <div class=3D"table-wrap">
+<style>[data-colorid=3Duz1ecf2ib8]{color:#ff991f} html[data-color-mode=3Dda=
+rk] [data-colorid=3Duz1ecf2ib8]{color:#e07a00}[data-colorid=3Dze35xczpjg]{c=
+olor:#ff991f} html[data-color-mode=3Ddark] [data-colorid=3Dze35xczpjg]{colo=
+r:#e07a00}[data-colorid=3Det5aw0y542]{color:#ff991f} html[data-color-mode=
+=3Ddark] [data-colorid=3Det5aw0y542]{color:#e07a00}[data-colorid=3Dlc5dpwb1=
+dg]{color:#ff991f} html[data-color-mode=3Ddark] [data-colorid=3Dlc5dpwb1dg]=
+{color:#e07a00}[data-colorid=3Dkwhle6yh45]{color:#ff991f} html[data-color-m=
+ode=3Ddark] [data-colorid=3Dkwhle6yh45]{color:#e07a00}[data-colorid=3Dzytla=
+q80pr]{color:#ff991f} html[data-color-mode=3Ddark] [data-colorid=3Dzytlaq80=
+pr]{color:#e07a00}[data-colorid=3Dt1dbuglykt]{color:#ff991f} html[data-colo=
+r-mode=3Ddark] [data-colorid=3Dt1dbuglykt]{color:#e07a00}[data-colorid=3Do3=
+ly3ggphr]{color:#ff991f} html[data-color-mode=3Ddark] [data-colorid=3Do3ly3=
+ggphr]{color:#e07a00}</style>
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"97=
+b9e0b4-d795-4791-8574-cd5743e77ece" class=3D"confluenceTable">
+<tbody>
+<tr>
+<th class=3D"confluenceTh">
+<p>=E2=9A=A0=EF=B8=8F<em>The following document outlines market-specific re=
+quirements for email marketing. These should always be used in addition to =
+</em><a href=3D"https://ilabs.atlassian.net/wiki/pages/resumedraft.action?d=
+raftId=3D434241565&amp;draftShareId=3D204320eb-f3d3-45dd-ac98-38ba89d25c12"=
+ rel=3D"nofollow"><em>Direct Marketing: General Rules</em></a><em> which ar=
+e applicable to all jurisdictions.</em></p></th>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h1 id=3D"id-=F0=9F=93=A9EmailMarketing:MarketSpecificRequirements-UK"><spa=
+n class=3D"confluence-embedded-file-wrapper"><img class=3D"confluence-embed=
+ded-image confluence-content-image-inline" alt=3D"image-20250514-123603.png=
+" loading=3D"lazy" src=3D"bb85412acbc89cdde3dda0e600d726dd63e0b4f154dff0442=
+14b24e77394a9e9" data-image-src=3D"https://ilabs.atlassian.net/wiki/downloa=
+d/attachments/432865287/image-20250514-123603.png?version=3D1&amp;modificat=
+ionDate=3D1747226166362&amp;cacheVersion=3D1&amp;api=3Dv2" data-height=3D"1=
+28" data-width=3D"128" data-unresolved-comment-count=3D"0" data-linked-reso=
+urce-id=3D"433061890" data-linked-resource-version=3D"1" data-linked-resour=
+ce-type=3D"attachment" data-linked-resource-default-alias=3D"image-20250514=
+-123603.png" data-base-url=3D"https://ilabs.atlassian.net/wiki" data-linked=
+-resource-content-type=3D"image/png" data-linked-resource-container-id=3D"4=
+32865287" data-linked-resource-container-version=3D"2" data-media-id=3D"e04=
+4fb51-0cab-428d-af5f-80f76065e9b2" data-media-type=3D"file" width=3D"128" h=
+eight=3D"128"></span> UK</h1>
+<p>When conducting email marketing, you must always respect <a href=3D"http=
+s://ilabs.atlassian.net/wiki/x/T4IqGQ" rel=3D"nofollow">UK: Advertising Gui=
+delines</a>.</p>
+<p>In addition to outlined gambling advertising rules, always make sure to =
+do the following:</p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1037"><span class=3D"placeholder-inline-tasks"><=
+span data-colorid=3D"o3ly3ggphr">Starting May 1, 2025,</span> explicit cons=
+ent for direct marketing must be given for:</span></li>
+</ul>
+<ul>
+<li>
+<p><span class=3D"inline-comment-marker" data-ref=3D"d22ff168-9766-4c99-a52=
+9-896b51bf2c2b">specific </span><strong><span class=3D"inline-comment-marke=
+r" data-ref=3D"d22ff168-9766-4c99-a529-896b51bf2c2b">vertical</span></stron=
+g><span class=3D"inline-comment-marker" data-ref=3D"d22ff168-9766-4c99-a529=
+-896b51bf2c2b"> (</span><em><span class=3D"inline-comment-marker" data-ref=
+=3D"d22ff168-9766-4c99-a529-896b51bf2c2b">bingo, betting, casino</span></em=
+><span class=3D"inline-comment-marker" data-ref=3D"d22ff168-9766-4c99-a529-=
+896b51bf2c2b">), </span><strong><span class=3D"inline-comment-marker" data-=
+ref=3D"d22ff168-9766-4c99-a529-896b51bf2c2b">and</span></strong></p></li>
+<li>
+<p><span class=3D"inline-comment-marker" data-ref=3D"d22ff168-9766-4c99-a52=
+9-896b51bf2c2b">specific </span><strong><span class=3D"inline-comment-marke=
+r" data-ref=3D"d22ff168-9766-4c99-a529-896b51bf2c2b">channel </span></stron=
+g><span class=3D"inline-comment-marker" data-ref=3D"d22ff168-9766-4c99-a529=
+-896b51bf2c2b">(</span><em><span class=3D"inline-comment-marker" data-ref=
+=3D"d22ff168-9766-4c99-a529-896b51bf2c2b">phone call, email or text message=
+s</span></em><span class=3D"inline-comment-marker" data-ref=3D"d22ff168-976=
+6-4c99-a529-896b51bf2c2b">)</span></p></li>
+</ul>
+<p style=3D"margin-left: 30.0px;">User must specify and<strong> <span class=
+=3D"inline-comment-marker" data-ref=3D"a2e1fbe0-4121-42cc-b637-fc8d3e77227d=
+"><span class=3D"inline-comment-marker" data-ref=3D"9216fe5a-9d9c-46c3-b9cb=
+-9c72eaec2c25">opt in</span></span></strong> for receiving a promotional ma=
+terial per product and per channel basis. e.g. (<em>I agree to receive <str=
+ong>casino promotions</strong> via <strong>email </strong>from ILL). </em>O=
+pt-out should be specified in the same manner.</p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1038"><span class=3D"placeholder-inline-tasks">E=
+nsure your email lists and targeting methods exclude individuals under <str=
+ong>18 years of age</strong>. Employ robust age-gating mechanisms if collec=
+ting email addresses through online platforms.</span></li>
+</ul>
+<h2 id=3D"id-=F0=9F=93=A9EmailMarketing:MarketSpecificRequirements-FooterRe=
+quirements"><span class=3D"confluence-embedded-file-wrapper"><img class=3D"=
+confluence-embedded-image confluence-content-image-inline" alt=3D"image-202=
+50514-130933.png" loading=3D"lazy" src=3D"c9ce0bcb10b5cc9cb5f6b4dd9047f2d2d=
+1df47a3a6b1607fab3b73c42421d7b9" data-image-src=3D"https://ilabs.atlassian.=
+net/wiki/download/attachments/432865287/image-20250514-130933.png?version=
+=3D1&amp;modificationDate=3D1747228175900&amp;cacheVersion=3D1&amp;api=3Dv2=
+" data-height=3D"128" data-width=3D"128" data-unresolved-comment-count=3D"0=
+" data-linked-resource-id=3D"432996415" data-linked-resource-version=3D"1" =
+data-linked-resource-type=3D"attachment" data-linked-resource-default-alias=
+=3D"image-20250514-130933.png" data-base-url=3D"https://ilabs.atlassian.net=
+/wiki" data-linked-resource-content-type=3D"image/png" data-linked-resource=
+-container-id=3D"432865287" data-linked-resource-container-version=3D"2" da=
+ta-media-id=3D"20eca313-6f88-42da-a501-025e2104d19d" data-media-type=3D"fil=
+e" width=3D"128" height=3D"128"></span> Footer Requirements</h2>
+<p>Make sure to include the following in the footer of the email:</p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1039"><span class=3D"placeholder-inline-tasks"><=
+strong><u>Unsubscribe option</u></strong></span></li>
+</ul>
+<p style=3D"margin-left: 30.0px;">e.g. You are receiving this email because=
+ you=E2=80=99ve subscribed to (<a class=3D"external-link" href=3D"http://eg=
+.com" rel=3D"nofollow"><em>eg.com</em></a>.) If you no longer wish to recei=
+ve these emails, you can easily <span data-colorid=3D"ze35xczpjg">Manage yo=
+ur preferences</span> or <span data-colorid=3D"zytlaq80pr">Unsubscribe</spa=
+n> (<em>with hyperlink to the unsubscribe option</em>);</p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1040"><span class=3D"placeholder-inline-tasks"><=
+strong><u>Compliance elements</u></strong><strong> </strong>( <em>18+, Play=
+ Responsibly, GamStop, Gam Care, GambleAware</em>)</span></li>
+</ul>
+<p style=3D"margin-left: 30.0px;">=F0=9F=92=A1all logos and links available=
+ under <a href=3D"https://ilabs.atlassian.net/wiki/spaces/GGC/pages/4222162=
+71/UK+Advertising+Guidelines#%5BmediaInline%5DMandatory-Compliance-Elements=
+" rel=3D"nofollow">Footer Requirements</a> in<a href=3D"https://ilabs.atlas=
+sian.net/wiki/spaces/GGC/pages/422216271" data-linked-resource-id=3D"422216=
+271" data-linked-resource-version=3D"6" data-linked-resource-type=3D"page">=
+/wiki/spaces/GGC/pages/422216271</a><span class=3D"inline-comment-marker" d=
+ata-ref=3D"efe53553-5ee6-4dee-8f1e-9e0fe8af0393">.</span></p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1041"><span class=3D"placeholder-inline-tasks"><=
+strong><u>&nbsp;Explanatory disclaimer regarding our inability to participa=
+te in SELF-EXCLUSION programs</u></strong></span></li>
+</ul>
+<p style=3D"margin-left: 30.0px;"><em>"We cannot access self-exclusion data=
+bases to verify your status. If you have self-excluded through GAMSTOP or a=
+ny other program, please take the necessary steps to opt out of our communi=
+cations by <span class=3D"inline-comment-marker" data-ref=3D"83c584f9-d2de-=
+49c2-8f65-d7420d550b6d">unsubscribing</span>. (with hyperlink to the unsubs=
+cribe option)" </em></p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1042"><span class=3D"placeholder-inline-tasks"><=
+strong><u>Commercial Content disclaimer</u></strong></span></li>
+</ul>
+<p style=3D"margin-left: 30.0px;">e.g. <em>This email contains commercial c=
+ontent</em>.</p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1043"><span class=3D"placeholder-inline-tasks"><=
+strong><u>Information about the sender</u></strong></span></li>
+</ul>
+<ul>
+<li>
+<p>Company Name</p></li>
+<li>
+<p>Company Address</p></li>
+</ul>
+<p style=3D"margin-left: 30.0px;">e.g. <em>Innovation Labs Limited, @GIG Be=
+ach, Triq id-Dragunara, St. Julians, STJ3148, Malta.</em></p>
+<ul class=3D"inline-task-list" data-inline-tasks-content-id=3D"432865287">
+<li data-inline-task-id=3D"1044"><span class=3D"placeholder-inline-tasks"><=
+strong><u>Bonus Offers</u></strong></span></li>
+</ul>
+<p>If partner specifically approved promotion of their bonus offers via ema=
+il marketing, always include <span data-colorid=3D"uz1ecf2ib8"><span class=
+=3D"inline-comment-marker" data-ref=3D"c61c1c6d-afe0-4f76-bb1a-43af2431ecc6=
+">Significant terms </span></span><span class=3D"inline-comment-marker" dat=
+a-ref=3D"c61c1c6d-afe0-4f76-bb1a-43af2431ecc6">of the offer</span> (<em>wit=
+h hyperlinks</em>) and <span class=3D"inline-comment-marker" data-ref=3D"1a=
+2862d5-7466-4953-bf3e-f983fe5ec64e">Full Terms of the offer one click away<=
+/span><span data-colorid=3D"kwhle6yh45"><span class=3D"inline-comment-marke=
+r" data-ref=3D"1a2862d5-7466-4953-bf3e-f983fe5ec64e">. (</span></span><em><=
+strong><span data-colorid=3D"t1dbuglykt"><span class=3D"inline-comment-mark=
+er" data-ref=3D"1a2862d5-7466-4953-bf3e-f983fe5ec64e">T&amp;C=E2=80=99s App=
+ly</span></span></strong><span data-colorid=3D"lc5dpwb1dg"><span class=3D"i=
+nline-comment-marker" data-ref=3D"1a2862d5-7466-4953-bf3e-f983fe5ec64e"> wi=
+th hyperlink</span></span></em><span data-colorid=3D"et5aw0y542"><span clas=
+s=3D"inline-comment-marker" data-ref=3D"1a2862d5-7466-4953-bf3e-f983fe5ec64=
+e">)</span></span></p>
+<p>(read more about it <a href=3D"https://ilabs.atlassian.net/wiki/spaces/G=
+GC/pages/422216271/UK+Advertising+Guidelines#%5BmediaInline%5D-Bonus-%26-Ot=
+her-Offers" rel=3D"nofollow">here</a>.)</p>
+<p><em><strong>Last Update: </strong>May 2025</em></p>
+<hr>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p><br></p>
+<p></p>
+<p></p>
+    </div>
+</body>
+</html>
+------=_Part_34_940451476.1759826164526
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+Content-Location: file:///C:/bb85412acbc89cdde3dda0e600d726dd63e0b4f154dff044214b24e77394a9e9
+
+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
+8UExcXQAAAAASUVORK5CYII=
+------=_Part_34_940451476.1759826164526
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+Content-Location: file:///C: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
+------=_Part_34_940451476.1759826164526--
