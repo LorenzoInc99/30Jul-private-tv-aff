@@ -101,16 +101,18 @@ export default function MobileWhereToWatch({
 
     const absDistance = Math.abs(distance);
 
-    if (absDistance === 0) { // Active card - make it bigger
+    if (absDistance === 0) { // Active card - make it bigger and ensure it's centered
       return {
-        transform: 'translateX(0) scale(1.15) rotateY(0deg)',
+        transform: 'translateX(0) scale(1.1) rotateY(0deg)',
         opacity: 1,
         zIndex: 10,
         filter: 'blur(0px)',
         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        left: '50%',
+        marginLeft: '-104px', // Half of w-52 (208px) to center it
       };
     } else if (absDistance === 1) { // Adjacent cards
-      const translateX = isLeft ? '-70%' : '70%';
+      const translateX = isLeft ? '-60%' : '60%';
       const scale = 0.8;
       const opacity = 0.6;
       const blur = '3px';
@@ -122,9 +124,11 @@ export default function MobileWhereToWatch({
         zIndex: 5,
         filter: `blur(${blur})`,
         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        left: '50%',
+        marginLeft: '-104px', // Half of w-52 (208px) to center it
       };
     } else { // Distant cards
-      const translateX = isLeft ? '-90%' : '90%';
+      const translateX = isLeft ? '-80%' : '80%';
       const scale = 0.6;
       const opacity = 0.3;
       const blur = '6px';
@@ -136,6 +140,8 @@ export default function MobileWhereToWatch({
         zIndex: 1,
         filter: `blur(${blur})`,
         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        left: '50%',
+        marginLeft: '-104px', // Half of w-52 (208px) to center it
       };
     }
   };
@@ -152,7 +158,7 @@ export default function MobileWhereToWatch({
   }
 
   return (
-    <div className="w-full px-4 pt-2 pb-4">
+    <div className="w-full px-2 pt-2 pb-4">
       {/* Horizontal Carousel Container */}
       <div className="relative w-full">
         {/* Navigation Arrows */}
@@ -160,7 +166,7 @@ export default function MobileWhereToWatch({
           <>
             <button
               onClick={() => handleScroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -168,7 +174,7 @@ export default function MobileWhereToWatch({
             </button>
             <button
               onClick={() => handleScroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -180,13 +186,15 @@ export default function MobileWhereToWatch({
         {/* Cards Container */}
         <div 
           ref={scrollRef}
-          className="relative h-64 w-full flex items-center justify-center overflow-hidden touch-pan-y"
+          className="relative h-64 w-full flex items-center justify-center overflow-visible touch-pan-y"
           style={{ 
             perspective: '1000px',
             touchAction: 'pan-y',
             userSelect: 'none',
             WebkitUserSelect: 'none',
-            minHeight: '256px'
+            minHeight: '256px',
+            paddingLeft: 'clamp(40px, 15vw, 80px)',
+            paddingRight: 'clamp(40px, 15vw, 80px)'
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}

@@ -321,15 +321,23 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
   const { setTeamData, setTeamMatches, setCurrentPage: setContextCurrentPage } = useTeam();
 
   // Transform matches for display - memoized to prevent infinite loops
-  const transformedPreviousMatches = useMemo(() => 
-    previousMatches.map(transformMatchForCard).filter(Boolean), 
-    [previousMatches]
-  );
+  const transformedPreviousMatches = useMemo(() => {
+    const transformed = previousMatches.map(transformMatchForCard).filter(Boolean);
+    // Remove duplicates based on match ID
+    const uniqueMatches = transformed.filter((match, index, self) => 
+      match && index === self.findIndex(m => m && match && m.id === match.id)
+    );
+    return uniqueMatches;
+  }, [previousMatches]);
   
-  const transformedUpcomingMatches = useMemo(() => 
-    (upcomingMatches || []).map(transformMatchForCard).filter(Boolean), 
-    [upcomingMatches]
-  );
+  const transformedUpcomingMatches = useMemo(() => {
+    const transformed = (upcomingMatches || []).map(transformMatchForCard).filter(Boolean);
+    // Remove duplicates based on match ID
+    const uniqueMatches = transformed.filter((match, index, self) => 
+      match && index === self.findIndex(m => m && match && m.id === match.id)
+    );
+    return uniqueMatches;
+  }, [upcomingMatches]);
 
   const transformedNextMatch = useMemo(() => 
     nextMatch ? transformMatchForCard(nextMatch) : null, 
@@ -350,8 +358,13 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
     }
     allMatchesArray.push(...transformedUpcomingMatches, ...transformedPreviousMatches);
     
+    // Remove duplicates based on match ID
+    const uniqueMatches = allMatchesArray.filter((match, index, self) => 
+      index === self.findIndex(m => m && match && m.id === match.id)
+    );
+    
     // Sort all matches chronologically (oldest to newest)
-    return allMatchesArray.sort((a, b) => {
+    return uniqueMatches.sort((a, b) => {
       if (!a || !b) return 0;
       return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
     });
@@ -553,16 +566,32 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
       case 'Matches':
         // Get matches based on sub-tab
         const getMatchesForSubTab = () => {
+          let matches = [];
           if (matchesSubTab === 'Results') {
             // Last 10 matches, most recent first
-            return transformedPreviousMatches.slice(0, 10);
+            matches = transformedPreviousMatches.slice(0, 10);
           } else {
             // Next 10 matches, next first
-            return transformedUpcomingMatches.slice(0, 10);
+            matches = transformedUpcomingMatches.slice(0, 10);
           }
+          
+          // Final deduplication to ensure no duplicates in display
+          return matches.filter((match, index, self) => 
+            match && index === self.findIndex(m => m && match && m.id === match.id)
+          );
         };
 
         const matchesToShow = getMatchesForSubTab();
+        
+        // Debug: Check for duplicates
+        console.log('🔍 Debug - matchesToShow:', matchesToShow.length, 'matches');
+        console.log('🔍 Debug - match IDs:', matchesToShow.map(m => m?.id));
+        const duplicateIds = matchesToShow.filter((match, index, self) => 
+          match && self.findIndex(m => m && match && m.id === match.id) !== index
+        );
+        if (duplicateIds.length > 0) {
+          console.log('🚨 Found duplicates in matchesToShow:', duplicateIds.map(m => m?.id));
+        }
         
         // Group matches by league in chronological order
         const groupMatchesByLeague = (matches: any[]) => {
@@ -578,10 +607,17 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
           
           // Convert to array and sort by most recent match in each league
           return Object.entries(leagueGroups)
-            .map(([leagueName, leagueMatches]) => ({
-              leagueName,
-              matches: leagueMatches
-            }))
+            .map(([leagueName, leagueMatches]) => {
+              // Remove duplicates within each league group
+              const uniqueMatches = leagueMatches.filter((match, index, self) => 
+                match && index === self.findIndex(m => m && match && m.id === match.id)
+              );
+              
+              return {
+                leagueName,
+                matches: uniqueMatches
+              };
+            })
             .sort((a, b) => {
               // Sort by the most recent match in each league
               const aMostRecent = new Date(a.matches[0].start_time);
@@ -648,7 +684,7 @@ export default function TeamDetailsClient({ team, nextMatch, todayMatch, upcomin
                         const isStarred = starredMatches.includes(match.id);
                         
                         return (
-                          <div key={match.id} className={`overflow-x-auto w-full ${idx === 0 ? 'border-t border-gray-100 dark:border-gray-700' : ''}`}>
+                          <div key={`${match.id}-${leagueGroup.leagueName}-${idx}`} className={`overflow-x-auto w-full ${idx === 0 ? 'border-t border-gray-100 dark:border-gray-700' : ''}`}>
                             <MatchCard
                               match={match}
                               timezone={timezone}

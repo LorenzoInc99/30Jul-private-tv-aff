@@ -10,3 +10,4 @@ This folder contains legal audit documentation and compliance checks for the iGa
 ## Purpose
 
 This documentation system helps ensure compliance with various legal requirements across different markets in the iGaming industry.
+

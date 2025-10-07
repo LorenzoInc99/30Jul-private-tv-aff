@@ -13,3 +13,4 @@ This folder contains gambling advertising regulations and compliance guidance.
 - Market-specific regulatory requirements
 - Best practices for gambling advertising
 - Compliance checklists
+
