@@ -65,3 +65,6 @@
 - "Ansvarlig spill"
 - "Lotteritilsynet vedtak"
 
+
+
+
